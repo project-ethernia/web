@@ -1,11 +1,42 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETHERNIA</title>
+  <meta charset="UTF-8">
+  <title>ETHERNIA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="main.css">
 </head>
 <body>
-    xddddddd
+  <!-- Navigáció -->
+  <div class="nav">
+    <div class="nav-inner">
+      <div class="logo">ETHERNIA</div>
+      <div class="nav-links">
+        <a href="rules.html">Szabályzat</a>
+        <a href="staff.html">Staff</a>
+        <a href="bans.html">Bannolások</a>
+        <a href="#join">Csatlakozás</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <header>
+    <div class="container">
+      <div class="hero">
+        <!-- ... (EZ itt marad teljesen ugyanaz) ... -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Footer -->
+  <footer>
+    &copy; <span id="year"></span> ETHERNIA &middot; Nem hivatalos Minecraft oldal.
+  </footer>
+
+  <script src="status.js"></script>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>

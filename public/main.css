@@ -1,5 +1,469 @@
+/* Alap reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
-    background: url('assets/bg.webp') no-repeat center center fixed;
-    background-size: cover;
-    background-color: red;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #040008;
+  color: #f9fafb;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Navigáció */
+
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  backdrop-filter: blur(18px);
+  background: rgba(10, 2, 20, 0.9);
+  border-bottom: 1px solid #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.nav-inner {
+  max-width: 1100px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: linear-gradient(120deg, #b364fd, #9e03e6);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.nav-links a {
+  opacity: 0.8;
+}
+
+.nav-links a:hover {
+  opacity: 1;
+}
+
+/* Konténer + hero */
+
+header {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(168, 85, 247, 0.35) 0, transparent 55%),
+    radial-gradient(circle at bottom, rgba(59, 130, 246, 0.2) 0, transparent 55%),
+    linear-gradient(160deg, #020014 0%, #020010 50%, #020008 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.container {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: center;
+  margin-top: 4.5rem; /* nav miatt */
+}
+
+/* Mobil */
+
+@media (max-width: 800px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    text-align: center;
+  }
+
+  .nav-links {
+    display: none;
+  }
+}
+
+/* Hero szöveg */
+
+.hero-title {
+  font-size: clamp(2.3rem, 5vw, 3.2rem);
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.hero-title span {
+  background: linear-gradient(120deg, #a855f7, #6366f1);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.hero-subtitle {
+  font-size: 1rem;
+  max-width: 32rem;
+  opacity: 0.9;
+  margin-bottom: 1.5rem;
+}
+
+/* IP box */
+
+.ip-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  background: rgba(10, 6, 25, 0.95);
+  border-radius: 999px;
+  border: 1px solid #4c1d95;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
+}
+
+.ip-label {
+  opacity: 0.7;
+}
+
+.ip-value {
+  font-weight: 600;
+}
+
+/* Gombok */
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.btn {
+  padding: 0.7rem 1.3rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  background: #a855f7;
+  color: #020617;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.12s ease,
+    opacity 0.12s ease;
+  box-shadow: 0 10px 25px rgba(168, 85, 247, 0.45);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 35px rgba(168, 85, 247, 0.65);
+  background: #9333ea;
+}
+
+.btn.secondary {
+  background: transparent;
+  color: #e5e7eb;
+  border: 1px solid #4b5563;
+  box-shadow: none;
+}
+
+.btn.secondary:hover {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: #9f1239;
+  transform: translateY(-1px);
+}
+
+/* Hero kártya */
+
+.hero-card {
+  background:
+  radial-gradient(circle at top left, rgba(168, 85, 247, 0.22) 0, transparent 60%),
+  #020013;
+  border-radius: 1.25rem;
+  border: 1px solid #312e81;
+  padding: 1.25rem 1.3rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85);
+}
+
+.hero-card h3 {
+  font-size: 1rem;
+  margin-bottom: 0.8rem;
+  opacity: 0.9;
+}
+
+.hero-card-note {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+/* Statisztika grid */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.stat-item {
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.9rem;
+  background: rgba(15, 6, 35, 0.95);
+  border: 1px solid #1e1b4b;
+}
+
+.stat-label {
+  opacity: 0.7;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Szekciók */
+
+.section {
+  padding: 4rem 1.5rem 1rem;
+  background: #020013;
+  border-top: 1px solid #111827;
+}
+
+.section-header {
+  max-width: 1100px;
+  margin: 0 auto 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.section-subtitle {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  max-width: 30rem;
+}
+
+/* Szabályzat */
+
+.rules-list {
+  max-width: 1100px;
+  margin: 0 auto 2.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.rule-card {
+  background: #020014;
+  border-radius: 1rem;
+  border: 1px solid #1e1b4b;
+  padding: 1rem 1.1rem;
+  font-size: 0.9rem;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.6);
+}
+
+.rule-card span {
+  font-weight: 600;
+  margin-right: 0.4rem;
+  opacity: 0.7;
+  color: #a855f7;
+}
+
+/* Staff */
+
+.staff-grid {
+  max-width: 1100px;
+  margin: 0 auto 2.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.staff-card {
+  background: #020014;
+  border-radius: 1rem;
+  border: 1px solid #1e1b4b;
+  padding: 1rem 1.1rem;
+  font-size: 0.9rem;
+}
+
+.staff-name {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.staff-role {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.7;
+  margin-bottom: 0.35rem;
+  color: #a855f7;
+}
+
+.staff-desc {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+/* STAFF skines kártyák */
+
+.staff-card--skin {
+  position: relative;
+  text-align: center;
+  padding-top: 1.4rem;
+  padding-bottom: 1.1rem;
+  overflow: hidden;
+  cursor: default;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.staff-card--skin:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.9);
+  border-color: #4c1d95;
+}
+
+/* Skin fej container */
+
+.staff-skin-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 90px; /* kb. a fej “magassága” */
+  pointer-events: none;
+}
+
+.staff-skin {
+  width: 72px;
+  height: 72px;
+  border-radius: 0.9rem;
+  border: 2px solid #1e1b4b;
+  background: #0a0215;
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.5);
+  transform-origin: center bottom;
+  transform: translateY(6px) scale(1);
+  transition: transform 0.18s ease;
+}
+
+/* Hover: fej nagyobbodik és kicsit feljebb megy */
+
+.staff-card--skin:hover .staff-skin {
+  transform: translateY(-8px) scale(1.25);
+}
+
+/* Szöveges rész – alapból rejtve / összehúzva */
+
+.staff-info {
+  margin-top: 0.5rem;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(8px);
+  transition:
+    max-height 0.22s ease,
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+/* Hover: szöveg lenyílik */
+
+.staff-card--skin:hover .staff-info {
+  max-height: 220px; /* ha hosszabb leírás, emeld */
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Kicsi finomhangolás, hogy szebb legyen a tipográfia */
+
+.staff-card--skin .staff-role {
+  margin-bottom: 0.2rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+}
+
+.staff-card--skin .staff-name {
+  margin-bottom: 0.25rem;
+  font-size: 0.95rem;
+}
+
+.staff-card--skin .staff-desc {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+/* Bannolások oldal specifikus */
+
+.bans-wrapper {
+  max-width: 1100px;
+  margin: 5.5rem auto 3rem;
+  padding: 0 1.5rem 2rem;
+}
+
+.bans-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.bans-subtitle {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  margin-bottom: 1.5rem;
+}
+
+/* Iframe vagy tábla helye */
+
+.bans-frame-wrapper {
+  margin-top: 1rem;
+  background: #020014;
+  border-radius: 1rem;
+  border: 1px solid #1e1b4b;
+  padding: 1rem;
+}
+
+/* Lábléc */
+
+footer {
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  opacity: 0.65;
+  border-top: 1px solid #111827;
+  background: #020013;
 }
