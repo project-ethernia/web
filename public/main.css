@@ -49,6 +49,7 @@ a {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   background: linear-gradient(120deg, #b364fd, #9e03e6);
+  background-clip: unset;
   -webkit-background-clip: text;
   color: transparent;
 }
@@ -118,6 +119,7 @@ header {
 
 .hero-title span {
   background: linear-gradient(120deg, #a855f7, #6366f1);
+  background-clip: unset;
   -webkit-background-clip: text;
   color: transparent;
 }
