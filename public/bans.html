@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Tiltások — Admin</title>
+    <background src="bg.webp">
+    <link rel="stylesheet" href="bans.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Tiltások</h1>
+            <div class="controls">
+                <input id="search" type="search" placeholder="Keresés felhasználó vagy ok szerint…">
+                <button id="clear">Törlés</button>
+            </div>
+        </header>
+
+        <section class="card" aria-labelledby="tiltasok">
+            <h2 id="tiltasok" class="muted" style="margin:0 0 8px 0">Jelenlegi tiltások listája</h2>
+
+            <table aria-describedby="list-desc">
+                <thead>
+                    <tr>
+                        <th>Felhasználó</th>
+                        <th>Ok</th>
+                        <th>Tiltotta</th>
+                        <th>Dátum</th>
+                        <th>Lejár</th>
+                        <th>Művelet</th>
+                    </tr>
+                </thead>
+                <tbody id="ban-list">
+                    <tr class="empty-row">
+                        <td class="empty" colspan="6">Nincs tiltás</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p id="list-desc" class="muted" style="margin-top:10px">Használja a keresőt a lista leszűréséhez. Kattintson a Művelet gombra további lehetőségekhez.</p>
+        </section>
+    </div>
+
+    <script>
+        // Egyszerű példa: a lista kezelése és keresés (szerver oldali adathívás helyére)
+        const banListEl = document.getElementById('ban-list');
+        const searchEl = document.getElementById('search');
+        const clearBtn = document.getElementById('clear');
+
+        // Mintaadatok; valós alkalmazásban API-ról töltsd
+        const bans = [
+            {user:'kisgabor', reason:'Nem megfelelő viselkedés', by:'moderator1', date:'2025-11-18', expires:'2025-12-18'},
+            {user:'anna99', reason:'Spamelés', by:'auto-ban', date:'2025-11-10', expires:'Végleges'}
+        ];
+
+        function render(list){
+            banListEl.innerHTML = '';
+            if (!list.length){
+                banListEl.innerHTML = '<tr class="empty-row"><td class="empty" colspan="6">Nincs tiltás</td></tr>';
+                return;
+            }
+            for (const b of list){
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${escapeHtml(b.user)}</strong></td>
+                    <td>${escapeHtml(b.reason)}</td>
+                    <td>${escapeHtml(b.by)}</td>
+                    <td>${escapeHtml(b.date)}</td>
+                    <td>${escapeHtml(b.expires)}</td>
+                    <td><button data-user="${escapeHtml(b.user)}">Feloldás</button></td>
+                `;
+                banListEl.appendChild(tr);
+            }
+        }
+
+        function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+        // Keresés
+        searchEl.addEventListener('input', () => {
+            const q = searchEl.value.trim().toLowerCase();
+            const filtered = bans.filter(b =>
+                b.user.toLowerCase().includes(q) ||
+                b.reason.toLowerCase().includes(q) ||
+                b.by.toLowerCase().includes(q)
+            );
+            render(filtered);
+        });
+
+        // Törlés mező kiürítése
+        clearBtn.addEventListener('click', () => {
+            searchEl.value = '';
+            render(bans);
+        });
+
+        // Delegált esemény a feloldásra (csak példa)
+        banListEl.addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const user = btn.dataset.user;
+            if (!confirm(`Valóban feloldod: ${user}?`)) return;
+            // Itt hívnál egy API-t a feloldáshoz. Például:
+            // fetch(`/api/unban/${encodeURIComponent(user)}`, {method:'POST'})
+            //   .then(...)
+            // Most csak eltávolítjuk a mintalistából:
+            const idx = bans.findIndex(b => b.user === user);
+            if (idx !== -1){ bans.splice(idx,1); render(bans); }
+        });
+
+        // Inicializálás
+        render(bans);
+    </script>
+</body>
+</html>
