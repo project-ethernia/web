@@ -1,4 +1,4 @@
-/* Reset */
+/* RESET */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -13,25 +13,28 @@ body {
     linear-gradient(160deg, #020014 0%, #020010 50%, #020008 100%);
   color: #f9fafb;
   line-height: 1.5;
+  min-height: 100vh;
 }
 
-/* Linkek */
+/* LINK ALAPOK */
 a {
   color: inherit;
   text-decoration: none;
 }
 
-/* Fő layout: bal info, jobb login panel */
+/* ---------- FŐ ELRENDEZÉS ---------- */
+
 .page {
   min-height: 100vh;
   padding: 6rem 3.5rem 4rem;
   display: flex;
-  align-items: center;
+  align-items: center;        /* függőlegesen középre */
   justify-content: space-between;
   gap: 3rem;
 }
 
-/* Bal oldal */
+/* ---------- BAL OLDAL: INFÓ + STATOK ---------- */
+
 .info-panel {
   flex: 1 1 0;
   max-width: 520px;
@@ -107,6 +110,7 @@ a {
   margin-top: 0.4rem;
 }
 
+/* Discord kártya kékesebb */
 .stat-discord {
   border-color: rgba(59, 130, 246, 0.7);
 }
@@ -161,16 +165,17 @@ a {
   transform: translateY(-1px);
 }
 
-/* Jobb oldal: login panel jobbra tolva */
+/* ---------- JOBB OLDAL: LOGIN PANEL ---------- */
+
 .auth-section {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* JOBBRA igazítás */
+  align-items: flex-end;   /* JOBBRA húzza a kártyát */
   gap: 0.8rem;
 }
 
-/* --- INNENTŐL a TE EREDETI LOGIN KÁRTYÁD --- */
+/* EZ ITT A TE EREDETI LOGIN KÁRTYÁD STÍLUSA */
 
 .auth-card {
   width: 100%;
@@ -197,7 +202,8 @@ a {
   margin-bottom: 0.9rem;
 }
 
-/* Űrlap */
+/* ŰRLAP */
+
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -241,6 +247,7 @@ a {
 }
 
 /* Sor: checkbox + jelszó link */
+
 .form-row {
   display: flex;
   align-items: center;
@@ -274,7 +281,8 @@ a {
   opacity: 1;
 }
 
-/* Gomb */
+/* GOMB */
+
 .btn {
   padding: 0.7rem 1.3rem;
   border-radius: 999px;
@@ -307,7 +315,8 @@ a {
   margin-top: 0.2rem;
 }
 
-/* Alsó szöveg */
+/* Alsó szövegek */
+
 .auth-footer-text {
   margin-top: 0.6rem;
   font-size: 0.85rem;
@@ -333,14 +342,16 @@ a {
   text-decoration-style: dotted;
 }
 
-/* Lábléc a panel alatt */
+/* Lábléc a login panel alatt */
+
 .footer {
   font-size: 0.8rem;
   opacity: 0.7;
   text-align: right;
 }
 
-/* Mobil */
+/* ---------- RESPONSIVE ---------- */
+
 @media (max-width: 900px) {
   .page {
     flex-direction: column;
@@ -352,7 +363,7 @@ a {
   }
 
   .auth-section {
-    align-items: stretch;
+    align-items: stretch;   /* mobilon ne jobbra, hanem teljes szélességben */
   }
 
   .footer {
