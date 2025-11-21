@@ -4,37 +4,81 @@
   <meta charset="UTF-8">
   <title>ETHERNIA - Bejelentkezés</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="main.css">
-  <background src="bg.webp">
+  <link rel="stylesheet" href="login.css">
 </head>
 
 <body>
-    <div class="loginpanel">
-    <h2>Bejelentkezés</h2>
-    <form action="/login" method="post">
-        <label for="username">Felhasználónév:</label>
-        <input type="text" id="username" name="username" required>
-        
-        <label for="password">Jelszó:</label>
-        <input type="password" id="password" name="password" required>
-        
-        <button type="submit">Bejelentkezés</button>
-
-    </form>
-    </div>
-  <header>
-    <div class="container">
-      <div class="hero">
-
+  <div class="nav">
+    <div class="nav-inner">
+      <div class="logo">ETHERNIA</div>
+      <div class="nav-links">
+        <a href="index.html">Főoldal</a>
+        <a href="rules.html">Szabályzat</a>
+        <a href="staff.html">Csapattagok</a>
+        <a href="/punishments">Büntetések</a>
       </div>
     </div>
-  </header>
+  </div>
+
+  <main class="auth-wrapper">
+    <div class="auth-card">
+      <h1 class="auth-title">Bejelentkezés</h1>
+      <p class="auth-subtitle">
+        Jelentkezz be, hogy csatlakozhass az <span>ETHERNIA</span> világához.
+      </p>
+
+      <!--
+        action: ha még nincs backend, maradhat így,
+        vagy ide írod majd a saját /login endpointodat.
+        Most demo-ként az index.html-re dob vissza.
+      -->
+      <form class="auth-form" action="index.html" method="POST">
+        <div class="form-group">
+          <label for="username">Felhasználónév vagy e-mail</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="pl. Steve, player@example.com"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Jelszó</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            required
+          >
+        </div>
+
+        <div class="form-row">
+          <label class="checkbox">
+            <input type="checkbox" name="remember">
+            <span>Emlékezzen rám ezen a gépen</span>
+          </label>
+          <a href="#" class="link-small">Elfelejtett jelszó?</a>
+        </div>
+
+        <button type="submit" class="btn auth-btn">
+          Bejelentkezés
+        </button>
+      </form>
+
+      <div class="auth-footer-text">
+        Nincs még fiókod?
+        <a href="#" class="link-accent">Regisztráció hamarosan</a>
+      </div>
+    </div>
+  </main>
 
   <footer>
     &copy; <span id="year"></span> ETHERNIA &middot; Nem hivatalos Minecraft oldal.
   </footer>
 
-  <script src="status.js"></script>
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
