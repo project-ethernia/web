@@ -1,4 +1,4 @@
-/* Alap reset */
+/* RESET */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -7,9 +7,13 @@
 
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #040008;
+  background:
+    radial-gradient(circle at top, rgba(168, 85, 247, 0.3) 0, transparent 55%),
+    radial-gradient(circle at bottom, rgba(59, 130, 246, 0.18) 0, transparent 55%),
+    linear-gradient(160deg, #020014 0%, #020010 50%, #020008 100%);
   color: #f9fafb;
   line-height: 1.5;
+  min-height: 100vh;
 }
 
 a {
@@ -17,80 +21,164 @@ a {
   text-decoration: none;
 }
 
-/* Navigáció – ugyanaz a stílus, mint a főoldalon */
+/* FŐ ELRENDEZÉS */
 
-.nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 64px;
-  backdrop-filter: blur(18px);
-  background: rgba(10, 2, 20, 0.9);
-  border-bottom: 1px solid #1f2937;
+.page {
+  min-height: 100vh;
+  padding: 2.5rem 1.5rem;
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 50;
+  align-items: center;
 }
 
-.nav-inner {
-  max-width: 1100px;
+.page-inner {
+  max-width: 1120px;
   width: 100%;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
-  padding: 0 1.5rem;
+  gap: 3rem;
 }
 
-.logo {
+/* BAL OLDAL: stat panel */
+
+.stats-panel {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.8rem;
+}
+
+.brand-logo {
   font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: 0.12em;
+  font-size: 1.4rem;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   background: linear-gradient(120deg, #b364fd, #9e03e6);
-  background-clip: unset;
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
 }
 
-.nav-links {
-  display: flex;
-  gap: 1.5rem;
-  font-size: 0.95rem;
-}
-
-.nav-links a {
+.brand-subtitle {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
   opacity: 0.8;
 }
 
-.nav-links a:hover {
-  opacity: 1;
+.stats-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.2rem;
 }
 
-/* Mobil navigáció */
-
-@media (max-width: 800px) {
-  .nav-links {
-    display: none;
-  }
+.stat-card {
+  border-radius: 1.2rem;
+  padding: 1.3rem 1.4rem;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.18) 0, transparent 60%),
+    rgba(15, 23, 42, 0.95);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.75);
 }
 
-/* Auth wrapper – középre igazított login kártya */
+.stat-card h2 {
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+}
 
-.auth-wrapper {
-  min-height: 100vh;
-  padding: 6rem 1.5rem 4rem;
+.stat-main {
   display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-size: 1.7rem;
+  font-weight: 800;
+}
+
+.stat-separator {
+  opacity: 0.7;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-top: 0.1rem;
+}
+
+.stat-sub {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-top: 0.4rem;
+}
+
+.stat-mc .stat-main {
+  color: #a855f7;
+}
+
+.stat-discord {
+  border-color: rgba(59, 130, 246, 0.7);
+}
+
+.stat-discord .stat-main {
+  color: #60a5fa;
+}
+
+.feature-list {
+  list-style: none;
+  margin: 0.5rem 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.feature-list li {
+  position: relative;
+  padding-left: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+.feature-list li::before {
+  content: "◆";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 0.6rem;
+  color: #a855f7;
+}
+
+/* OUTLINE gomb (Discord) */
+
+.btn-outline {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  background:
-    radial-gradient(circle at top, rgba(168, 85, 247, 0.35) 0, transparent 55%),
-    radial-gradient(circle at bottom, rgba(59, 130, 246, 0.2) 0, transparent 55%),
-    linear-gradient(160deg, #020014 0%, #020010 50%, #020008 100%);
+  margin-top: 0.6rem;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.8);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    transform 0.12s ease;
 }
 
-/* Login kártya */
+.btn-outline:hover {
+  background: rgba(148, 163, 184, 0.1);
+  border-color: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+/* JOBB OLDAL: bejelentkező panel */
+
+.auth-wrapper {
+  flex: 0 0 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* jobb oldalra húzza a kártyát */
+  gap: 1rem;
+}
 
 .auth-card {
   width: 100%;
@@ -107,10 +195,16 @@ a {
 .auth-title {
   font-size: 1.6rem;
   font-weight: 800;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.2rem;
 }
 
-/* Űrlap */
+.auth-note {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-bottom: 0.9rem;
+}
+
+/* ŰRLAP */
 
 .auth-form {
   display: flex;
@@ -189,7 +283,7 @@ a {
   opacity: 1;
 }
 
-/* Gomb */
+/* GOMB */
 
 .btn {
   padding: 0.7rem 1.3rem;
@@ -223,7 +317,7 @@ a {
   margin-top: 0.2rem;
 }
 
-/* Alsó szöveg */
+/* Alsó szövegek */
 
 .auth-footer-text {
   margin-top: 0.6rem;
@@ -239,7 +333,47 @@ a {
   text-decoration: underline;
 }
 
-/* Mobil */
+.auth-help {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: 0.6rem;
+}
+
+.auth-help a {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+/* Lábléc a panel alatt */
+
+.footer {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  text-align: right;
+}
+
+/* MOBIL / TABLET */
+
+@media (max-width: 900px) {
+  .page {
+    padding-top: 1.8rem;
+    padding-bottom: 1.8rem;
+  }
+
+  .page-inner {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .auth-wrapper {
+    align-items: stretch;
+  }
+
+  .footer {
+    text-align: left;
+  }
+}
 
 @media (max-width: 480px) {
   .auth-card {
@@ -254,30 +388,4 @@ a {
     flex-direction: column;
     align-items: flex-start;
   }
-}
-
-/* Lábléc */
-
-footer {
-  padding: 1.5rem;
-  text-align: center;
-  font-size: 0.85rem;
-}
-
-.auth-note {
-  font-size: 0.8rem;
-  opacity: 0.8;
-  margin-top: 0.2rem;
-  margin-bottom: 0.8rem;
-}
-
-.auth-help {
-  font-size: 0.8rem;
-  opacity: 0.8;
-  margin-top: 0.6rem;
-}
-
-.auth-help a {
-  text-decoration: underline;
-  text-decoration-style: dotted;
 }

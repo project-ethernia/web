@@ -4,39 +4,126 @@
   <meta charset="UTF-8">
   <title>ETHERNIA - Bejelentkezés</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="main.css">
-  <background src="bg.webp">
+  <link rel="stylesheet" href="login.css">
 </head>
-
 <body>
-    <div class="loginpanel">
-    <h2>Bejelentkezés</h2>
-    <form action="/login" method="post">
-        <label for="username">Felhasználónév:</label>
-        <input type="text" id="username" name="username" required>
-        
-        <label for="password">Jelszó:</label>
-        <input type="password" id="password" name="password" required>
-        
-        <button type="submit">Bejelentkezés</button>
+  <main class="page">
+    <div class="page-inner">
+      <!-- BAL OLDAL: statok, infó -->
+      <section class="stats-panel">
+        <div class="brand">
+          <div class="brand-logo">ETHERNIA</div>
+          <p class="brand-subtitle">magyar Minecraft közösség</p>
+        </div>
 
-    </form>
+        <div class="stats-grid">
+          <!-- Minecraft stat kártya -->
+          <article class="stat-card stat-mc">
+            <h2>Minecraft szerver</h2>
+            <div class="stat-main">
+              <span id="mc-online">--</span>
+              <span class="stat-separator">/</span>
+              <span id="mc-max">--</span>
+            </div>
+            <p class="stat-label">jelenleg online játékos</p>
+            <p class="stat-sub">IP: <code>play.ethernia.hu</code></p>
+          </article>
+
+          <!-- Discord stat kártya -->
+          <article class="stat-card stat-discord">
+            <h2>Discord</h2>
+            <div class="stat-main">
+              <span id="discord-online">--</span>
+            </div>
+            <p class="stat-label">tag a szerveren</p>
+            <a
+              class="btn-outline"
+              href="https://discord.gg/SAJATMEGHIVO"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Csatlakozom a Discordhoz
+            </a>
+          </article>
+
+          <!-- Extra infó / feature kártya -->
+          <article class="stat-card stat-info">
+            <h2>Mi vár rád az ETHERNIA-n?</h2>
+            <ul class="feature-list">
+              <li>Egyedi, fekete–lila dizájn és hangulat</li>
+              <li>Aktív, barátságos közösség és staff</li>
+              <li>Eventek, jutalmak, rangok a webes profilodhoz kötve</li>
+            </ul>
+            <p class="stat-sub">
+              Lépj be, nézd meg a statjaidat, és csatlakozz a játékhoz!
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- JOBB OLDAL: bejelentkezés -->
+      <section class="auth-wrapper">
+        <div class="auth-card">
+          <h1 class="auth-title">Bejelentkezés</h1>
+          <p class="auth-note">
+            Lépj be a fiókodba, hogy elérd a statjaidat, jutalmaidat és a webes funkciókat.
+          </p>
+
+          <!-- Ha lesz backend, az action-t majd cseréld a saját /login endpointodra -->
+          <form class="auth-form" action="index.html" method="POST">
+            <div class="form-group">
+              <label for="username">Felhasználónév</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="játékosnév"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="password">Jelszó</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="••••••••"
+                required
+              >
+            </div>
+
+            <div class="form-row">
+              <label class="checkbox">
+                <input type="checkbox" name="remember">
+                <span>Emlékezz rám</span>
+              </label>
+              <a href="/new-password.html" class="link-small">Elfelejtett jelszó?</a>
+            </div>
+
+            <button type="submit" class="btn auth-btn">
+              Bejelentkezés
+            </button>
+          </form>
+
+          <div class="auth-footer-text">
+            Nincs még fiókod?
+            <a href="/register.html" class="link-accent">Regisztráció</a>
+          </div>
+
+          <div class="auth-help">
+            Probléma a belépéssel?
+            <a href="mailto:support@ethernia.hu">Írj a supportnak</a>.
+          </div>
+        </div>
+
+        <footer class="footer">
+          &copy; <span id="year"></span> ETHERNIA &middot; Nem hivatalos Minecraft oldal.
+        </footer>
+      </section>
     </div>
-  <header>
-    <div class="container">
-      <div class="hero">
+  </main>
 
-      </div>
-    </div>
-  </header>
-
-  <footer>
-    &copy; <span id="year"></span> ETHERNIA &middot; Nem hivatalos Minecraft oldal.
-  </footer>
-
-  <script src="status.js"></script>
-  <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
+  <script src="login.js"></script>
 </body>
 </html>
