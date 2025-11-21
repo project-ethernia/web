@@ -277,3 +277,21 @@ footer {
   text-align: center;
   font-size: 0.85rem;
 }
+
+.auth-note {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: 0.2rem;
+  margin-bottom: 0.8rem;
+}
+
+.auth-help {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: 0.6rem;
+}
+
+.auth-help a {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}

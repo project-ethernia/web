@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>ETHERNIA - Regisztráció</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="login.css">
+</head>
+
+<body>
+  <div class="nav">
+    <div class="nav-inner">
+      <div class="logo">ETHERNIA</div>
+      <div class="nav-links">
+        <a href="index.html">Főoldal</a>
+        <a href="rules.html">Szabályzat</a>
+        <a href="staff.html">Csapattagok</a>
+        <a href="/punishments">Büntetések</a>
+      </div>
+    </div>
+  </div>
+
+  <main class="auth-wrapper">
+    <div class="auth-card">
+      <h1 class="auth-title">Regisztráció</h1>
+      <p class="auth-subtitle">
+        Hozz létre egy fiókot, és csatlakozz az <span>ETHERNIA</span> közösséghez.
+      </p>
+
+      <!--
+        Ha lesz backend:
+        action="/register" (POST) – tipikus regisztrációs endpoint.
+      -->
+      <form class="auth-form" action="/register" method="POST">
+        <div class="form-group">
+          <label for="username">Felhasználónév</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="pl. Steve"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="email">E-mail cím</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="player@example.com"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Jelszó</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password_confirmation">Jelszó megerősítése</label>
+          <input
+            type="password"
+            id="password_confirmation"
+            name="password_confirmation"
+            placeholder="••••••••"
+            required
+          >
+        </div>
+
+        <div class="form-row">
+          <label class="checkbox">
+            <input type="checkbox" name="terms" required>
+            <span>
+              Elfogadom a <a href="rules.html" class="link-accent">szabályzatot</a>
+            </span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn auth-btn">
+          Regisztráció
+        </button>
+      </form>
+
+      <div class="auth-footer-text">
+        Már van fiókod?
+        <a href="login.html" class="link-accent">Bejelentkezés</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; <span id="year"></span> ETHERNIA &middot; Nem hivatalos Minecraft oldal.
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
