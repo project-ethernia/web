@@ -1,391 +1,166 @@
-/* RESET */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* Reset */
+* { margin:0; padding:0; box-sizing:border-box; }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(168, 85, 247, 0.3) 0, transparent 55%),
-    radial-gradient(circle at bottom, rgba(59, 130, 246, 0.18) 0, transparent 55%),
-    linear-gradient(160deg, #020014 0%, #020010 50%, #020008 100%);
-  color: #f9fafb;
-  line-height: 1.5;
+  font-family: "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, rgba(140, 60, 220, .35), transparent 60%),
+              #080314;
+  color: white;
   min-height: 100vh;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* FŐ ELRENDEZÉS */
-
-.page {
-  min-height: 100vh;
-  padding: 2.5rem 1.5rem;
   display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
-.page-inner {
-  max-width: 1120px;
+/* --- FŐ ELRENDEZÉS --- */
+.layout {
+  display: flex;
   width: 100%;
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 3rem;
+  padding: 3rem 4rem;
+  gap: 4rem;
 }
 
-/* BAL OLDAL: stat panel */
-
-.stats-panel {
-  flex: 1 1 0;
+/* BAL OLDAL */
+.left {
+  width: 50%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 1.8rem;
+  gap: 2rem;
 }
 
-.brand-logo {
+.brand {
+  font-size: 2.4rem;
   font-weight: 800;
-  font-size: 1.4rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  background: linear-gradient(120deg, #b364fd, #9e03e6);
-  -webkit-background-clip: text;
-  background-clip: text;
+  letter-spacing: .12em;
+  background: linear-gradient(120deg,#b364fd,#9e03e6);
+  background-clip: unset;
+  -webkit-background-clip:text;
   color: transparent;
 }
 
-.brand-subtitle {
-  margin-top: 0.4rem;
-  font-size: 0.9rem;
-  opacity: 0.8;
+.brand-sub {
+  opacity: .8;
+  margin-top: -1rem;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1.2rem;
-}
-
-.stat-card {
-  border-radius: 1.2rem;
-  padding: 1.3rem 1.4rem;
-  border: 1px solid rgba(55, 65, 81, 0.9);
-  background:
-    radial-gradient(circle at top left, rgba(168, 85, 247, 0.18) 0, transparent 60%),
-    rgba(15, 23, 42, 0.95);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.75);
-}
-
-.stat-card h2 {
-  font-size: 1rem;
-  margin-bottom: 0.4rem;
-}
-
-.stat-main {
+.cards {
   display: flex;
-  align-items: baseline;
-  gap: 0.25rem;
-  font-size: 1.7rem;
-  font-weight: 800;
+  flex-direction: column;
+  gap: 1.4rem;
 }
 
-.stat-separator {
-  opacity: 0.7;
+.card {
+  padding: 1.4rem;
+  border-radius: 1rem;
+  background: rgba(20, 10, 40, 0.65);
+  border: 1px solid rgba(120, 60, 200, .4);
+  backdrop-filter: blur(8px);
 }
 
-.stat-label {
-  font-size: 0.85rem;
-  opacity: 0.8;
-  margin-top: 0.1rem;
+.card h2 {
+  margin-bottom: .5rem;
 }
 
-.stat-sub {
-  font-size: 0.85rem;
-  opacity: 0.8;
-  margin-top: 0.4rem;
+.big {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #c084fc;
 }
 
-.stat-mc .stat-main {
-  color: #a855f7;
+.small {
+  font-size: .85rem;
+  opacity: .8;
 }
 
-.stat-discord {
-  border-color: rgba(59, 130, 246, 0.7);
+.server-ip { opacity:.7; margin-top:.4rem; }
+
+.bullets { margin-top:.6rem; }
+.bullets li {
+  margin-left: 1rem;
+  margin-bottom: .3rem;
+  opacity:.85;
 }
 
-.stat-discord .stat-main {
-  color: #60a5fa;
-}
-
-.feature-list {
-  list-style: none;
-  margin: 0.5rem 0 0.5rem;
-  font-size: 0.9rem;
-}
-
-.feature-list li {
-  position: relative;
-  padding-left: 1rem;
-  margin-bottom: 0.3rem;
-}
-
-.feature-list li::before {
-  content: "◆";
-  position: absolute;
-  left: 0;
-  top: 0;
-  font-size: 0.6rem;
-  color: #a855f7;
-}
-
-/* OUTLINE gomb (Discord) */
-
+/* Discord button */
 .btn-outline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 0.6rem;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.8);
-  background: transparent;
-  cursor: pointer;
-  transition:
-    background 0.12s ease,
-    border-color 0.12s ease,
-    transform 0.12s ease;
+  display:inline-block;
+  padding:.4rem 1rem;
+  border:1px solid #a78bfa;
+  border-radius:999px;
+  margin-top:.6rem;
 }
 
 .btn-outline:hover {
-  background: rgba(148, 163, 184, 0.1);
-  border-color: #e5e7eb;
-  transform: translateY(-1px);
+  background:#a78bfa22;
 }
 
-/* JOBB OLDAL: bejelentkező panel */
-
-.auth-wrapper {
-  flex: 0 0 380px;
+/* JOBB OLDAL */
+.right {
+  width: 50%;
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* jobb oldalra húzza a kártyát */
-  gap: 1rem;
-}
-
-.auth-card {
-  width: 100%;
-  max-width: 420px;
-  background:
-    radial-gradient(circle at top left, rgba(168, 85, 247, 0.22) 0, transparent 60%),
-    #020013;
-  border-radius: 1.25rem;
-  border: 1px solid #312e81;
-  padding: 1.75rem 1.75rem 1.5rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85);
-}
-
-.auth-title {
-  font-size: 1.6rem;
-  font-weight: 800;
-  margin-bottom: 0.2rem;
-}
-
-.auth-note {
-  font-size: 0.8rem;
-  opacity: 0.8;
-  margin-bottom: 0.9rem;
-}
-
-/* ŰRLAP */
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  font-size: 0.9rem;
-}
-
-.form-group label {
-  opacity: 0.85;
-}
-
-.form-group input {
-  padding: 0.6rem 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid #1f2937;
-  background: rgba(15, 23, 42, 0.9);
-  color: #f9fafb;
-  font-size: 0.9rem;
-  outline: none;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease;
-}
-
-.form-group input::placeholder {
-  opacity: 0.6;
-}
-
-.form-group input:focus {
-  border-color: #a855f7;
-  box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.5);
-  background: rgba(15, 23, 42, 1);
-}
-
-/* Sor: checkbox + jelszó link */
-
-.form-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  margin-bottom: 0.3rem;
-}
-
-.checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  cursor: pointer;
-  user-select: none;
-}
-
-.checkbox input {
-  width: 14px;
-  height: 14px;
-  accent-color: #a855f7;
-}
-
-.link-small {
-  opacity: 0.8;
-  text-decoration: underline;
-  text-decoration-style: dotted;
-}
-
-.link-small:hover {
-  opacity: 1;
-}
-
-/* GOMB */
-
-.btn {
-  padding: 0.7rem 1.3rem;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  border: none;
-  cursor: pointer;
-  background: #a855f7;
-  color: #020617;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  width: 100%;
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease,
-    background 0.12s ease,
-    opacity 0.12s ease;
-  box-shadow: 0 10px 25px rgba(168, 85, 247, 0.45);
+  align-items: center;
 }
 
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 35px rgba(168, 85, 247, 0.65);
-  background: #9333ea;
+.login-box {
+  width: 350px;
+  padding: 2rem;
+  background: rgba(0,0,0,.4);
+  border: 1px solid rgba(120,60,200,.4);
+  backdrop-filter: blur(10px);
+  border-radius: 1.2rem;
+  box-shadow:0 20px 45px rgba(0,0,0,.6);
 }
 
-.auth-btn {
-  margin-top: 0.2rem;
+.login-box h2 {
+  font-size:1.6rem;
+  margin-bottom:1rem;
 }
 
-/* Alsó szövegek */
-
-.auth-footer-text {
-  margin-top: 0.6rem;
-  font-size: 0.85rem;
-  opacity: 0.8;
+.login-form {
+  display:flex;
+  flex-direction:column;
+  gap:.6rem;
 }
 
-.link-accent {
-  color: #a855f7;
+.login-form input {
+  padding:.6rem .9rem;
+  border-radius:.7rem;
+  border:1px solid #222;
+  background:#111;
+  color:white;
 }
 
-.link-accent:hover {
-  text-decoration: underline;
+.row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:.4rem;
 }
 
-.auth-help {
-  font-size: 0.8rem;
-  opacity: 0.8;
-  margin-top: 0.6rem;
+.btn-login {
+  margin-top:.8rem;
+  padding:.7rem 1rem;
+  border:none;
+  border-radius:999px;
+  background:#a855f7;
+  color:black;
+  font-weight:600;
+  cursor:pointer;
 }
 
-.auth-help a {
-  text-decoration: underline;
-  text-decoration-style: dotted;
+.btn-login:hover {
+  background:#9333ea;
 }
 
-/* Lábléc a panel alatt */
+.foot {
+  font-size:.85rem;
+  margin-top:.6rem;
+  opacity:.8;
+}
 
 .footer {
-  margin-top: 0.5rem;
-  font-size: 0.8rem;
-  opacity: 0.7;
-  text-align: right;
-}
-
-/* MOBIL / TABLET */
-
-@media (max-width: 900px) {
-  .page {
-    padding-top: 1.8rem;
-    padding-bottom: 1.8rem;
-  }
-
-  .page-inner {
-    flex-direction: column;
-    gap: 2rem;
-  }
-
-  .auth-wrapper {
-    align-items: stretch;
-  }
-
-  .footer {
-    text-align: left;
-  }
-}
-
-@media (max-width: 480px) {
-  .auth-card {
-    padding: 1.4rem 1.2rem 1.2rem;
-  }
-
-  .auth-title {
-    font-size: 1.4rem;
-  }
-
-  .form-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  margin-top:1rem;
+  font-size:.8rem;
+  opacity:.6;
 }
