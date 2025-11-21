@@ -110,20 +110,6 @@ a {
   margin-bottom: 0.3rem;
 }
 
-.auth-subtitle {
-  font-size: 0.95rem;
-  opacity: 0.9;
-  margin-bottom: 1.3rem;
-  max-width: 24rem;
-}
-
-.auth-subtitle span {
-  background: linear-gradient(120deg, #a855f7, #6366f1);
-  background-clip: unset;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
 /* Űrlap */
 
 .auth-form {
