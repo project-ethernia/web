@@ -1,18 +1,42 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ethernia</title>
-    <style>
-        body {
-            background: url('assets/etherniareborn.png') no-repeat center center fixed;
-            background-size: contain;
-            background-color: #000;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>ETHERNIA - Bejelentkezés</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="main.css">
+  <background src="bg.webp">
 </head>
+
 <body>
-    
+    <div class="loginpanel">
+    <h2>Bejelentkezés</h2>
+    <form action="/login" method="post">
+        <label for="username">Felhasználónév:</label>
+        <input type="text" id="username" name="username" required>
+        
+        <label for="password">Jelszó:</label>
+        <input type="password" id="password" name="password" required>
+        
+        <button type="submit">Bejelentkezés</button>
+
+    </form>
+    </div>
+  <header>
+    <div class="container">
+      <div class="hero">
+
+      </div>
+    </div>
+  </header>
+
+  <footer>
+    &copy; <span id="year"></span> ETHERNIA &middot; Nem hivatalos Minecraft oldal.
+  </footer>
+
+  <script src="status.js"></script>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
