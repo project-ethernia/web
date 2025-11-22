@@ -171,11 +171,12 @@ a {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;   /* JOBBRA húzza a kártyát */
+  align-items: flex-end;   /* JOBBRA igazítja a kártyát */
   gap: 0.8rem;
+  margin-left: auto;       /* a jobb oldalhoz tolja */
 }
 
-/* EZ ITT A TE EREDETI LOGIN KÁRTYÁD STÍLUSA */
+/* EREDETI LOGIN KÁRTYA STÍLUSOD */
 
 .auth-card {
   width: 100%;
@@ -363,7 +364,8 @@ a {
   }
 
   .auth-section {
-    align-items: stretch;   /* mobilon ne jobbra, hanem teljes szélességben */
+    align-items: stretch;
+    margin-left: 0;
   }
 
   .footer {

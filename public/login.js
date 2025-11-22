@@ -52,7 +52,6 @@ async function updateDiscordStats() {
 
     const data = await res.json();
 
-    // presence_count ha van, különben members.length
     const count =
       typeof data.presence_count === "number"
         ? data.presence_count
