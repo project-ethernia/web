@@ -1,11 +1,13 @@
 <?php
-// admin/news.php
 session_start();
+
+/* ---- IDEIGLENESEN: hiba kiírás, hogy lássuk, mi a baja ---- */
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 /*
  * Itt tudsz jogosultságot ellenőrizni.
- * Példa: ha nincs bejelentkezve admin, dobjuk vissza loginra.
- *
  * if (empty($_SESSION['is_admin'])) {
  *     header('Location: /login.html');
  *     exit;
@@ -13,18 +15,18 @@ session_start();
  */
 
 // --- DB beállítások: TÖLTSD KI SAJÁT ADATOKKAL ---
-$DB_DSN  = 'mysql:host=localhost;dbname=ethernia;charset=utf8mb4';
-$DB_USER = 'SAJAT_DB_USER';
-$DB_PASS = 'SAJAT_DB_JELSZO';
+$DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
+$DB_USER = 'ethernia';
+$DB_PASS = 'LrKqjfTKc3Q5H6e1Ohuo';
 
 function get_pdo() {
     static $pdo = null;
     global $DB_DSN, $DB_USER, $DB_PASS;
     if ($pdo === null) {
-        $pdo = new PDO($DB_DSN, $DB_USER, $DB_PASS, [
+        $pdo = new PDO($DB_DSN, $DB_USER, $DB_PASS, array(
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]);
+        ));
     }
     return $pdo;
 }
@@ -34,21 +36,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
 
     $pdo    = get_pdo();
-    $action = $_POST['action'] ?? '';
+    $action = isset($_POST['action']) ? $_POST['action'] : '';
 
     try {
         if ($action === 'save') {
-            $id          = isset($_POST['id']) && $_POST['id'] !== '' ? (int)$_POST['id'] : null;
-            $title       = trim($_POST['title'] ?? '');
-            $tag         = trim($_POST['tag'] ?? 'Info');
-            $date        = trim($_POST['date_display'] ?? '');
-            $short       = trim($_POST['short_text'] ?? '');
-            $full        = trim($_POST['full_text'] ?? '');
-            $order_index = (int)($_POST['order_index'] ?? 0);
+            $id          = (isset($_POST['id']) && $_POST['id'] !== '') ? (int)$_POST['id'] : null;
+            $title       = isset($_POST['title']) ? trim($_POST['title']) : '';
+            $tag         = isset($_POST['tag']) ? trim($_POST['tag']) : 'Info';
+            $date        = isset($_POST['date_display']) ? trim($_POST['date_display']) : '';
+            $short       = isset($_POST['short_text']) ? trim($_POST['short_text']) : '';
+            $full        = isset($_POST['full_text']) ? trim($_POST['full_text']) : '';
+            $order_index = isset($_POST['order_index']) ? (int)$_POST['order_index'] : 0;
             $is_visible  = isset($_POST['is_visible']) ? 1 : 0;
 
             if ($title === '') {
-                throw new RuntimeException('A cím kötelező.');
+                throw new Exception('A cím kötelező.');
             }
 
             if ($id === null) {
@@ -84,25 +86,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $id = (int)$pdo->lastInsertId();
             }
 
-            echo json_encode(['ok' => true, 'id' => $id]);
+            echo json_encode(array('ok' => true, 'id' => $id));
             exit;
         }
 
         if ($action === 'delete') {
             $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
             if ($id <= 0) {
-                throw new RuntimeException('Hiányzó ID.');
+                throw new Exception('Hiányzó ID.');
             }
             $stmt = $pdo->prepare("DELETE FROM news WHERE id = :id");
-            $stmt->execute([':id' => $id]);
-            echo json_encode(['ok' => true]);
+            $stmt->execute(array(':id' => $id));
+            echo json_encode(array('ok' => true));
             exit;
         }
 
-        throw new RuntimeException('Ismeretlen művelet.');
-    } catch (Throwable $e) {
+        throw new Exception('Ismeretlen művelet.');
+    } catch (Exception $e) {
         http_response_code(400);
-        echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+        echo json_encode(array('ok' => false, 'error' => $e->getMessage()));
         exit;
     }
 }
@@ -126,7 +128,7 @@ $news = $stmt->fetchAll();
     <div class="admin-header-inner">
       <div class="admin-logo">ETHERNIA <span>Admin</span></div>
       <div class="admin-header-right">
-        <!-- Ide később: bejelentkezett admin neve, kilépés, stb. -->
+        <!-- később: admin név, kilépés -->
       </div>
     </div>
   </header>
@@ -168,21 +170,21 @@ $news = $stmt->fetchAll();
           <?php else: ?>
             <?php foreach ($news as $row): ?>
               <tr
-                data-id="<?= htmlspecialchars($row['id']) ?>"
-                data-title="<?= htmlspecialchars($row['title']) ?>"
-                data-tag="<?= htmlspecialchars($row['tag']) ?>"
-                data-date_display="<?= htmlspecialchars($row['date_display']) ?>"
-                data-short_text="<?= htmlspecialchars($row['short_text']) ?>"
-                data-full_text="<?= htmlspecialchars($row['full_text']) ?>"
-                data-order_index="<?= (int)$row['order_index'] ?>"
-                data-is_visible="<?= (int)$row['is_visible'] ?>"
+                data-id="<?php echo htmlspecialchars($row['id']); ?>"
+                data-title="<?php echo htmlspecialchars($row['title']); ?>"
+                data-tag="<?php echo htmlspecialchars($row['tag']); ?>"
+                data-date_display="<?php echo htmlspecialchars($row['date_display']); ?>"
+                data-short_text="<?php echo htmlspecialchars($row['short_text']); ?>"
+                data-full_text="<?php echo htmlspecialchars($row['full_text']); ?>"
+                data-order_index="<?php echo (int)$row['order_index']; ?>"
+                data-is_visible="<?php echo (int)$row['is_visible']; ?>"
               >
-                <td>#<?= (int)$row['id'] ?></td>
-                <td class="title-cell"><?= htmlspecialchars($row['title']) ?></td>
-                <td><?= htmlspecialchars($row['tag']) ?></td>
-                <td><?= htmlspecialchars($row['date_display']) ?></td>
-                <td><?= (int)$row['order_index'] ?></td>
-                <td><?= $row['is_visible'] ? 'Igen' : 'Nem' ?></td>
+                <td>#<?php echo (int)$row['id']; ?></td>
+                <td class="title-cell"><?php echo htmlspecialchars($row['title']); ?></td>
+                <td><?php echo htmlspecialchars($row['tag']); ?></td>
+                <td><?php echo htmlspecialchars($row['date_display']); ?></td>
+                <td><?php echo (int)$row['order_index']; ?></td>
+                <td><?php echo $row['is_visible'] ? 'Igen' : 'Nem'; ?></td>
                 <td>
                   <button type="button" class="btn btn-sm btn-secondary btn-edit">Szerkesztés</button>
                   <button type="button" class="btn btn-sm btn-danger btn-delete">Törlés</button>
