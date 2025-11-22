@@ -14,6 +14,10 @@ body {
   color: #f9fafb;
   line-height: 1.5;
   min-height: 100vh;
+
+  /* footer az oldal alján */
+  display: flex;
+  flex-direction: column;
 }
 
 a {
@@ -24,19 +28,18 @@ a {
 /* ---------- FŐ ELRENDEZÉS ---------- */
 
 .page {
-  min-height: 100vh;
-  padding: 6rem 3.5rem 4rem;
+  flex: 1;
+  padding: 6rem 3.5rem 2.5rem;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 3rem;
+  gap: 2.5rem;
 }
 
 /* ---------- BAL OLDAL: INFÓ + STATOK ---------- */
 
 .info-panel {
-  flex: 1 1 0;
-  max-width: 520px;
+  flex: 0 0 360px;
   display: flex;
   flex-direction: column;
   gap: 1.8rem;
@@ -57,11 +60,7 @@ a {
   color: transparent;
 }
 
-.brand-subtitle {
-  margin-top: 0.4rem;
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
+/* brand-subtitle törölhető, már nincs használva */
 
 .stats-grid {
   display: flex;
@@ -161,15 +160,92 @@ a {
   transform: translateY(-1px);
 }
 
+/* ---------- KÖZÉP: HÍREK ---------- */
+
+.news-panel {
+  flex: 1 1 auto;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.news-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.news-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.news-card {
+  border-radius: 1rem;
+  padding: 0.95rem 1rem 1rem;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.18) 0, transparent 60%),
+    rgba(15, 23, 42, 0.96);
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.7);
+}
+
+.news-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.news-tag {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(168, 85, 247, 0.18);
+  border: 1px solid rgba(168, 85, 247, 0.6);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.news-tag-event {
+  background: rgba(96, 165, 250, 0.18);
+  border-color: rgba(96, 165, 250, 0.7);
+}
+
+.news-tag-info {
+  background: rgba(52, 211, 153, 0.18);
+  border-color: rgba(52, 211, 153, 0.7);
+}
+
+.news-date {
+  opacity: 0.8;
+}
+
+.news-headline {
+  font-size: 0.98rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.news-text {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
 /* ---------- JOBB OLDAL: LOGIN PANEL ---------- */
 
 .auth-section {
-  flex: 0 0 auto;
+  flex: 0 0 380px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.8rem;
-  margin-left: auto;
 }
 
 .auth-card {
@@ -329,10 +405,33 @@ a {
   text-decoration-style: dotted;
 }
 
+/* ---------- FOOTER AZ OLDAL ALJÁN ---------- */
+
 .footer {
   font-size: 0.8rem;
   opacity: 0.7;
-  text-align: right;
+  text-align: center;
+  padding: 0.5rem 1.5rem 1.2rem;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 1100px) {
+  .page {
+    gap: 2rem;
+  }
+
+  .info-panel {
+    flex-basis: 320px;
+  }
+
+  .news-panel {
+    max-width: 360px;
+  }
+
+  .auth-section {
+    flex-basis: 340px;
+  }
 }
 
 @media (max-width: 900px) {
@@ -341,17 +440,19 @@ a {
     padding: 4rem 1.5rem 2.5rem;
   }
 
-  .info-panel {
+  .info-panel,
+  .news-panel,
+  .auth-section {
+    flex: 1 1 auto;
     max-width: none;
   }
 
   .auth-section {
     align-items: stretch;
-    margin-left: 0;
   }
 
   .footer {
-    text-align: left;
+    text-align: center;
   }
 }
 

@@ -4,15 +4,18 @@
   <meta charset="UTF-8">
   <title>ETHERNIA - Bejelentkezés</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/login.css?v=2">
+
+  <!-- root-abszolút + cache-bust -->
+  <link rel="stylesheet" href="/login.css?v=3">
 </head>
 <body>
 
   <main class="page">
+    <!-- BAL: statok -->
     <section class="info-panel">
       <div class="brand-block">
         <div class="brand-logo">ETHERNIA</div>
-        <p class="brand-subtitle">magyar Minecraft közösség &bull; fekete–lila hangulat</p>
+        <!-- subtitle törölve, nem kell ide semmi -->
       </div>
 
       <div class="stats-grid">
@@ -52,6 +55,46 @@
       </div>
     </section>
 
+    <!-- KÖZÉP: hírek -->
+    <section class="news-panel">
+      <h2 class="news-title">Hírek &amp; frissítések</h2>
+      <div class="news-grid">
+        <article class="news-card">
+          <div class="news-meta">
+            <span class="news-tag">Újdonság</span>
+            <span class="news-date">2025. 01. 01.</span>
+          </div>
+          <h3 class="news-headline">Season 2 indulása</h3>
+          <p class="news-text">
+            Új világ, resetelt gazdaság, frissített spawn és kiegyensúlyozott rangok. Nézd meg a teljes patch note-ot a Discordon!
+          </p>
+        </article>
+
+        <article class="news-card">
+          <div class="news-meta">
+            <span class="news-tag news-tag-event">Event</span>
+            <span class="news-date">Hamarosan</span>
+          </div>
+          <h3 class="news-headline">ETHERNIA Community Event</h3>
+          <p class="news-text">
+            Közösségi build-verseny, PvP mini-tournament és nyeremények az aktív játékosoknak. Részletek hamarosan.
+          </p>
+        </article>
+
+        <article class="news-card">
+          <div class="news-meta">
+            <span class="news-tag news-tag-info">Info</span>
+            <span class="news-date">Folyamatos</span>
+          </div>
+          <h3 class="news-headline">Bug jelentés &amp; javaslatok</h3>
+          <p class="news-text">
+            Ha hibát találsz, vagy van egy jó ötleted, nyiss ticketet a Discordon. A legjobb javaslatok jutalmat kapnak a szerveren.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- JOBB: login panel -->
     <section class="auth-section">
       <div class="auth-card">
         <h1 class="auth-title">Bejelentkezés</h1>
@@ -91,13 +134,17 @@
           <a href="mailto:support@ethernia.hu">Írj a supportnak</a>.
         </div>
       </div>
-
-      <footer class="footer">
-        &copy; <span id="year"></span> ETHERNIA &middot; Nem hivatalos Minecraft oldal.
-      </footer>
     </section>
   </main>
+
+  <!-- FOOTER most már globális, az oldal alján -->
+  <footer class="footer">
+    &copy; <span id="year"></span> ETHERNIA &middot; Nem hivatalos Minecraft oldal.
+  </footer>
 
   <script src="/login.js?v=2"></script>
 </body>
 </html>
+<!--  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script> -->
