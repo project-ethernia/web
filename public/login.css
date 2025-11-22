@@ -15,7 +15,6 @@ body {
   line-height: 1.5;
   min-height: 100vh;
 
-  /* footer az oldal alján */
   display: flex;
   flex-direction: column;
 }
@@ -29,17 +28,20 @@ a {
 
 .page {
   flex: 1;
-  padding: 6rem 3.5rem 2.5rem;
+  padding: 5rem 2.5rem 2.5rem;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 2.5rem;
+  gap: 2rem;
+
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* ---------- BAL OLDAL: INFÓ + STATOK ---------- */
 
 .info-panel {
-  flex: 0 0 360px;
+  flex: 0 0 330px;
   display: flex;
   flex-direction: column;
   gap: 1.8rem;
@@ -59,8 +61,6 @@ a {
   background-clip: text;
   color: transparent;
 }
-
-/* brand-subtitle törölhető, már nincs használva */
 
 .stats-grid {
   display: flex;
@@ -160,11 +160,11 @@ a {
   transform: translateY(-1px);
 }
 
-/* ---------- KÖZÉP: HÍREK ---------- */
+/* ---------- KÖZÉP: HÍREK KARUSSZEL ---------- */
 
 .news-panel {
   flex: 1 1 auto;
-  max-width: 420px;
+  max-width: 380px;
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
@@ -173,25 +173,42 @@ a {
 .news-title {
   font-size: 1.05rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
-.news-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
+/* slider container */
+.news-slider {
+  position: relative;
+  min-height: 170px;
 }
 
+/* alapértelmezés: rejtett slide */
 .news-card {
+  position: absolute;
+  inset: 0;
   border-radius: 1rem;
-  padding: 0.95rem 1rem 1rem;
+  padding: 0.95rem 1rem 1.1rem;
   border: 1px solid rgba(55, 65, 81, 0.9);
   background:
     radial-gradient(circle at top right, rgba(59, 130, 246, 0.18) 0, transparent 60%),
     rgba(15, 23, 42, 0.96);
   box-shadow: 0 16px 35px rgba(0, 0, 0, 0.7);
+
+  opacity: 0;
+  transform: translateX(24px);
+  pointer-events: none;
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+}
+
+/* aktív slide */
+.news-card.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
 }
 
 .news-meta {
@@ -236,12 +253,35 @@ a {
 .news-text {
   font-size: 0.85rem;
   opacity: 0.85;
+  margin-bottom: 0.6rem;
+}
+
+.news-readmore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.8);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    transform 0.12s ease;
+}
+
+.news-readmore:hover {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: #e5e7eb;
+  transform: translateY(-1px);
 }
 
 /* ---------- JOBB OLDAL: LOGIN PANEL ---------- */
 
 .auth-section {
-  flex: 0 0 380px;
+  flex: 0 0 360px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -414,19 +454,83 @@ a {
   padding: 0.5rem 1.5rem 1.2rem;
 }
 
+/* ---------- HÍR MODAL ---------- */
+
+.news-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 80;
+}
+
+.news-modal.open {
+  display: flex;
+}
+
+.news-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.news-modal-dialog {
+  position: relative;
+  max-width: 480px;
+  width: 90%;
+  z-index: 81;
+}
+
+.news-modal-content {
+  border-radius: 1.2rem;
+  padding: 1.3rem 1.4rem 1.4rem;
+  background:
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.24) 0, transparent 60%),
+    rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.9);
+}
+
+.news-modal-content-inner .news-meta {
+  margin-bottom: 0.5rem;
+}
+
+.news-modal-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.news-modal-text {
+  font-size: 0.9rem;
+  opacity: 0.88;
+}
+
+.news-modal-close {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.7rem;
+  border: none;
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
 /* ---------- RESPONSIVE ---------- */
 
 @media (max-width: 1100px) {
   .page {
-    gap: 2rem;
+    gap: 1.6rem;
   }
 
   .info-panel {
-    flex-basis: 320px;
+    flex-basis: 300px;
   }
 
   .news-panel {
-    max-width: 360px;
+    max-width: 340px;
   }
 
   .auth-section {
@@ -453,6 +557,10 @@ a {
 
   .footer {
     text-align: center;
+  }
+
+  .news-panel {
+    max-width: none;
   }
 }
 

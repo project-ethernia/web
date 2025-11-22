@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- root-abszolút + cache-bust -->
-  <link rel="stylesheet" href="/login.css?v=3">
+  <link rel="stylesheet" href="/login.css?v=4">
 </head>
 <body>
 
@@ -15,7 +15,6 @@
     <section class="info-panel">
       <div class="brand-block">
         <div class="brand-logo">ETHERNIA</div>
-        <!-- subtitle törölve, nem kell ide semmi -->
       </div>
 
       <div class="stats-grid">
@@ -55,10 +54,10 @@
       </div>
     </section>
 
-    <!-- KÖZÉP: hírek -->
+    <!-- KÖZÉP: hírek karusszel -->
     <section class="news-panel">
-      <h2 class="news-title">Hírek &amp; frissítések</h2>
-      <div class="news-grid">
+      <h2 class="news-title">HÍREK &amp; FRISSÍTÉSEK</h2>
+      <div class="news-slider">
         <article class="news-card">
           <div class="news-meta">
             <span class="news-tag">Újdonság</span>
@@ -68,6 +67,7 @@
           <p class="news-text">
             Új világ, resetelt gazdaság, frissített spawn és kiegyensúlyozott rangok. Nézd meg a teljes patch note-ot a Discordon!
           </p>
+          <button type="button" class="news-readmore">Részletek</button>
         </article>
 
         <article class="news-card">
@@ -79,6 +79,7 @@
           <p class="news-text">
             Közösségi build-verseny, PvP mini-tournament és nyeremények az aktív játékosoknak. Részletek hamarosan.
           </p>
+          <button type="button" class="news-readmore">Részletek</button>
         </article>
 
         <article class="news-card">
@@ -90,6 +91,7 @@
           <p class="news-text">
             Ha hibát találsz, vagy van egy jó ötleted, nyiss ticketet a Discordon. A legjobb javaslatok jutalmat kapnak a szerveren.
           </p>
+          <button type="button" class="news-readmore">Részletek</button>
         </article>
       </div>
     </section>
@@ -137,12 +139,25 @@
     </section>
   </main>
 
-  <!-- FOOTER most már globális, az oldal alján -->
+  <!-- Globális footer az oldal alján -->
   <footer class="footer">
     &copy; <span id="year"></span> ETHERNIA &middot; Nem hivatalos Minecraft oldal.
   </footer>
 
-  <script src="/login.js?v=2"></script>
+  <!-- HÍR MODAL -->
+  <div class="news-modal" id="news-modal" aria-hidden="true">
+    <div class="news-modal-backdrop"></div>
+    <div class="news-modal-dialog" role="dialog" aria-modal="true">
+      <button type="button" class="news-modal-close" aria-label="Bezárás">×</button>
+      <div class="news-modal-content">
+        <div class="news-modal-content-inner">
+          <!-- ide tölti be a JS a kiválasztott hírt -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/login.js?v=3"></script>
 </body>
 </html>
 <!--  <script>

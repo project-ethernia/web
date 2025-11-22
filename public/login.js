@@ -1,5 +1,5 @@
 const MC_SERVER = "play.ethernia.hu";
-const DISCORD_GUILD_ID = "1322224781000577046"; // <-- saját Discord szerver ID
+const DISCORD_GUILD_ID = "1322224781000577046"; // ETHERNIA guild ID
 
 document.addEventListener("DOMContentLoaded", () => {
   const yearEl = document.getElementById("year");
@@ -7,8 +7,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateMinecraftStats();
   updateDiscordStats();
+  initNewsSlider();
+  initNewsModal();
 });
 
+// Minecraft stat
 async function updateMinecraftStats() {
   const onlineEl = document.getElementById("mc-online");
   const maxEl = document.getElementById("mc-max");
@@ -21,22 +24,21 @@ async function updateMinecraftStats() {
     onlineEl.textContent = data?.players?.online ?? 0;
     maxEl.textContent  = data?.players?.max ?? "?";
   } catch (e) {
+    console.error("MC stat hiba:", e);
     onlineEl.textContent = "N/A";
     maxEl.textContent = "";
   }
 }
 
+// Discord stat
 async function updateDiscordStats() {
   const onlineEl = document.getElementById("discord-online");
   if (!onlineEl) return;
 
   try {
-    const res = await fetch(
-      `https://discord.com/api/guilds/${DISCORD_GUILD_ID}/widget.json`,
-      { cache: "no-store" }
-    );
-
-    if (!res.ok) throw new Error("HTTP error");
+    const url = `https://discord.com/api/guilds/${DISCORD_GUILD_ID}/widget.json`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP error: " + res.status);
 
     const data = await res.json();
 
@@ -49,6 +51,86 @@ async function updateDiscordStats() {
 
     onlineEl.textContent = typeof count === "number" ? count : "N/A";
   } catch (e) {
+    console.error("Discord stat hiba:", e);
     onlineEl.textContent = "N/A";
   }
+}
+
+/* ---------- HÍR SLIDER ---------- */
+
+function initNewsSlider() {
+  const cards = document.querySelectorAll(".news-card");
+  if (!cards.length) return;
+
+  let index = 0;
+  const intervalMs = 5000;
+
+  function show(idx) {
+    cards.forEach((card, i) => {
+      card.classList.toggle("active", i === idx);
+    });
+  }
+
+  show(index);
+
+  setInterval(() => {
+    index = (index + 1) % cards.length;
+    show(index);
+  }, intervalMs);
+}
+
+/* ---------- HÍR MODAL ---------- */
+
+function initNewsModal() {
+  const modal = document.getElementById("news-modal");
+  if (!modal) return;
+
+  const contentInner = modal.querySelector(".news-modal-content-inner");
+  const closeBtn = modal.querySelector(".news-modal-close");
+  const backdrop = modal.querySelector(".news-modal-backdrop");
+  const readMoreButtons = document.querySelectorAll(".news-readmore");
+
+  function openFromCard(card) {
+    if (!card || !contentInner) return;
+
+    const tag = card.querySelector(".news-tag")?.textContent || "";
+    const date = card.querySelector(".news-date")?.textContent || "";
+    const title = card.querySelector(".news-headline")?.textContent || "";
+    const text = card.querySelector(".news-text")?.textContent || "";
+
+    contentInner.innerHTML = `
+      <div class="news-meta">
+        <span class="news-tag">${tag}</span>
+        <span class="news-date">${date}</span>
+      </div>
+      <h3 class="news-modal-title">${title}</h3>
+      <p class="news-modal-text">${text}</p>
+    `;
+
+    modal.classList.add("open");
+  }
+
+  function closeModal() {
+    modal.classList.remove("open");
+  }
+
+  readMoreButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const card = btn.closest(".news-card");
+      openFromCard(card);
+    });
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeModal);
+  }
+  if (backdrop) {
+    backdrop.addEventListener("click", closeModal);
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeModal();
+    }
+  });
 }
