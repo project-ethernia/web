@@ -16,7 +16,6 @@ body {
   min-height: 100vh;
 }
 
-/* LINK ALAPOK */
 a {
   color: inherit;
   text-decoration: none;
@@ -28,7 +27,7 @@ a {
   min-height: 100vh;
   padding: 6rem 3.5rem 4rem;
   display: flex;
-  align-items: center;        /* függőlegesen középre */
+  align-items: center;
   justify-content: space-between;
   gap: 3rem;
 }
@@ -110,7 +109,6 @@ a {
   margin-top: 0.4rem;
 }
 
-/* Discord kártya kékesebb */
 .stat-discord {
   border-color: rgba(59, 130, 246, 0.7);
 }
@@ -119,7 +117,6 @@ a {
   color: #60a5fa;
 }
 
-/* Feature lista */
 .feature-list {
   list-style: none;
   margin: 0.5rem 0 0.5rem;
@@ -141,7 +138,6 @@ a {
   color: #a855f7;
 }
 
-/* Discord outline gomb */
 .btn-outline {
   display: inline-flex;
   align-items: center;
@@ -171,12 +167,10 @@ a {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;   /* JOBBRA igazítja a kártyát */
+  align-items: flex-end;
   gap: 0.8rem;
-  margin-left: auto;       /* a jobb oldalhoz tolja */
+  margin-left: auto;
 }
-
-/* EREDETI LOGIN KÁRTYA STÍLUSOD */
 
 .auth-card {
   width: 100%;
@@ -202,8 +196,6 @@ a {
   margin-top: 0.2rem;
   margin-bottom: 0.9rem;
 }
-
-/* ŰRLAP */
 
 .auth-form {
   display: flex;
@@ -247,8 +239,6 @@ a {
   background: rgba(15, 23, 42, 1);
 }
 
-/* Sor: checkbox + jelszó link */
-
 .form-row {
   display: flex;
   align-items: center;
@@ -282,8 +272,6 @@ a {
   opacity: 1;
 }
 
-/* GOMB */
-
 .btn {
   padding: 0.7rem 1.3rem;
   border-radius: 999px;
@@ -316,8 +304,6 @@ a {
   margin-top: 0.2rem;
 }
 
-/* Alsó szövegek */
-
 .auth-footer-text {
   margin-top: 0.6rem;
   font-size: 0.85rem;
@@ -343,15 +329,11 @@ a {
   text-decoration-style: dotted;
 }
 
-/* Lábléc a login panel alatt */
-
 .footer {
   font-size: 0.8rem;
   opacity: 0.7;
   text-align: right;
 }
-
-/* ---------- RESPONSIVE ---------- */
 
 @media (max-width: 900px) {
   .page {

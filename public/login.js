@@ -1,43 +1,31 @@
-// KONFIG – EZEKET ÁLLÍTSD BE
-const MC_SERVER = "play.ethernia.hu";          // a te MC szervered hostja
-const DISCORD_GUILD_ID = "000000000000000000"; // a te Discord szerver ID-je
+const MC_SERVER = "play.ethernia.hu";
+const DISCORD_GUILD_ID = "1322224781000577046"; // <-- saját Discord szerver ID
 
 document.addEventListener("DOMContentLoaded", () => {
-  // év a footerben
   const yearEl = document.getElementById("year");
-  if (yearEl) {
-    yearEl.textContent = new Date().getFullYear();
-  }
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
 
   updateMinecraftStats();
   updateDiscordStats();
 });
 
-// Minecraft stat (api.mcsrvstat.us)
 async function updateMinecraftStats() {
   const onlineEl = document.getElementById("mc-online");
   const maxEl = document.getElementById("mc-max");
   if (!onlineEl || !maxEl) return;
 
   try {
-    const res = await fetch(`https://api.mcsrvstat.us/2/${MC_SERVER}`, {
-      cache: "no-store",
-    });
-
+    const res = await fetch(`https://api.mcsrvstat.us/2/${MC_SERVER}`, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP error");
-
     const data = await res.json();
-
     onlineEl.textContent = data?.players?.online ?? 0;
-    maxEl.textContent = data?.players?.max ?? "?";
-  } catch (err) {
-    console.error("Minecraft stat hiba:", err);
+    maxEl.textContent  = data?.players?.max ?? "?";
+  } catch (e) {
     onlineEl.textContent = "N/A";
     maxEl.textContent = "";
   }
 }
 
-// Discord stat (guild widget – engedélyezni kell a szerver beállításainál!)
 async function updateDiscordStats() {
   const onlineEl = document.getElementById("discord-online");
   if (!onlineEl) return;
@@ -60,8 +48,7 @@ async function updateDiscordStats() {
         : null;
 
     onlineEl.textContent = typeof count === "number" ? count : "N/A";
-  } catch (err) {
-    console.error("Discord stat hiba:", err);
+  } catch (e) {
     onlineEl.textContent = "N/A";
   }
 }
