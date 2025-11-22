@@ -7,8 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateMinecraftStats();
   updateDiscordStats();
-  initNewsCarousel();
-  initNewsModal();
+  loadNewsFromApi(); // <-- hírek betöltése DB-ből
 });
 
 // ---------- Minecraft stat ----------
@@ -22,8 +21,12 @@ async function updateMinecraftStats() {
     const res = await fetch(`https://api.mcsrvstat.us/2/${MC_SERVER}`, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP error");
     const data = await res.json();
-    onlineEl.textContent = data?.players?.online ?? 0;
-    maxEl.textContent = data?.players?.max ?? "?";
+    onlineEl.textContent = data && data.players && typeof data.players.online === "number"
+      ? data.players.online
+      : 0;
+    maxEl.textContent = data && data.players && typeof data.players.max === "number"
+      ? data.players.max
+      : "?";
   } catch (e) {
     console.error("MC stat hiba:", e);
     onlineEl.textContent = "N/A";
@@ -56,6 +59,87 @@ async function updateDiscordStats() {
     console.error("Discord stat hiba:", e);
     onlineEl.textContent = "N/A";
   }
+}
+
+// ---------- HÍREK BETÖLTÉSE API-BÓL ----------
+
+function loadNewsFromApi() {
+  const container = document.getElementById("news-strip-inner");
+  if (!container) return;
+
+  fetch("/api/news.php", { cache: "no-store" })
+    .then((res) => res.json())
+    .then((data) => {
+      if (!data.ok || !Array.isArray(data.news) || data.news.length === 0) {
+        console.warn("Nincs megjeleníthető hír.");
+        return;
+      }
+
+      container.innerHTML = "";
+
+      data.news.forEach((item) => {
+        const card = document.createElement("article");
+        card.className = "news-card";
+
+        // meta (tag + dátum)
+        const metaDiv = document.createElement("div");
+        metaDiv.className = "news-meta";
+
+        const tagSpan = document.createElement("span");
+        tagSpan.className = "news-tag";
+        const tagText = item.tag || "Info";
+        tagSpan.textContent = tagText;
+
+        const lowered = tagText.toLowerCase();
+        if (lowered.indexOf("event") !== -1) {
+          tagSpan.classList.add("news-tag-event");
+        } else if (lowered.indexOf("info") !== -1) {
+          tagSpan.classList.add("news-tag-info");
+        }
+
+        const dateSpan = document.createElement("span");
+        dateSpan.className = "news-date";
+        dateSpan.textContent = item.date_display || "";
+
+        metaDiv.appendChild(tagSpan);
+        metaDiv.appendChild(dateSpan);
+
+        // cím
+        const h3 = document.createElement("h3");
+        h3.className = "news-headline";
+        h3.textContent = item.title || "";
+
+        // rövid szöveg
+        const p = document.createElement("p");
+        p.className = "news-text";
+        p.textContent = item.short_text || "";
+
+        // gomb
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "news-readmore";
+        btn.textContent = "Részletek";
+
+        // hosszú szöveget data attribútumba tesszük
+        if (item.full_text) {
+          card.setAttribute("data-full", item.full_text);
+        }
+
+        card.appendChild(metaDiv);
+        card.appendChild(h3);
+        card.appendChild(p);
+        card.appendChild(btn);
+
+        container.appendChild(card);
+      });
+
+      // ha megvannak a kártyák, indulhat a coverflow + modal
+      initNewsCarousel();
+      initNewsModal();
+    })
+    .catch((err) => {
+      console.error("Hír API hiba:", err);
+    });
 }
 
 // ---------- HÍR COVERFLOW KARUSSZEL ----------
@@ -140,11 +224,16 @@ function initNewsModal() {
   function openFromCard(card) {
     if (!card || !contentInner) return;
 
-    const tag = card.querySelector(".news-tag")?.textContent || "";
-    const date = card.querySelector(".news-date")?.textContent || "";
-    const title = card.querySelector(".news-headline")?.textContent || "";
+    const tagEl = card.querySelector(".news-tag");
+    const dateEl = card.querySelector(".news-date");
+    const titleEl = card.querySelector(".news-headline");
+    const shortEl = card.querySelector(".news-text");
+
+    const tag = tagEl ? tagEl.textContent : "";
+    const date = dateEl ? dateEl.textContent : "";
+    const title = titleEl ? titleEl.textContent : "";
     const textAttr = card.getAttribute("data-full") || "";
-    const shortText = card.querySelector(".news-text")?.textContent || "";
+    const shortText = shortEl ? shortEl.textContent : "";
     const text = textAttr || shortText;
 
     contentInner.innerHTML = `
