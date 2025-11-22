@@ -7,11 +7,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateMinecraftStats();
   updateDiscordStats();
-  initNewsSlider();
+  initNewsCarousel();
   initNewsModal();
 });
 
-// Minecraft stat
+// ---------- Minecraft stat ----------
+
 async function updateMinecraftStats() {
   const onlineEl = document.getElementById("mc-online");
   const maxEl = document.getElementById("mc-max");
@@ -30,7 +31,8 @@ async function updateMinecraftStats() {
   }
 }
 
-// Discord stat
+// ---------- Discord stat ----------
+
 async function updateDiscordStats() {
   const onlineEl = document.getElementById("discord-online");
   if (!onlineEl) return;
@@ -56,30 +58,56 @@ async function updateDiscordStats() {
   }
 }
 
-/* ---------- HÍR SLIDER ---------- */
+// ---------- HÍR KARUSSZEL ----------
 
-function initNewsSlider() {
-  const cards = document.querySelectorAll(".news-card");
-  if (!cards.length) return;
+function initNewsCarousel() {
+  const container = document.querySelector(".news-strip");
+  const cards = Array.from(document.querySelectorAll(".news-card"));
+  if (!container || !cards.length) return;
 
   let index = 0;
   const intervalMs = 5000;
 
-  function show(idx) {
-    cards.forEach((card, i) => {
-      card.classList.toggle("active", i === idx);
+  function setActive(i) {
+    index = (i + cards.length) % cards.length;
+
+    cards.forEach((card, idx) => {
+      card.classList.toggle("active", idx === index);
+    });
+
+    const activeCard = cards[index];
+    const containerRect = container.getBoundingClientRect();
+    const cardRect = activeCard.getBoundingClientRect();
+
+    const targetLeft = container.scrollLeft +
+      (cardRect.left - (containerRect.left + (containerRect.width - cardRect.width) / 2));
+
+    container.scrollTo({
+      left: targetLeft,
+      behavior: "smooth",
     });
   }
 
-  show(index);
+  // első aktív
+  setActive(index);
 
+  // automatikus léptetés
   setInterval(() => {
-    index = (index + 1) % cards.length;
-    show(index);
+    setActive(index + 1);
   }, intervalMs);
+
+  // kattintásra is lehessen középre húzni
+  cards.forEach((card, idx) => {
+    card.addEventListener("click", (e) => {
+      // ha a gombra kattintott, a modal majd kezeli, de a card is középre kerül
+      if (!(e.target instanceof HTMLButtonElement)) {
+        setActive(idx);
+      }
+    });
+  });
 }
 
-/* ---------- HÍR MODAL ---------- */
+// ---------- HÍR MODAL ----------
 
 function initNewsModal() {
   const modal = document.getElementById("news-modal");
@@ -96,7 +124,9 @@ function initNewsModal() {
     const tag = card.querySelector(".news-tag")?.textContent || "";
     const date = card.querySelector(".news-date")?.textContent || "";
     const title = card.querySelector(".news-headline")?.textContent || "";
-    const text = card.querySelector(".news-text")?.textContent || "";
+    const textAttr = card.getAttribute("data-full") || "";
+    const shortText = card.querySelector(".news-text")?.textContent || "";
+    const text = textAttr || shortText;
 
     contentInner.innerHTML = `
       <div class="news-meta">
@@ -115,7 +145,8 @@ function initNewsModal() {
   }
 
   readMoreButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation(); // ne triggelje a kártya clickjét
       const card = btn.closest(".news-card");
       openFromCard(card);
     });

@@ -6,10 +6,113 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- root-abszolút + cache-bust -->
-  <link rel="stylesheet" href="/login.css?v=4">
+  <link rel="stylesheet" href="/login.css?v=5">
 </head>
 <body>
 
+  <!-- FELSŐ SÁV: hírek karusszel -->
+  <header class="news-header">
+    <div class="news-header-inner">
+      <h2 class="news-title">Hírek &amp; frissítések</h2>
+
+      <div class="news-strip">
+        <div class="news-strip-inner">
+          <!-- 1 -->
+          <article class="news-card" data-full="Season 2 indulása – új világ, resetelt gazdaság, frissített spawn, rang átdolgozás és rengeteg kisebb QoL módosítás. A teljes patch note-ot a Discord patch-notes csatornáján találod.">
+            <div class="news-meta">
+              <span class="news-tag">Újdonság</span>
+              <span class="news-date">2025. 01. 01.</span>
+            </div>
+            <h3 class="news-headline">Season 2 indulása</h3>
+            <p class="news-text">
+              Új világ, frissített spawn és kiegyensúlyozott rangok. Nézd meg a teljes patch note-ot a Discordon!
+            </p>
+            <button type="button" class="news-readmore">Részletek</button>
+          </article>
+
+          <!-- 2 -->
+          <article class="news-card" data-full="ETHERNIA Community Event – build-verseny, PvP mini-tournament, parkour és egyéb mini-gamek. A részletes időpontok és nyeremények a Discord #eventek csatornáján érhetők el.">
+            <div class="news-meta">
+              <span class="news-tag news-tag-event">Event</span>
+              <span class="news-date">Hamarosan</span>
+            </div>
+            <h3 class="news-headline">ETHERNIA Community Event</h3>
+            <p class="news-text">
+              Közösségi build-verseny, PvP mini-tournament és nyeremények az aktív játékosoknak.
+            </p>
+            <button type="button" class="news-readmore">Részletek</button>
+          </article>
+
+          <!-- 3 -->
+          <article class="news-card" data-full="Ha hibát találsz, vagy ötleted van, nyiss ticketet a Discordon. A hasznos visszajelzésekért játékbeli jutalom jár – coin, rang upgrade vagy különleges kozmetikai cucc.">
+            <div class="news-meta">
+              <span class="news-tag news-tag-info">Info</span>
+              <span class="news-date">Folyamatos</span>
+            </div>
+            <h3 class="news-headline">Bug jelentés &amp; javaslatok</h3>
+            <p class="news-text">
+              Ha hibát találsz, vagy van egy jó ötleted, nyiss ticketet a Discordon – jutalom jár érte.
+            </p>
+            <button type="button" class="news-readmore">Részletek</button>
+          </article>
+
+          <!-- 4 -->
+          <article class="news-card" data-full="Teszt hír – ezt nyugodtan felülírhatod bármikor. Ide jöhet bármilyen fontos közlemény, változás, vagy újdonság.">
+            <div class="news-meta">
+              <span class="news-tag">Teszt</span>
+              <span class="news-date">2025. 02. 10.</span>
+            </div>
+            <h3 class="news-headline">Teszt hír #1</h3>
+            <p class="news-text">
+              Teszt szöveg. Ezt a hírt később lecserélheted saját bejelentésre.
+            </p>
+            <button type="button" class="news-readmore">Részletek</button>
+          </article>
+
+          <!-- 5 -->
+          <article class="news-card" data-full="Teszt hír – rang shop fejlesztések. Később ide jöhetnek konkrét információk az új rangokról, kedvezményekről, akciókról.">
+            <div class="news-meta">
+              <span class="news-tag">Teszt</span>
+              <span class="news-date">2025. 03. 05.</span>
+            </div>
+            <h3 class="news-headline">Teszt hír #2</h3>
+            <p class="news-text">
+              Teszt szöveg rangokhoz, bolt frissítésekhez, vagy bármilyen jövőbeli változtatáshoz.
+            </p>
+            <button type="button" class="news-readmore">Részletek</button>
+          </article>
+
+          <!-- 6 -->
+          <article class="news-card" data-full="Teszt hír – szerver karbantartások, kisebb frissítések, belső optimalizálások. Használd rövid technikai infókra.">
+            <div class="news-meta">
+              <span class="news-tag news-tag-info">Teszt</span>
+              <span class="news-date">2025. 03. 20.</span>
+            </div>
+            <h3 class="news-headline">Teszt hír #3</h3>
+            <p class="news-text">
+              Rövid infó karbantartásról, restartokról, kisebb javításokról.
+            </p>
+            <button type="button" class="news-readmore">Részletek</button>
+          </article>
+
+          <!-- 7 -->
+          <article class="news-card" data-full="Teszt hír – közösségi szavazás új game mode-okról, pluginekről, szabályokról. Ezeket simán átírhatod saját ötletekre.">
+            <div class="news-meta">
+              <span class="news-tag news-tag-event">Teszt</span>
+              <span class="news-date">2025. 04. 01.</span>
+            </div>
+            <h3 class="news-headline">Teszt hír #4</h3>
+            <p class="news-text">
+              Közösségi szavazás, ötletelés, testreszabás – ezt a hírt is teljesen átszerkesztheted.
+            </p>
+            <button type="button" class="news-readmore">Részletek</button>
+          </article>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ALSÓ SÁV: statok + login -->
   <main class="page">
     <!-- BAL: statok -->
     <section class="info-panel">
@@ -54,49 +157,7 @@
       </div>
     </section>
 
-    <!-- KÖZÉP: hírek karusszel -->
-    <section class="news-panel">
-      <h2 class="news-title">HÍREK &amp; FRISSÍTÉSEK</h2>
-      <div class="news-slider">
-        <article class="news-card">
-          <div class="news-meta">
-            <span class="news-tag">Újdonság</span>
-            <span class="news-date">2025. 01. 01.</span>
-          </div>
-          <h3 class="news-headline">Season 2 indulása</h3>
-          <p class="news-text">
-            Új világ, resetelt gazdaság, frissített spawn és kiegyensúlyozott rangok. Nézd meg a teljes patch note-ot a Discordon!
-          </p>
-          <button type="button" class="news-readmore">Részletek</button>
-        </article>
-
-        <article class="news-card">
-          <div class="news-meta">
-            <span class="news-tag news-tag-event">Event</span>
-            <span class="news-date">Hamarosan</span>
-          </div>
-          <h3 class="news-headline">ETHERNIA Community Event</h3>
-          <p class="news-text">
-            Közösségi build-verseny, PvP mini-tournament és nyeremények az aktív játékosoknak. Részletek hamarosan.
-          </p>
-          <button type="button" class="news-readmore">Részletek</button>
-        </article>
-
-        <article class="news-card">
-          <div class="news-meta">
-            <span class="news-tag news-tag-info">Info</span>
-            <span class="news-date">Folyamatos</span>
-          </div>
-          <h3 class="news-headline">Bug jelentés &amp; javaslatok</h3>
-          <p class="news-text">
-            Ha hibát találsz, vagy van egy jó ötleted, nyiss ticketet a Discordon. A legjobb javaslatok jutalmat kapnak a szerveren.
-          </p>
-          <button type="button" class="news-readmore">Részletek</button>
-        </article>
-      </div>
-    </section>
-
-    <!-- JOBB: login panel -->
+    <!-- JOBB: login, kicsit lentebb -->
     <section class="auth-section">
       <div class="auth-card">
         <h1 class="auth-title">Bejelentkezés</h1>
@@ -157,9 +218,6 @@
     </div>
   </div>
 
-  <script src="/login.js?v=3"></script>
+  <script src="/login.js?v=4"></script>
 </body>
 </html>
-<!--  <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-  </script> -->

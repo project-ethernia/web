@@ -24,11 +24,146 @@ a {
   text-decoration: none;
 }
 
-/* ---------- FŐ ELRENDEZÉS ---------- */
+/* ---------- FELSŐ HÍR SÁV ---------- */
+
+.news-header {
+  padding: 3.5rem 2.5rem 1.5rem;
+}
+
+.news-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.news-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.95;
+  margin-bottom: 0.9rem;
+}
+
+/* horizontális sáv */
+.news-strip {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 0.4rem;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+
+.news-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.news-strip-inner {
+  display: flex;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+/* alap kártya */
+.news-card {
+  flex: 0 0 260px;
+  border-radius: 1rem;
+  padding: 0.95rem 1rem 1.1rem;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.18) 0, transparent 60%),
+    rgba(15, 23, 42, 0.96);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.55);
+
+  transform: scale(0.9);
+  opacity: 0.6;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+  cursor: pointer;
+}
+
+/* középső, aktív kártya */
+.news-card.active {
+  transform: scale(1.08);
+  opacity: 1;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.9);
+  border-color: rgba(168, 85, 247, 0.9);
+}
+
+.news-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.news-tag {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(168, 85, 247, 0.18);
+  border: 1px solid rgba(168, 85, 247, 0.6);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.news-tag-event {
+  background: rgba(96, 165, 250, 0.18);
+  border-color: rgba(96, 165, 250, 0.7);
+}
+
+.news-tag-info {
+  background: rgba(52, 211, 153, 0.18);
+  border-color: rgba(52, 211, 153, 0.7);
+}
+
+.news-date {
+  opacity: 0.8;
+}
+
+.news-headline {
+  font-size: 0.98rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.news-text {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  margin-bottom: 0.6rem;
+}
+
+.news-readmore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.8);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    transform 0.12s ease;
+}
+
+.news-readmore:hover {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+/* ---------- ALSÓ SÁV: STATOK + LOGIN ---------- */
 
 .page {
   flex: 1;
-  padding: 5rem 2.5rem 2.5rem;
+  padding: 1rem 2.5rem 2.5rem;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -38,7 +173,7 @@ a {
   margin: 0 auto;
 }
 
-/* ---------- BAL OLDAL: INFÓ + STATOK ---------- */
+/* BAL OLDAL: INFÓ + STATOK */
 
 .info-panel {
   flex: 0 0 330px;
@@ -160,132 +295,14 @@ a {
   transform: translateY(-1px);
 }
 
-/* ---------- KÖZÉP: HÍREK KARUSSZEL ---------- */
-
-.news-panel {
-  flex: 1 1 auto;
-  max-width: 380px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.news-title {
-  font-size: 1.05rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.95;
-}
-
-/* slider container */
-.news-slider {
-  position: relative;
-  min-height: 170px;
-}
-
-/* alapértelmezés: rejtett slide */
-.news-card {
-  position: absolute;
-  inset: 0;
-  border-radius: 1rem;
-  padding: 0.95rem 1rem 1.1rem;
-  border: 1px solid rgba(55, 65, 81, 0.9);
-  background:
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.18) 0, transparent 60%),
-    rgba(15, 23, 42, 0.96);
-  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.7);
-
-  opacity: 0;
-  transform: translateX(24px);
-  pointer-events: none;
-  transition:
-    opacity 0.35s ease,
-    transform 0.35s ease;
-}
-
-/* aktív slide */
-.news-card.active {
-  opacity: 1;
-  transform: translateX(0);
-  pointer-events: auto;
-}
-
-.news-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.4rem;
-  font-size: 0.75rem;
-  opacity: 0.85;
-}
-
-.news-tag {
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  background: rgba(168, 85, 247, 0.18);
-  border: 1px solid rgba(168, 85, 247, 0.6);
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.news-tag-event {
-  background: rgba(96, 165, 250, 0.18);
-  border-color: rgba(96, 165, 250, 0.7);
-}
-
-.news-tag-info {
-  background: rgba(52, 211, 153, 0.18);
-  border-color: rgba(52, 211, 153, 0.7);
-}
-
-.news-date {
-  opacity: 0.8;
-}
-
-.news-headline {
-  font-size: 0.98rem;
-  font-weight: 600;
-  margin-bottom: 0.3rem;
-}
-
-.news-text {
-  font-size: 0.85rem;
-  opacity: 0.85;
-  margin-bottom: 0.6rem;
-}
-
-.news-readmore {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.3rem 0.75rem;
-  font-size: 0.78rem;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.8);
-  background: transparent;
-  cursor: pointer;
-  transition:
-    background 0.12s ease,
-    border-color 0.12s ease,
-    transform 0.12s ease;
-}
-
-.news-readmore:hover {
-  background: rgba(148, 163, 184, 0.12);
-  border-color: #e5e7eb;
-  transform: translateY(-1px);
-}
-
-/* ---------- JOBB OLDAL: LOGIN PANEL ---------- */
+/* JOBB OLDAL: LOGIN PANEL – kicsit lentebb / jobbra húzva */
 
 .auth-section {
   flex: 0 0 360px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.8rem;
+  margin-top: 1.5rem;
 }
 
 .auth-card {
@@ -445,7 +462,7 @@ a {
   text-decoration-style: dotted;
 }
 
-/* ---------- FOOTER AZ OLDAL ALJÁN ---------- */
+/* ---------- FOOTER ---------- */
 
 .footer {
   font-size: 0.8rem;
@@ -529,23 +546,22 @@ a {
     flex-basis: 300px;
   }
 
-  .news-panel {
-    max-width: 340px;
-  }
-
   .auth-section {
     flex-basis: 340px;
   }
 }
 
 @media (max-width: 900px) {
+  .news-header {
+    padding: 3rem 1.5rem 1.2rem;
+  }
+
   .page {
     flex-direction: column;
-    padding: 4rem 1.5rem 2.5rem;
+    padding: 1rem 1.5rem 2.5rem;
   }
 
   .info-panel,
-  .news-panel,
   .auth-section {
     flex: 1 1 auto;
     max-width: none;
@@ -553,14 +569,21 @@ a {
 
   .auth-section {
     align-items: stretch;
+    margin-top: 2rem;
   }
 
   .footer {
     text-align: center;
   }
+}
 
-  .news-panel {
-    max-width: none;
+@media (max-width: 600px) {
+  .news-strip-inner {
+    gap: 1rem;
+  }
+
+  .news-card {
+    flex: 0 0 80vw;
   }
 }
 
