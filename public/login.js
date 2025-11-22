@@ -32,7 +32,7 @@ async function updateDiscordStats() {
 
   try {
     const res = await fetch(
-      `https://discord.com/api/guilds/${DISCORD_GUILD_ID}/widget.json`,
+      `https://discord.com/api/guilds/${1322224781000577046}/widget.json`,
       { cache: "no-store" }
     );
 
