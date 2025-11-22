@@ -23,7 +23,7 @@ async function updateMinecraftStats() {
     if (!res.ok) throw new Error("HTTP error");
     const data = await res.json();
     onlineEl.textContent = data?.players?.online ?? 0;
-    maxEl.textContent  = data?.players?.max ?? "?";
+    maxEl.textContent = data?.players?.max ?? "?";
   } catch (e) {
     console.error("MC stat hiba:", e);
     onlineEl.textContent = "N/A";
@@ -58,51 +58,70 @@ async function updateDiscordStats() {
   }
 }
 
-// ---------- HÍR KARUSSZEL ----------
+// ---------- HÍR COVERFLOW KARUSSZEL ----------
 
 function initNewsCarousel() {
-  const container = document.querySelector(".news-strip");
   const cards = Array.from(document.querySelectorAll(".news-card"));
-  if (!container || !cards.length) return;
+  if (!cards.length) return;
 
   let index = 0;
   const intervalMs = 5000;
+  let intervalId;
 
-  function setActive(i) {
-    index = (i + cards.length) % cards.length;
+  function updatePositions() {
+    const n = cards.length;
 
-    cards.forEach((card, idx) => {
-      card.classList.toggle("active", idx === index);
-    });
+    cards.forEach((card, i) => {
+      let offset = i - index;
 
-    const activeCard = cards[index];
-    const containerRect = container.getBoundingClientRect();
-    const cardRect = activeCard.getBoundingClientRect();
+      // wrap körbe
+      if (offset > n / 2) offset -= n;
+      if (offset < -n / 2) offset += n;
 
-    const targetLeft = container.scrollLeft +
-      (cardRect.left - (containerRect.left + (containerRect.width - cardRect.width) / 2));
+      card.classList.remove("pos-2", "pos-1", "pos0", "pos1", "pos2", "hidden");
 
-    container.scrollTo({
-      left: targetLeft,
-      behavior: "smooth",
+      if (offset === 0) {
+        card.classList.add("pos0");
+      } else if (offset === -1) {
+        card.classList.add("pos-1");
+      } else if (offset === -2) {
+        card.classList.add("pos-2");
+      } else if (offset === 1) {
+        card.classList.add("pos1");
+      } else if (offset === 2) {
+        card.classList.add("pos2");
+      } else {
+        card.classList.add("hidden");
+      }
     });
   }
 
-  // első aktív
+  function setActive(i) {
+    const n = cards.length;
+    index = ((i % n) + n) % n;
+    updatePositions();
+  }
+
+  function startAuto() {
+    stopAuto();
+    intervalId = setInterval(() => {
+      setActive(index + 1);
+    }, intervalMs);
+  }
+
+  function stopAuto() {
+    if (intervalId) clearInterval(intervalId);
+  }
+
+  // első állapot
   setActive(index);
+  startAuto();
 
-  // automatikus léptetés
-  setInterval(() => {
-    setActive(index + 1);
-  }, intervalMs);
-
-  // kattintásra is lehessen középre húzni
-  cards.forEach((card, idx) => {
-    card.addEventListener("click", (e) => {
-      // ha a gombra kattintott, a modal majd kezeli, de a card is középre kerül
-      if (!(e.target instanceof HTMLButtonElement)) {
-        setActive(idx);
-      }
+  // card click → legyen középen
+  cards.forEach((card, i) => {
+    card.addEventListener("click", () => {
+      setActive(i);
+      startAuto();
     });
   });
 }
@@ -146,7 +165,7 @@ function initNewsModal() {
 
   readMoreButtons.forEach((btn) => {
     btn.addEventListener("click", (e) => {
-      e.stopPropagation(); // ne triggelje a kártya clickjét
+      e.stopPropagation();
       const card = btn.closest(".news-card");
       openFromCard(card);
     });

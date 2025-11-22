@@ -24,7 +24,7 @@ a {
   text-decoration: none;
 }
 
-/* ---------- FELSŐ HÍR SÁV ---------- */
+/* ---------- FELSŐ HÍR SÁV (COVERFLOW SLIDER) ---------- */
 
 .news-header {
   padding: 3.5rem 2.5rem 1.5rem;
@@ -44,28 +44,26 @@ a {
   margin-bottom: 0.9rem;
 }
 
-/* horizontális sáv */
+/* slider keret */
 .news-strip {
-  overflow-x: auto;
-  overflow-y: visible;
-  padding-bottom: 0.4rem;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
+  position: relative;
+  height: 210px; /* kb. kártya magasság */
+  overflow: visible;
 }
 
-.news-strip::-webkit-scrollbar {
-  display: none;
-}
-
+/* belső wrapper – a kártyák abszolútban lesznek */
 .news-strip-inner {
-  display: flex;
-  gap: 1.5rem;
-  align-items: stretch;
+  position: absolute;
+  inset: 0;
 }
 
-/* alap kártya */
+/* alap kártya – középről indul, aztán pos class mozgatja el */
 .news-card {
-  flex: 0 0 260px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 260px;
+
   border-radius: 1rem;
   padding: 0.95rem 1rem 1.1rem;
   border: 1px solid rgba(55, 65, 81, 0.9);
@@ -74,22 +72,64 @@ a {
     rgba(15, 23, 42, 0.96);
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.55);
 
-  transform: scale(0.9);
-  opacity: 0.6;
+  opacity: 0;
+  transform: translateX(-50%) scale(0.85);
+  pointer-events: none;
   transition:
     transform 0.3s ease,
     opacity 0.3s ease,
     box-shadow 0.3s ease,
     border-color 0.3s ease;
   cursor: pointer;
+  z-index: 1;
 }
 
-/* középső, aktív kártya */
-.news-card.active {
-  transform: scale(1.08);
+/* középső, aktív */
+.news-card.pos0 {
   opacity: 1;
+  transform: translateX(-50%) scale(1.08);
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.9);
   border-color: rgba(168, 85, 247, 0.9);
+  pointer-events: auto;
+  z-index: 5;
+}
+
+/* balra 1 */
+.news-card.pos-1 {
+  opacity: 0.8;
+  transform: translateX(calc(-50% - 190px)) scale(0.95);
+  pointer-events: auto;
+  z-index: 3;
+}
+
+/* balra 2 */
+.news-card.pos-2 {
+  opacity: 0.5;
+  transform: translateX(calc(-50% - 360px)) scale(0.9);
+  pointer-events: auto;
+  z-index: 2;
+}
+
+/* jobbra 1 */
+.news-card.pos1 {
+  opacity: 0.8;
+  transform: translateX(calc(-50% + 190px)) scale(0.95);
+  pointer-events: auto;
+  z-index: 3;
+}
+
+/* jobbra 2 */
+.news-card.pos2 {
+  opacity: 0.5;
+  transform: translateX(calc(-50% + 360px)) scale(0.9);
+  pointer-events: auto;
+  z-index: 2;
+}
+
+/* minden más (túl távol): ne látszódjon */
+.news-card.hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .news-meta {
@@ -295,7 +335,7 @@ a {
   transform: translateY(-1px);
 }
 
-/* JOBB OLDAL: LOGIN PANEL – kicsit lentebb / jobbra húzva */
+/* JOBB OLDAL: LOGIN PANEL */
 
 .auth-section {
   flex: 0 0 360px;
@@ -556,6 +596,10 @@ a {
     padding: 3rem 1.5rem 1.2rem;
   }
 
+  .news-strip {
+    height: 230px;
+  }
+
   .page {
     flex-direction: column;
     padding: 1rem 1.5rem 2.5rem;
@@ -578,12 +622,13 @@ a {
 }
 
 @media (max-width: 600px) {
-  .news-strip-inner {
-    gap: 1rem;
-  }
-
-  .news-card {
-    flex: 0 0 80vw;
+  /* mobilon csak a középső látszódjon */
+  .news-card.pos-2,
+  .news-card.pos-1,
+  .news-card.pos1,
+  .news-card.pos2 {
+    opacity: 0;
+    pointer-events: none;
   }
 }
 
