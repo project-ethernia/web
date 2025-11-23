@@ -36,7 +36,6 @@
   border-radius: 999px;
   font-size: 0.75rem;
   background: rgba(55, 65, 81, 0.9);
-  text-transform: lowercase;
 }
 
 .role-owner {
@@ -133,8 +132,4 @@
 .admin-table tbody tr:last-child th,
 .admin-table tbody tr:last-child td {
   border-bottom: none;
-}
-
-.role-pill {
-    text-transform: uppercase;
 }
