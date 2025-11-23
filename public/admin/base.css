@@ -1,0 +1,609 @@
+/* /admin/base.css - közös admin stílusok */
+
+/* --------- Alapok --------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body.admin-body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #312e81 0, transparent 55%),
+              radial-gradient(circle at bottom, #1f2937 0, transparent 55%),
+              #020013;
+  color: #f9fafb;
+}
+
+/* --------- Layout --------- */
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+
+.admin-sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, #050013 0%, #040010 50%, #020008 100%);
+  border-right: 1px solid rgba(148, 163, 184, 0.25);
+  padding: 1.25rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sidebar-logo {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.logo-main {
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  background: linear-gradient(120deg, #c4b5fd, #a855f7);
+  background-clip: unset;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.logo-sub {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  color: #e5e7eb;
+}
+
+/* Sidebar nav */
+
+.sidebar-nav {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.nav-item {
+  border: none;
+  background: transparent;
+  color: #e5e7eb;
+  text-decoration: none;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.nav-item:hover:not(.nav-item-disabled) {
+  background: rgba(15, 23, 42, 0.9);
+  opacity: 1;
+}
+
+.nav-item.active {
+  background: radial-gradient(circle at top left, rgba(168, 85, 247, 0.35), transparent 60%),
+              rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(168, 85, 247, 0.7);
+  box-shadow: 0 12px 30px rgba(88, 28, 135, 0.8);
+  opacity: 1;
+}
+
+.nav-item-disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.nav-icon {
+  width: 1.25rem;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.nav-pill {
+  margin-left: auto;
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.25);
+  color: #e5e7eb;
+}
+
+.nav-separator {
+  height: 1px;
+  background: rgba(148, 163, 184, 0.3);
+  margin: 0.35rem 0;
+}
+
+/* Sidebar footer */
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px dashed rgba(148, 163, 184, 0.4);
+}
+
+.sidebar-user {
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.user-label {
+  opacity: 0.7;
+}
+
+.user-name {
+  font-weight: 600;
+}
+
+/* Main */
+
+.admin-main {
+  flex: 1;
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Header */
+
+.admin-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-title {
+  font-size: 1.35rem;
+  margin: 0;
+}
+
+.admin-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+/* Section */
+
+.admin-section {
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 1rem;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.8);
+  padding: 1rem;
+}
+
+/* Empty state */
+
+.admin-empty {
+  padding: 2rem 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  opacity: 0.9;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* Buttons */
+
+.btn {
+  border: none;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background: linear-gradient(120deg, #a855f7, #c4b5fd);
+  color: #020617;
+  box-shadow: 0 10px 25px rgba(168, 85, 247, 0.6);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(120deg, #9333ea, #a855f7);
+}
+
+.btn-secondary {
+  background: rgba(31, 41, 55, 0.95);
+  color: #e5e7eb;
+}
+
+.btn-secondary:hover {
+  background: rgba(55, 65, 81, 1);
+}
+
+.btn-danger {
+  background: #b91c1c;
+  color: #fee2e2;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+/* Table */
+
+.admin-table-wrapper {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.admin-table thead {
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid rgba(55, 65, 81, 0.9);
+  text-align: left;
+}
+
+.admin-table th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(31, 41, 55, 0.75);
+}
+
+/* Cell specific */
+
+.cell-order .order-value {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.cell-title .title-main {
+  font-weight: 500;
+}
+
+.cell-title .title-sub {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-top: 0.15rem;
+}
+
+/* Tag pill */
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  background: rgba(55, 65, 81, 0.9);
+}
+
+.tag-pill-event {
+  background: rgba(251, 146, 60, 0.18);
+  color: #fed7aa;
+}
+
+.tag-pill-info {
+  background: rgba(59, 130, 246, 0.18);
+  color: #bfdbfe;
+}
+
+/* Visible toggle */
+
+.cell-visible {
+  text-align: center;
+}
+
+.visibility-toggle {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: radial-gradient(circle at top left, rgba(148, 163, 184, 0.25), rgba(15, 23, 42, 0.95));
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.visibility-toggle .toggle-knob {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+  transition: transform 0.16s ease;
+}
+
+/* ON state */
+
+.visibility-toggle.is-on {
+  border-color: rgba(52, 211, 153, 0.8);
+  background: radial-gradient(circle at top left, rgba(52, 211, 153, 0.4), rgba(15, 23, 42, 0.95));
+}
+
+.visibility-toggle.is-on .toggle-knob {
+  transform: translateX(15px);
+}
+
+/* Actions */
+
+.cell-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+/* Modal */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(6px);
+}
+
+.modal-dialog {
+  position: relative;
+  z-index: 41;
+  max-width: 640px;
+  width: 100%;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: rgba(15, 23, 42, 0.98);
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+  padding: 1rem 1.25rem 0.9rem;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.7rem;
+  right: 1.35rem;
+  border: none;
+  border-radius: 999px;
+  width: 26px;
+  height: 26px;
+  font-size: 1.1rem;
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  cursor: pointer;
+}
+
+.modal-content h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+/* Form */
+
+.form-group {
+  margin-bottom: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group label {
+  opacity: 0.9;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group textarea,
+.form-group select {
+  border-radius: 0.6rem;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  background: rgba(15, 23, 42, 0.95);
+  padding: 0.45rem 0.6rem;
+  color: #f9fafb;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: rgba(168, 85, 247, 0.9);
+  box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.5);
+}
+
+/* Checkbox */
+
+.form-group-checkbox {
+  justify-content: center;
+}
+
+.checkbox-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.checkbox-inline input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+}
+
+/* Meta */
+
+.form-meta {
+  margin: 0.25rem 0 0.6rem;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.meta-separator {
+  margin: 0 0.3rem;
+}
+
+/* Modal actions */
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.actions-right {
+  display: flex;
+  gap: 0.35rem;
+}
+
+/* Error */
+
+.form-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #fecaca;
+}
+
+/* Reszponzív */
+
+@media (max-width: 900px) {
+  .admin-sidebar {
+    display: none;
+  }
+  .admin-main {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .form-row {
+    flex-direction: column;
+  }
+  .modal-dialog {
+    max-width: 100%;
+    height: 100%;
+    padding: 0.75rem;
+  }
+  .modal-content {
+    height: 100%;
+    overflow-y: auto;
+  }
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 1rem 1.25rem 1.25rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.9);
+}
+
+.sidebar-user {
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-user .user-label {
+  display: block;
+  opacity: 0.7;
+}
+
+.sidebar-user .user-name {
+  font-weight: 600;
+}
+
+.sidebar-logout {
+  margin-top: 0.25rem;
+}
+
+.btn-logout {
+  width: 100%;
+  border: none;
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.btn-logout:hover {
+  background: rgba(55, 65, 81, 1);
+  color: #fefefe;
+}

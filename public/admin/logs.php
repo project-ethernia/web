@@ -70,73 +70,8 @@ $logs = $stmt->fetchAll();
   <title>ETHERNIA Admin - Napló</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- reuse admin design -->
-  <link rel="stylesheet" href="/admin/admins.css?v=1">
-  <style>
-    .log-action {
-      font-size: 0.85rem;
-    }
-    .log-pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.05rem 0.4rem;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      margin-right: 0.3rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      opacity: 0.9;
-    }
-    .log-pill-login { background: rgba(34, 197, 94, 0.18); color: #bbf7d0; }
-    .log-pill-logout { background: rgba(248, 113, 113, 0.2); color: #fecaca; }
-    .log-pill-news { background: rgba(59, 130, 246, 0.2); color: #bfdbfe; }
-    .log-pill-admin { background: rgba(168, 85, 247, 0.22); color: #e9d5ff; }
-    .log-pill-other { background: rgba(148, 163, 184, 0.25); color: #e5e7eb; }
-
-    .cell-ua {
-      max-width: 260px;
-      font-size: 0.7rem;
-      opacity: 0.7;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .search-bar {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-      margin-top: 0.75rem;
-    }
-
-    .search-bar input[type="text"] {
-      flex: 1;
-      padding: 0.45rem 0.7rem;
-      border-radius: 999px;
-      border: 1px solid rgba(31, 41, 55, 0.9);
-      background: rgba(15, 23, 42, 0.95);
-      color: #e5e7eb;
-      font-size: 0.85rem;
-    }
-
-    .search-bar button {
-      padding: 0.4rem 0.9rem;
-      border-radius: 999px;
-      border: none;
-      font-size: 0.8rem;
-      cursor: pointer;
-      background: rgba(55, 65, 81, 1);
-      color: #e5e7eb;
-    }
-
-    .search-bar button:hover {
-      background: rgba(75, 85, 99, 1);
-    }
-
-    .admin-table tbody tr:hover {
-      background: rgba(15, 23, 42, 0.9);
-    }
-  </style>
+  <!-- egységes admin design + napló extra stílusok -->
+  <link rel="stylesheet" href="/admin/logs.css?v=1">
 </head>
 <body class="admin-body">
   <div class="admin-layout">

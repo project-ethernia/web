@@ -1,7 +1,7 @@
 /* /admin/dashboard.css */
 
 /* alap admin stílus behúzása */
-@import url('/admin/news.css?v=3');
+@import url('/admin/base.css?v=1');
 
 /* GRID a felső kártyáknak */
 .dashboard-grid {
