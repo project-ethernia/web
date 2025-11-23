@@ -424,6 +424,6 @@ try {
     </div>
   </div>
 
-  <script src="/admin/assets/js/admins.js?v=6"></script>
+  <script src="/admin/assets/css/admins.js?v=<?= time(); ?>"></script>
 </body>
 </html>
