@@ -5,3 +5,18 @@
 /* Jelenleg minden közös stílus a base.css-ben van.
    Ha később kellnek kizárólag a hírek oldalra érvényes extra stílusok,
    ide tudod hozzáírni őket. */
+
+.admin-table {
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.75rem 1rem;          
+  border-bottom: 1px solid rgb(155, 155, 155);
+}
+
+.admin-table tbody tr:last-child th,
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}

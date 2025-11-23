@@ -255,13 +255,11 @@ body.admin-body {
   font-size: 0.8rem;
 }
 
-/* Table */
-
 .admin-table-wrapper {
   overflow-x: auto;
 }
 
-.admin-table {
+/* .admin-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.85rem;
@@ -284,7 +282,6 @@ body.admin-body {
   opacity: 0.85;
 }
 
-/* utolsó sor alatt ne legyen vonal */
 .admin-table tbody tr:last-child th,
 .admin-table tbody tr:last-child td {
   border-bottom: none;
@@ -292,9 +289,7 @@ body.admin-body {
 
 .admin-table tbody tr:hover {
   background: rgba(31, 41, 55, 0.75);
-}
-
-/* Cell specific */
+} */
 
 .cell-order .order-value {
   font-variant-numeric: tabular-nums;
