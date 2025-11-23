@@ -7,7 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateMinecraftStats();
   updateDiscordStats();
-  loadNewsFromApi(); // <-- hírek betöltése DB-ből
+  initNewsCarousel();
+  initNewsModal();
 });
 
 // ---------- Minecraft stat ----------
@@ -61,97 +62,6 @@ async function updateDiscordStats() {
     console.error("Discord stat hiba:", e);
     onlineEl.textContent = "N/A";
   }
-}
-
-// ---------- HÍREK BETÖLTÉSE API-BÓL ----------
-
-function loadNewsFromApi() {
-  const container = document.getElementById("news-strip-inner");
-  if (!container) {
-    console.warn("Nincs news-strip-inner elem.");
-    return;
-  }
-
-  console.log("Hírek betöltése API-ból...");
-
-  fetch("/api/news.php", { cache: "no-store" })
-    .then((res) => {
-      console.log("API válasz státuszkód:", res.status);
-      return res.json();
-    })
-    .then((data) => {
-      console.log("API válasz JSON:", data);
-
-      if (!data.ok || !Array.isArray(data.news) || data.news.length === 0) {
-        console.warn("Nincs megjeleníthető hír (ok=false vagy üres news tömb).");
-        return;
-      }
-
-      container.innerHTML = "";
-
-      data.news.forEach((item) => {
-        const card = document.createElement("article");
-        card.className = "news-card";
-
-        // meta (tag + dátum)
-        const metaDiv = document.createElement("div");
-        metaDiv.className = "news-meta";
-
-        const tagSpan = document.createElement("span");
-        tagSpan.className = "news-tag";
-        const tagText = item.tag || "Info";
-        tagSpan.textContent = tagText;
-
-        const lowered = tagText.toLowerCase();
-        if (lowered.indexOf("event") !== -1) {
-          tagSpan.classList.add("news-tag-event");
-        } else if (lowered.indexOf("info") !== -1) {
-          tagSpan.classList.add("news-tag-info");
-        }
-
-        const dateSpan = document.createElement("span");
-        dateSpan.className = "news-date";
-        dateSpan.textContent = item.date_display || "";
-
-        metaDiv.appendChild(tagSpan);
-        metaDiv.appendChild(dateSpan);
-
-        // cím
-        const h3 = document.createElement("h3");
-        h3.className = "news-headline";
-        h3.textContent = item.title || "";
-
-        // rövid szöveg
-        const p = document.createElement("p");
-        p.className = "news-text";
-        p.textContent = item.short_text || "";
-
-        // gomb
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "news-readmore";
-        btn.textContent = "Részletek";
-
-        // hosszú szöveg data attribútumba
-        if (item.full_text) {
-          card.setAttribute("data-full", item.full_text);
-        }
-
-        card.appendChild(metaDiv);
-        card.appendChild(h3);
-        card.appendChild(p);
-        card.appendChild(btn);
-
-        container.appendChild(card);
-      });
-
-      console.log("Hírkártyák létrehozva, initNewsCarousel + initNewsModal indul.");
-      initNewsCarousel();
-      initNewsModal();
-    })
-    .catch((err) => {
-      console.error("Hír API hiba:", err);
-    });
 }
 
 // ---------- HÍR COVERFLOW KARUSSZEL ----------
