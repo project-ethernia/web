@@ -251,7 +251,7 @@ $news = $stmt->fetchAll();
   <title>ETHERNIA Admin - Hírek</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="/admin/assets/css/news.css?v=4">
+  <link rel="stylesheet" href="/admin/assets/css/news.css?v=5">
 </head>
 <body class="admin-body">
   <div class="admin-layout">
