@@ -251,7 +251,7 @@ $news = $stmt->fetchAll();
   <title>ETHERNIA Admin - Hírek</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="/admin/news.css?v=3">
+  <link rel="stylesheet" href="/admin/assets/css/news.css?v=3">
 </head>
 <body class="admin-body">
   <div class="admin-layout">
@@ -439,6 +439,6 @@ $news = $stmt->fetchAll();
   <script>
     window.ETHERNIA_ADMIN_USER = <?php echo json_encode($currentUser); ?>;
   </script>
-  <script src="/admin/news.js?v=2"></script>
+  <script src="/admin/assets/js/news.js?v=2"></script>
 </body>
 </html>

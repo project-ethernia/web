@@ -101,7 +101,7 @@ function h($str) {
   <meta charset="UTF-8">
   <title>ETHERNIA Admin - Áttekintés</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/admin/dashboard.css?v=1">
+  <link rel="stylesheet" href="/admin/assets/css/dashboard.css?v=1">
 </head>
 <body class="admin-body">
   <div class="admin-layout">

@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>ETHERNIA Admin - Bejelentkezés</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="/admin/login.css?v=1">
+  <link rel="stylesheet" href="/admin/assets/css/login.css?v=1">
 </head>
 <body class="admin-login-body">
   <div class="login-wrapper">
@@ -142,6 +142,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
 
-  <script src="/admin/login.js?v=1"></script>
+  <script src="/admin/assets/js/login.js?v=1"></script>
 </body>
 </html>

@@ -71,7 +71,7 @@ $logs = $stmt->fetchAll();
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- egységes admin design + napló extra stílusok -->
-  <link rel="stylesheet" href="/admin/logs.css?v=1">
+  <link rel="stylesheet" href="/admin/assets/css/logs.css?v=1">
 </head>
 <body class="admin-body">
   <div class="admin-layout">
