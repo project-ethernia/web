@@ -40,12 +40,12 @@
 }
 
 .role-owner {
-  background: rgba(203, 128, 253, 0.2);
+  background: rgba(203, 128, 253, 0.25);
   color: #8007e4;
 }
 
 .role-admin {
-  background: rgba(182, 0, 0, 0);
+  background: rgba(182, 0, 0, 0.25);
   color: #d80000;
 }
 
