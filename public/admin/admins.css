@@ -116,3 +116,21 @@
   color: #fefefe;
   transform: translateY(-1px);
 }
+
+/* Legyen egységes, összecsukott táblázat */
+.admin-table {
+  border-collapse: collapse;
+}
+
+/* Minden cella ugyanazt az alsó vonalat kapja */
+.admin-table th,
+.admin-table td {
+  padding: 0.75rem 1rem;          /* egységes padding */
+  border-bottom: 1px solid rgba(15, 23, 42, 0.95);
+}
+
+/* Az utolsó sor aljáról leveheted, ha nem kell vonal */
+.admin-table tbody tr:last-child th,
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
