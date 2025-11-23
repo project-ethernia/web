@@ -259,38 +259,6 @@ body.admin-body {
   overflow-x: auto;
 }
 
-/* .admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-}
-
-.admin-table thead {
-  background: rgba(15, 23, 42, 0.95);
-}
-
-.admin-table th,
-.admin-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgb(155, 155, 155);
-  text-align: left;
-}
-
-.admin-table th {
-  font-weight: 600;
-  font-size: 0.8rem;
-  opacity: 0.85;
-}
-
-.admin-table tbody tr:last-child th,
-.admin-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.admin-table tbody tr:hover {
-  background: rgba(31, 41, 55, 0.75);
-} */
-
 .cell-order .order-value {
   font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
