@@ -99,9 +99,9 @@ function h($str) {
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>ETHERNIA Admin - Áttekintés</title>
+  <title>ETHERNIA Admin - Adminok kezelése</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/admin/assets/css/dashboard.css?v=1">
+  <link rel="stylesheet" href="/admin/assets/css/dashboard.css?v=<?= time(); ?>">
 </head>
 <body class="admin-body">
   <div class="admin-layout">

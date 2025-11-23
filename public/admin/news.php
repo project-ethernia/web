@@ -248,10 +248,9 @@ $news = $stmt->fetchAll();
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>ETHERNIA Admin - Hírek</title>
+  <title>ETHERNIA Admin - Adminok kezelése</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <link rel="stylesheet" href="/admin/assets/css/news.css?v=5">
+  <link rel="stylesheet" href="/admin/assets/css/news.css?v=<?= time(); ?>">
 </head>
 <body class="admin-body">
   <div class="admin-layout">

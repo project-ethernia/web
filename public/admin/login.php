@@ -95,10 +95,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>ETHERNIA Admin - Bejelentkezés</title>
+  <title>ETHERNIA Admin - Adminok kezelése</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <link rel="stylesheet" href="/admin/assets/css/login.css?v=1">
+  <link rel="stylesheet" href="/admin/assets/css/login.css?v=<?= time(); ?>">
 </head>
 <body class="admin-login-body">
   <div class="login-wrapper">
