@@ -1,8 +1,4 @@
-/* /admin/assets/css/players.css */
-
-@import url('/admin/assets/css/base.css?v=1');
-
-/* csak a játékos oldal extra cuccai */
+@import url('/admin/assets/css/base.css?v=<?= time(); ?>');
 
 .players-table .cell-username {
   font-weight: 500;

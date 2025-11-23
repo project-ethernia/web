@@ -1,6 +1,6 @@
 /* /admin/news.css */
 /* Hírek oldal – a közös admin stílust a base.css-ből vesszük */
-@import url('/admin/assets/css/base.css?v=1');
+@import url('/admin/assets/css/base.css?v=<?= time(); ?>');
 
 /* Jelenleg minden közös stílus a base.css-ben van.
    Ha később kellnek kizárólag a hírek oldalra érvényes extra stílusok,

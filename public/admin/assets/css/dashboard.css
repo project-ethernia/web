@@ -1,7 +1,7 @@
 /* /admin/dashboard.css */
 
 /* alap admin stílus behúzása */
-@import url('/admin/assets/css/base.css?v=1');
+@import url('/admin/assets/css/base.css?v=<?= time(); ?>');
 
 /* GRID a felső kártyáknak */
 .dashboard-grid {

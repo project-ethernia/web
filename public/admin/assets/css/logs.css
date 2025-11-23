@@ -1,6 +1,6 @@
 /* /admin/logs.css */
 /* Napló oldal – közös admin stílusok a base.css-ből */
-@import url('/admin/assets/css/base.css?v=1');
+@import url('/admin/assets/css/base.css?v=<?= time(); ?>');
 
 /* Log specifikus stílusok */
 
