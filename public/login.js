@@ -21,12 +21,14 @@ async function updateMinecraftStats() {
     const res = await fetch(`https://api.mcsrvstat.us/2/${MC_SERVER}`, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP error");
     const data = await res.json();
-    onlineEl.textContent = data && data.players && typeof data.players.online === "number"
-      ? data.players.online
-      : 0;
-    maxEl.textContent = data && data.players && typeof data.players.max === "number"
-      ? data.players.max
-      : "?";
+    onlineEl.textContent =
+      data && data.players && typeof data.players.online === "number"
+        ? data.players.online
+        : 0;
+    maxEl.textContent =
+      data && data.players && typeof data.players.max === "number"
+        ? data.players.max
+        : "?";
   } catch (e) {
     console.error("MC stat hiba:", e);
     onlineEl.textContent = "N/A";
@@ -65,13 +67,23 @@ async function updateDiscordStats() {
 
 function loadNewsFromApi() {
   const container = document.getElementById("news-strip-inner");
-  if (!container) return;
+  if (!container) {
+    console.warn("Nincs news-strip-inner elem.");
+    return;
+  }
+
+  console.log("Hírek betöltése API-ból...");
 
   fetch("/api/news.php", { cache: "no-store" })
-    .then((res) => res.json())
+    .then((res) => {
+      console.log("API válasz státuszkód:", res.status);
+      return res.json();
+    })
     .then((data) => {
+      console.log("API válasz JSON:", data);
+
       if (!data.ok || !Array.isArray(data.news) || data.news.length === 0) {
-        console.warn("Nincs megjeleníthető hír.");
+        console.warn("Nincs megjeleníthető hír (ok=false vagy üres news tömb).");
         return;
       }
 
@@ -120,7 +132,7 @@ function loadNewsFromApi() {
         btn.className = "news-readmore";
         btn.textContent = "Részletek";
 
-        // hosszú szöveget data attribútumba tesszük
+        // hosszú szöveg data attribútumba
         if (item.full_text) {
           card.setAttribute("data-full", item.full_text);
         }
@@ -133,7 +145,7 @@ function loadNewsFromApi() {
         container.appendChild(card);
       });
 
-      // ha megvannak a kártyák, indulhat a coverflow + modal
+      console.log("Hírkártyák létrehozva, initNewsCarousel + initNewsModal indul.");
       initNewsCarousel();
       initNewsModal();
     })
@@ -146,7 +158,10 @@ function loadNewsFromApi() {
 
 function initNewsCarousel() {
   const cards = Array.from(document.querySelectorAll(".news-card"));
-  if (!cards.length) return;
+  if (!cards.length) {
+    console.warn("Nincsenek news-card elemek a sliderhez.");
+    return;
+  }
 
   let index = 0;
   const intervalMs = 5000;
@@ -158,7 +173,6 @@ function initNewsCarousel() {
     cards.forEach((card, i) => {
       let offset = i - index;
 
-      // wrap körbe
       if (offset > n / 2) offset -= n;
       if (offset < -n / 2) offset += n;
 
@@ -197,11 +211,9 @@ function initNewsCarousel() {
     if (intervalId) clearInterval(intervalId);
   }
 
-  // első állapot
   setActive(index);
   startAuto();
 
-  // card click → legyen középen
   cards.forEach((card, i) => {
     card.addEventListener("click", () => {
       setActive(i);
