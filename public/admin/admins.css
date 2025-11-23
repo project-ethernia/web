@@ -134,3 +134,7 @@
 .admin-table tbody tr:last-child td {
   border-bottom: none;
 }
+
+.role-pill {
+    text-transform: uppercase;
+}
