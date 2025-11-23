@@ -6,14 +6,13 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-/*
- * Jogosultság ellenőrzés – ha van admin loginod, ide tedd:
- *
- * if (empty($_SESSION['is_admin'])) {
- *     header('Location: /login.php');
- *     exit;
- * }
- */
+session_start();
+
+if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
+    header('Location: /admin/login.php');
+    exit;
+}
+
 
 /* --- BEJELENTKEZETT FELHASZNÁLÓ NEVE (szerző) --- */
 $currentUser = 'Ismeretlen';
