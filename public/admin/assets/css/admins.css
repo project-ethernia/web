@@ -1,3 +1,5 @@
+@import url('/admin/assets/css/base.css?v=<?= time(); ?>');
+
 .cell-id {
   font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
