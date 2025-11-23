@@ -20,8 +20,8 @@ $currentUsername = isset($_SESSION['admin_username']) ? $_SESSION['admin_usernam
 
 /* --- DB beállítások: állítsd be a SAJÁT adataidra --- */
 $DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
-$DB_USER = 'SAJAT_DB_USER';
-$DB_PASS = 'SAJAT_DB_JELSZO';
+$DB_USER = 'ethernia';
+$DB_PASS = 'LrKqjfTKc3Q5H6e1Ohuo';
 
 function get_pdo_admin() {
     static $pdo = null;
