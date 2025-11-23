@@ -263,7 +263,7 @@ try {
   <meta charset="UTF-8">
   <title>ETHERNIA Admin - Adminok kezelése</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/admin/admins.css?v=4">
+  <link rel="stylesheet" href="/admin/admins.css?v=5">
 </head>
 <body class="admin-body">
   <div class="admin-layout">
@@ -425,6 +425,6 @@ try {
     </div>
   </div>
 
-  <script src="/admin/admins.js?v=2"></script>
+  <script src="/admin/admins.js?v=5"></script>
 </body>
 </html>
