@@ -1,7 +1,7 @@
 /* /admin/admins.css */
 
 /* Használd ki a már létező admin stílust */
-@import url('/admin/base.css?v=1');
+@import url('/admin/assets/css/base.css?v=1');
 
 /* plusz dolgok kifejezetten az admin-listához */
 
