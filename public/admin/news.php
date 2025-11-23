@@ -6,8 +6,6 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-session_start();
-
 if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
     header('Location: /admin/login.php');
     exit;
