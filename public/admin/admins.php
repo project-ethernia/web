@@ -48,6 +48,9 @@ function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
+/* --- LOG FUNKCIÓ BEHÚZÁSA --- */
+require_once __DIR__ . '/log.php';
+
 /* ---------------- AJAX: add / toggle_active / reset_password ---------------- */
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -56,6 +59,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $pdo    = get_pdo_admin();
         $action = isset($_POST['action']) ? $_POST['action'] : '';
+
+        // jelenlegi admin adatok logoláshoz
+        $currentAdminId   = isset($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0;
+        $currentAdminName = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
 
         if ($action === 'add_admin') {
             $username = isset($_POST['username']) ? trim($_POST['username']) : '';
@@ -91,6 +98,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $id = (int)$pdo->lastInsertId();
 
+            // LOG: új admin létrehozása
+            try {
+                log_admin_action(
+                    $pdo,
+                    $currentAdminId,
+                    $currentAdminName,
+                    "Új admin felhasználó létrehozása: '{$username}' ({$role})",
+                    [
+                        'new_admin_id' => $id,
+                        'new_role'     => $role,
+                    ]
+                );
+            } catch (Throwable $e) {
+                // ha a logolás hibázik, ne álljon le az app
+            }
+
             echo json_encode(array(
                 'ok'   => true,
                 'id'   => $id,
@@ -114,18 +137,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Hiányzó admin ID.');
             }
 
-            global $currentUserId;
-            if ($id === $currentUserId && $isActive === 0) {
+            // ne engedd magad inaktiválni
+            if ($id === $currentAdminId && $isActive === 0) {
                 throw new Exception('Nem inaktiválhatod saját magad.');
             }
 
-            $stmt = $pdo->prepare("SELECT role FROM admin_users WHERE id = :id");
+            // owner-t csak akkor piszkáljuk, ha ő maga a current user
+            $stmt = $pdo->prepare("SELECT username, role FROM admin_users WHERE id = :id");
             $stmt->execute(array(':id' => $id));
             $row = $stmt->fetch();
             if (!$row) {
                 throw new Exception('Admin nem található.');
             }
-            if ($row['role'] === 'owner' && $id !== $currentUserId) {
+
+            $targetName = $row['username'];
+            if ($row['role'] === 'owner' && $id !== $currentAdminId) {
                 throw new Exception('Másik owner fiókját nem inaktiválhatod.');
             }
 
@@ -134,6 +160,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':a'  => $isActive,
                 ':id' => $id,
             ));
+
+            $stateText = $isActive ? 'aktiválva' : 'inaktiválva';
+
+            // LOG: admin aktív / inaktív
+            try {
+                log_admin_action(
+                    $pdo,
+                    $currentAdminId,
+                    $currentAdminName,
+                    "Admin fiók {$stateText}: '{$targetName}'",
+                    [
+                        'target_admin_id' => $id,
+                        'target_username' => $targetName,
+                        'is_active'       => $isActive,
+                        'state'           => $stateText,
+                    ]
+                );
+            } catch (Throwable $e) {
+                // logolás hibája ne ölje meg a választ
+            }
 
             echo json_encode(array(
                 'ok'        => true,
@@ -151,6 +197,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Hiányzó ID vagy jelszó.');
             }
 
+            // Cél admin neve a loghoz
+            $stmt = $pdo->prepare("SELECT username FROM admin_users WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+            $row = $stmt->fetch();
+            if (!$row) {
+                throw new Exception('Admin nem található.');
+            }
+            $targetName = $row['username'];
+
             $hash = password_hash($password, PASSWORD_DEFAULT);
 
             $stmt = $pdo->prepare("UPDATE admin_users SET password_hash = :h WHERE id = :id");
@@ -158,6 +213,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':h'  => $hash,
                 ':id' => $id,
             ));
+
+            // LOG: jelszócsere
+            try {
+                log_admin_action(
+                    $pdo,
+                    $currentAdminId,
+                    $currentAdminName,
+                    "Admin jelszó módosítása: '{$targetName}'",
+                    [
+                        'target_admin_id' => $id,
+                        'target_username' => $targetName,
+                    ]
+                );
+            } catch (Throwable $e) {
+                // log hiba ignorálva
+            }
 
             echo json_encode(array('ok' => true, 'id' => $id));
             exit;

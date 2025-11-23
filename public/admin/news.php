@@ -40,6 +40,9 @@ function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
+/* --- LOG FUNKCIÓ --- */
+require_once __DIR__ . '/log.php';
+
 /* ---------------- AJAX RÉSZ: SAVE / DELETE / TOGGLE_VISIBLE ---------------- */
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -47,6 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $pdo    = get_pdo();
     $action = isset($_POST['action']) ? $_POST['action'] : '';
+
+    // logoláshoz aktuális admin ID + név
+    $adminId   = !empty($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0;
+    $adminName = $currentUser;
 
     try {
         if ($action === 'save') {
@@ -62,7 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('A cím kötelező.');
             }
 
-            if ($id === null) {
+            $isNew = ($id === null);
+
+            if ($isNew) {
                 // ÚJ HÍR: dátum = mai nap, szerző = bejelentkezett user
                 $dateDisplay = date('Y. m. d.');
                 $author      = $currentUser;
@@ -96,8 +105,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindValue(':is_visible', $is_visible, PDO::PARAM_INT);
             $stmt->execute();
 
-            if ($id === null) {
+            if ($isNew) {
                 $id = (int)$pdo->lastInsertId();
+
+                // LOG: új hír
+                try {
+                    log_admin_action(
+                        $pdo,
+                        $adminId,
+                        $adminName,
+                        "Új hír létrehozása: '{$title}'",
+                        [
+                            'news_id'    => $id,
+                            'tag'        => $tag,
+                            'visible'    => $is_visible,
+                            'order_idx'  => $order_index,
+                        ]
+                    );
+                } catch (Throwable $e) {
+                    // log hiba ignorálva
+                }
+            } else {
+                // LOG: hír módosítása
+                try {
+                    log_admin_action(
+                        $pdo,
+                        $adminId,
+                        $adminName,
+                        "Hír módosítása: '{$title}'",
+                        [
+                            'news_id'    => $id,
+                            'tag'        => $tag,
+                            'visible'    => $is_visible,
+                            'order_idx'  => $order_index,
+                        ]
+                    );
+                } catch (Throwable $e) {
+                    // log hiba ignorálva
+                }
             }
 
             echo json_encode(array('ok' => true, 'id' => $id));
@@ -110,8 +155,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Hiányzó ID.');
             }
 
+            // cím lekérdezése a loghoz
+            $titleForLog = null;
+            $stmt = $pdo->prepare("SELECT title FROM news WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+            if ($row = $stmt->fetch()) {
+                $titleForLog = $row['title'];
+            }
+
             $stmt = $pdo->prepare("DELETE FROM news WHERE id = :id");
             $stmt->execute(array(':id' => $id));
+
+            // LOG: törlés
+            try {
+                log_admin_action(
+                    $pdo,
+                    $adminId,
+                    $adminName,
+                    "Hír törlése: " . ($titleForLog ? "'{$titleForLog}'" : "ID={$id}"),
+                    ['news_id' => $id]
+                );
+            } catch (Throwable $e) {
+                // log hiba ignorálva
+            }
 
             echo json_encode(array('ok' => true));
             exit;
@@ -125,11 +191,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Hiányzó ID a láthatóság állításához.');
             }
 
+            // cím lekérdezése a loghoz
+            $titleForLog = null;
+            $stmt = $pdo->prepare("SELECT title FROM news WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+            if ($row = $stmt->fetch()) {
+                $titleForLog = $row['title'];
+            }
+
             $stmt = $pdo->prepare("UPDATE news SET is_visible = :is_visible WHERE id = :id");
             $stmt->execute(array(
                 ':is_visible' => $isVisible,
                 ':id'         => $id
             ));
+
+            $stateText = $isVisible ? 'látható' : 'rejtett';
+
+            // LOG: láthatóság módosítása
+            try {
+                log_admin_action(
+                    $pdo,
+                    $adminId,
+                    $adminName,
+                    "Hír láthatóság módosítása: " . ($titleForLog ? "'{$titleForLog}'" : "ID={$id}") . " → {$stateText}",
+                    [
+                        'news_id'  => $id,
+                        'visible'  => $isVisible,
+                        'state'    => $stateText,
+                    ]
+                );
+            } catch (Throwable $e) {
+                // log hiba ignorálva
+            }
 
             echo json_encode(array('ok' => true, 'id' => $id, 'is_visible' => $isVisible));
             exit;

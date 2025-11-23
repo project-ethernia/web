@@ -12,6 +12,9 @@ $DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
 $DB_USER = 'ethernia';
 $DB_PASS = 'LrKqjfTKc3Q5H6e1Ohuo';
 
+/* --- LOG FUNKCIÓ BEHÚZÁSA --- */
+require_once __DIR__ . '/log.php';
+
 function get_pdo() {
     static $pdo = null;
     global $DB_DSN, $DB_USER, $DB_PASS;
@@ -41,6 +44,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (!$user || !password_verify($password, $user['password_hash'])) {
                 $error = 'Hibás felhasználónév vagy jelszó.';
+
+                // SIKERTELEN BELÉPÉS LOGOLÁSA
+                try {
+                    log_admin_action(
+                        $pdo,
+                        0,
+                        'Ismeretlen',
+                        'Sikertelen admin bejelentkezés',
+                        ['username' => $username]
+                    );
+                } catch (Throwable $e2) {
+                    // ha a logolás elhasal, ne dőljön össze a login
+                }
+
             } else {
                 // sikeres login
                 $_SESSION['admin_id']       = (int)$user['id'];
@@ -51,6 +68,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // last_login frissítés
                 $upd = $pdo->prepare("UPDATE admin_users SET last_login = NOW() WHERE id = :id");
                 $upd->execute([':id' => $user['id']]);
+
+                // SIKERES BELÉPÉS LOGOLÁSA
+                try {
+                    log_admin_action(
+                        $pdo,
+                        (int)$user['id'],
+                        (string)$user['username'],
+                        'Sikeres admin bejelentkezés',
+                        []
+                    );
+                } catch (Throwable $e2) {
+                    // ha a logolás elhasal, akkor se álljon meg a login
+                }
 
                 header('Location: /admin/news.php');
                 exit;
