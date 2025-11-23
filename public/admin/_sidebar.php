@@ -8,7 +8,7 @@ if (!function_exists('h')) {
     }
 }
 
-// aktív menü (dashboard, news, admins, stb.)
+// aktív menü (dashboard, news, admins, players, logs, stb.)
 if (!isset($activePage)) {
     $activePage = '';
 }
@@ -46,7 +46,7 @@ function admin_nav_item_class($page, $activePage) {
       <span class="nav-label">Hírek</span>
     </a>
 
-    <!-- Adminok – közvetlenül a hírek alatt -->
+    <!-- Adminok -->
     <a href="/admin/admins.php" class="<?php echo admin_nav_item_class('admins', $activePage); ?>">
       <span class="nav-icon">🛡️</span>
       <span class="nav-label">Adminok</span>
@@ -58,18 +58,19 @@ function admin_nav_item_class($page, $activePage) {
       <span class="nav-label">Napló</span>
     </a>
 
+    <!-- Játékosok -->
+    <a href="/admin/players.php" class="<?php echo admin_nav_item_class('players', $activePage); ?>">
+      <span class="nav-icon">👥</span>
+      <span class="nav-label">Játékosok</span>
+      <span class="nav-pill">Beta</span>
+    </a>
+
     <div class="nav-separator"></div>
 
     <!-- Későbbi menük -->
     <button class="nav-item nav-item-disabled" type="button" disabled>
       <span class="nav-icon">💎</span>
       <span class="nav-label">Bolt / Rangok</span>
-      <span class="nav-pill">Hamarosan</span>
-    </button>
-
-    <button class="nav-item nav-item-disabled" type="button" disabled>
-      <span class="nav-icon">👥</span>
-      <span class="nav-label">Játékosok</span>
       <span class="nav-pill">Hamarosan</span>
     </button>
   </nav>

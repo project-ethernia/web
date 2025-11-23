@@ -1,0 +1,48 @@
+/* /admin/assets/css/players.css */
+
+@import url('/admin/assets/css/base.css?v=1');
+
+/* csak a játékos oldal extra cuccai */
+
+.players-table .cell-username {
+  font-weight: 500;
+}
+
+.players-table .cell-ip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.players-table .cell-rank {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+/* státusz pill-ek */
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+}
+
+.status-ok {
+  background: rgba(34, 197, 94, 0.18);
+  color: #bbf7d0;
+}
+
+.status-banned {
+  background: rgba(239, 68, 68, 0.22);
+  color: #fecaca;
+}
+
+.status-muted {
+  background: rgba(59, 130, 246, 0.22);
+  color: #bfdbfe;
+}
