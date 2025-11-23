@@ -273,8 +273,8 @@ body.admin-body {
 
 .admin-table th,
 .admin-table td {
-  padding: 0.55rem 0.6rem;
-  border-bottom: 1px solid rgba(55, 65, 81, 0.9);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(152, 0, 190, 0.95); /* LILA VONAL */
   text-align: left;
 }
 
@@ -282,6 +282,12 @@ body.admin-body {
   font-weight: 600;
   font-size: 0.8rem;
   opacity: 0.85;
+}
+
+/* utolsó sor alatt ne legyen vonal */
+.admin-table tbody tr:last-child th,
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .admin-table tbody tr:hover {
