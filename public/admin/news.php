@@ -11,7 +11,6 @@ if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
     exit;
 }
 
-
 /* --- BEJELENTKEZETT FELHASZNÁLÓ NEVE (szerző) --- */
 $currentUser = 'Ismeretlen';
 if (!empty($_SESSION['admin_username'])) {
@@ -20,7 +19,7 @@ if (!empty($_SESSION['admin_username'])) {
     $currentUser = $_SESSION['username'];
 }
 
-/* --- DB BEÁLLÍTÁSOK: ÁLLÍTSD BE PONTOSAN! --- */
+/* --- DB BEÁLLÍTÁSOK --- */
 $DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
 $DB_USER = 'ethernia';
 $DB_PASS = 'LrKqjfTKc3Q5H6e1Ohuo';
@@ -163,43 +162,13 @@ $news = $stmt->fetchAll();
 </head>
 <body class="admin-body">
   <div class="admin-layout">
-    <!-- SIDEBAR -->
-    <aside class="admin-sidebar">
-      <div class="sidebar-logo">
-        <span class="logo-main">ETHERNIA</span>
-        <span class="logo-sub">Admin</span>
-      </div>
 
-      <nav class="sidebar-nav">
-        <a href="/admin/news.php" class="nav-item active">
-          <span class="nav-icon">📰</span>
-          <span class="nav-label">Hírek</span>
-        </a>
-        <div class="nav-separator"></div>
-        <button class="nav-item nav-item-disabled" type="button" disabled>
-          <span class="nav-icon">💎</span>
-          <span class="nav-label">Bolt / Rangok</span>
-          <span class="nav-pill">Hamarosan</span>
-        </button>
-        <button class="nav-item nav-item-disabled" type="button" disabled>
-          <span class="nav-icon">👥</span>
-          <span class="nav-label">Játékosok</span>
-          <span class="nav-pill">Hamarosan</span>
-        </button>
-        <button class="nav-item nav-item-disabled" type="button" disabled>
-          <span class="nav-icon">⚙️</span>
-          <span class="nav-label">Beállítások</span>
-        </button>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="sidebar-user">
-          <span class="user-label">Bejelentkezve</span>
-          <span class="user-name"><?php echo h($currentUser); ?></span>
-        </div>
-        <!-- Ide jöhet később kijelentkezés link -->
-      </div>
-    </aside>
+    <?php
+      // közös sidebar include
+      $activePage      = 'news';
+      $currentUsername = $currentUser;
+      require __DIR__ . '/_sidebar.php';
+    ?>
 
     <!-- FŐ TARTALOM -->
     <div class="admin-main">

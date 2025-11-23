@@ -1,6 +1,10 @@
 <?php
-// /admin/admins.php
 session_start();
+
+/* --- HIBAKIÍRÁS FEJLESZTÉSHEZ --- */
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 /* --- jogosultság ellenőrzés --- */
 if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
@@ -8,7 +12,6 @@ if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
     exit;
 }
 
-// csak owner férjen hozzá az admin-kezeléshez
 if (empty($_SESSION['admin_role']) || $_SESSION['admin_role'] !== 'owner') {
     http_response_code(403);
     echo "Nincs jogosultságod az adminok kezeléséhez.";
@@ -18,19 +21,25 @@ if (empty($_SESSION['admin_role']) || $_SESSION['admin_role'] !== 'owner') {
 $currentUserId   = isset($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0;
 $currentUsername = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
 
-/* --- DB beállítások: állítsd be a SAJÁT adataidra --- */
+/* --- DB beállítások: ÁLLÍTSD BE UGYANÚGY, MINT A TÖBBI FÁJLBAN --- */
 $DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
-$DB_USER = 'ethernia';
-$DB_PASS = 'LrKqjfTKc3Q5H6e1Ohuo';
+$DB_USER = 'SAJAT_DB_USER';
+$DB_PASS = 'SAJAT_DB_JELSZO';
 
 function get_pdo_admin() {
     static $pdo = null;
     global $DB_DSN, $DB_USER, $DB_PASS;
+
     if ($pdo === null) {
-        $pdo = new PDO($DB_DSN, $DB_USER, $DB_PASS, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]);
+        $pdo = new PDO(
+            $DB_DSN,
+            $DB_USER,
+            $DB_PASS,
+            array(
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            )
+        );
     }
     return $pdo;
 }
@@ -39,15 +48,15 @@ function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
-/* ---------------- AJAX: add / toggle / reset_pw ---------------- */
+/* ---------------- AJAX: add / toggle_active / reset_password ---------------- */
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
 
-    $pdo    = get_pdo_admin();
-    $action = isset($_POST['action']) ? $_POST['action'] : '';
-
     try {
+        $pdo    = get_pdo_admin();
+        $action = isset($_POST['action']) ? $_POST['action'] : '';
+
         if ($action === 'add_admin') {
             $username = isset($_POST['username']) ? trim($_POST['username']) : '';
             $password = isset($_POST['password']) ? $_POST['password'] : '';
@@ -57,44 +66,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Felhasználónév és jelszó szükséges.');
             }
 
-            if (!in_array($role, ['owner', 'admin', 'mod'], true)) {
+            if (!in_array($role, array('owner', 'admin', 'mod'), true)) {
                 $role = 'admin';
             }
 
-            // ellenőrizd, hogy a username szabad-e
+            // van-e már ilyen felhasználónév?
             $stmt = $pdo->prepare("SELECT id FROM admin_users WHERE username = :u LIMIT 1");
-            $stmt->execute([':u' => $username]);
+            $stmt->execute(array(':u' => $username));
             if ($stmt->fetch()) {
                 throw new Exception('Ez a felhasználónév már foglalt.');
             }
 
-            // jelszó hash
             $hash = password_hash($password, PASSWORD_DEFAULT);
 
             $stmt = $pdo->prepare("
                 INSERT INTO admin_users (username, password_hash, role, is_active)
                 VALUES (:u, :h, :r, 1)
             ");
-            $stmt->execute([
+            $stmt->execute(array(
                 ':u' => $username,
                 ':h' => $hash,
                 ':r' => $role,
-            ]);
+            ));
 
             $id = (int)$pdo->lastInsertId();
 
-            echo json_encode([
+            echo json_encode(array(
                 'ok'   => true,
                 'id'   => $id,
-                'user' => [
+                'user' => array(
                     'id'         => $id,
                     'username'   => $username,
                     'role'       => $role,
                     'is_active'  => 1,
                     'created_at' => date('Y-m-d H:i:s'),
                     'last_login' => null,
-                ],
-            ]);
+                ),
+            ));
             exit;
         }
 
@@ -106,15 +114,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Hiányzó admin ID.');
             }
 
-            // ne engedd magad inaktiválni
             global $currentUserId;
             if ($id === $currentUserId && $isActive === 0) {
                 throw new Exception('Nem inaktiválhatod saját magad.');
             }
 
-            // owner-t csak akkor engedjük piszkálni, ha ő maga a current user (vagy akár teljesen tiltjuk)
             $stmt = $pdo->prepare("SELECT role FROM admin_users WHERE id = :id");
-            $stmt->execute([':id' => $id]);
+            $stmt->execute(array(':id' => $id));
             $row = $stmt->fetch();
             if (!$row) {
                 throw new Exception('Admin nem található.');
@@ -124,12 +130,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $stmt = $pdo->prepare("UPDATE admin_users SET is_active = :a WHERE id = :id");
-            $stmt->execute([
+            $stmt->execute(array(
                 ':a'  => $isActive,
                 ':id' => $id,
-            ]);
+            ));
 
-            echo json_encode(['ok' => true, 'id' => $id, 'is_active' => $isActive]);
+            echo json_encode(array(
+                'ok'        => true,
+                'id'        => $id,
+                'is_active' => $isActive,
+            ));
             exit;
         }
 
@@ -144,34 +154,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hash = password_hash($password, PASSWORD_DEFAULT);
 
             $stmt = $pdo->prepare("UPDATE admin_users SET password_hash = :h WHERE id = :id");
-            $stmt->execute([
-                ':h' => $hash,
+            $stmt->execute(array(
+                ':h'  => $hash,
                 ':id' => $id,
-            ]);
+            ));
 
-            echo json_encode(['ok' => true, 'id' => $id]);
+            echo json_encode(array('ok' => true, 'id' => $id));
             exit;
         }
 
         throw new Exception('Ismeretlen művelet.');
     } catch (Exception $e) {
         http_response_code(400);
-        echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+        echo json_encode(array('ok' => false, 'error' => $e->getMessage()));
         exit;
     }
 }
 
 /* ---------------- GET: admin lista ---------------- */
 
-$pdo = get_pdo_admin();
+try {
+    $pdo = get_pdo_admin();
 
-$stmt = $pdo->query("
-    SELECT id, username, role, is_active, created_at, last_login
-    FROM admin_users
-    ORDER BY role = 'owner' DESC, username ASC
-");
-$admins = $stmt->fetchAll();
-
+    $stmt = $pdo->query("
+        SELECT id, username, role, is_active, created_at, last_login
+        FROM admin_users
+        ORDER BY role = 'owner' DESC, username ASC
+    ");
+    $admins = $stmt->fetchAll();
+} catch (Exception $e) {
+    die('Adatbázis hiba: ' . $e->getMessage());
+}
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -179,50 +192,16 @@ $admins = $stmt->fetchAll();
   <meta charset="UTF-8">
   <title>ETHERNIA Admin - Adminok kezelése</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <link rel="stylesheet" href="/admin/admins.css?v=1">
 </head>
 <body class="admin-body">
   <div class="admin-layout">
-    <!-- SIDEBAR – hasonló, mint news.php-ben -->
-    <aside class="admin-sidebar">
-      <div class="sidebar-logo">
-        <span class="logo-main">ETHERNIA</span>
-        <span class="logo-sub">Admin</span>
-      </div>
 
-      <nav class="sidebar-nav">
-        <a href="/admin/news.php" class="nav-item">
-          <span class="nav-icon">📰</span>
-          <span class="nav-label">Hírek</span>
-        </a>
-
-        <div class="nav-separator"></div>
-
-        <button class="nav-item nav-item-disabled" type="button" disabled>
-          <span class="nav-icon">💎</span>
-          <span class="nav-label">Bolt / Rangok</span>
-          <span class="nav-pill">Hamarosan</span>
-        </button>
-        <button class="nav-item nav-item-disabled" type="button" disabled>
-          <span class="nav-icon">👥</span>
-          <span class="nav-label">Játékosok</span>
-          <span class="nav-pill">Hamarosan</span>
-        </button>
-
-        <a href="/admin/admins.php" class="nav-item active">
-          <span class="nav-icon">🛡️</span>
-          <span class="nav-label">Adminok</span>
-        </a>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="sidebar-user">
-          <span class="user-label">Bejelentkezve</span>
-          <span class="user-name"><?php echo h($currentUsername); ?></span>
-        </div>
-      </div>
-    </aside>
+    <?php
+      // itt húzzuk be a közös sidebart
+      $activePage = 'admins';
+      require __DIR__ . '/_sidebar.php';
+    ?>
 
     <!-- FŐ TARTALOM -->
     <div class="admin-main">
@@ -241,7 +220,7 @@ $admins = $stmt->fetchAll();
       <section class="admin-section">
         <?php if (empty($admins)): ?>
           <div class="admin-empty">
-            <p>Még nincs egyetlen admin felhasználó sem (rajtatok kívül SQL-ben). 🤔</p>
+            <p>Még nincs egyetlen admin felhasználó sem.</p>
             <button type="button" class="btn btn-primary" id="btn-add-admin-empty">
               + Hozz létre egy admin fiókot
             </button>
@@ -279,11 +258,15 @@ $admins = $stmt->fetchAll();
                     </td>
                     <td class="cell-role">
                       <?php
-                        $role = $a['role'];
+                        $role  = $a['role'];
                         $class = 'role-pill';
-                        if ($role === 'owner') $class .= ' role-owner';
-                        elseif ($role === 'admin') $class .= ' role-admin';
-                        elseif ($role === 'mod') $class .= ' role-mod';
+                        if ($role === 'owner') {
+                            $class .= ' role-owner';
+                        } elseif ($role === 'admin') {
+                            $class .= ' role-admin';
+                        } elseif ($role === 'mod') {
+                            $class .= ' role-mod';
+                        }
                       ?>
                       <span class="<?php echo $class; ?>">
                         <?php echo h($role); ?>
@@ -306,7 +289,7 @@ $admins = $stmt->fetchAll();
                       <?php echo h($a['created_at']); ?>
                     </td>
                     <td class="cell-date">
-                      <?php echo h($a['last_login'] ?: '–'); ?>
+                      <?php echo h($a['last_login'] ? $a['last_login'] : '–'); ?>
                     </td>
                     <td class="cell-actions">
                       <button type="button" class="btn btn-sm btn-secondary btn-reset-pw">
