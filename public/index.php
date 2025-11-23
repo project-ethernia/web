@@ -3,8 +3,8 @@
 
 // --- DB beállítások: ÁLLÍTSD BE SAJÁT ADATOKRA (ugyanaz, mint admin/news.php) ---
 $DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
-$DB_USER = 'SAJAT_DB_USER';
-$DB_PASS = 'SAJAT_DB_JELSZO';
+$DB_USER = 'ethernia';
+$DB_PASS = 'LrKqjfTKc3Q5H6e1Ohuo';
 
 $news = [];
 
