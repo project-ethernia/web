@@ -45,8 +45,8 @@
 }
 
 .role-admin {
-  background: rgb(151, 0, 0);
-  color: #ff0000;
+  background: rgba(182, 0, 0, 0);
+  color: #d80000;
 }
 
 .role-mod {
