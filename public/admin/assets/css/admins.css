@@ -1,9 +1,4 @@
-/* /admin/admins.css */
-
-/* Használd ki a már létező admin stílust */
 @import url('/admin/assets/css/base.css?v=<?= time(); ?>');
-
-/* plusz dolgok kifejezetten az admin-listához */
 
 .cell-id {
   font-variant-numeric: tabular-nums;
@@ -24,8 +19,6 @@
   background: rgba(59, 130, 246, 0.22);
   color: #bfdbfe;
 }
-
-/* szerep badge-ek */
 
 .role-pill {
   display: inline-flex;
@@ -60,8 +53,6 @@
 .cell-actions {
   gap: 0.4rem;
 }
-
-/* modal finomítás adminhoz */
 
 #admin-modal .modal-content h2 {
   margin-bottom: 0.75rem;
