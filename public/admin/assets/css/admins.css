@@ -1,4 +1,4 @@
-@import url('/admin/assets/css/base.css?v=<?= time(); ?>');
+@import url('/admin/assets/css/base.css?v=3');
 
 .cell-id {
   font-variant-numeric: tabular-nums;
