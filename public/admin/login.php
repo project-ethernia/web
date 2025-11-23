@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // ha a logolás elhasal, akkor se álljon meg a login
                 }
 
-                header('Location: /admin/news.php');
+                header('Location: /admin/index.php');
                 exit;
             }
         } catch (Exception $e) {
