@@ -340,7 +340,7 @@ try {
                         }
                       ?>
                       <span class="<?php echo $class; ?>">
-                        <?php echo h($role); ?>
+                          <?php echo strtoupper(h($role)); ?>
                       </span>
                     </td>
                     <td class="cell-active">
