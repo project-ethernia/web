@@ -269,7 +269,6 @@ try {
   <div class="admin-layout">
 
     <?php
-      // itt húzzuk be a közös sidebart
       $activePage = 'admins';
       require __DIR__ . '/_sidebar.php';
     ?>
