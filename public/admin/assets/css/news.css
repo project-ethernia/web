@@ -13,7 +13,7 @@
 .admin-table th,
 .admin-table td {
   padding: 0.75rem 1rem;          
-  border-bottom: 1px solid rgba(152, 0, 190, 0.616);
+  border-bottom: 1px solid rgb(155, 155, 155);
 }
 
 .admin-table tbody tr:last-child th,
