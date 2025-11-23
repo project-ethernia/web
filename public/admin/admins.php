@@ -263,7 +263,7 @@ try {
   <meta charset="UTF-8">
   <title>ETHERNIA Admin - Adminok kezelése</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/admin/assets/css/admins.css?v=7">
+  <link rel="stylesheet" href="/admin/assets/css/admins.css?v=8">
 </head>
 <body class="admin-body">
   <div class="admin-layout">
