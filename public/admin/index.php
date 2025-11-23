@@ -49,25 +49,20 @@ $recentLogs   = [];
 try {
     $pdo = get_pdo_admin();
 
-    // Hírek: összes / látható
     $stmt = $pdo->query("
-        SELECT 
-            COUNT(*) AS total,
-            SUM(CASE WHEN is_visible = 1 THEN 1 ELSE 0 END) AS visible
+        SELECT COUNT(*) AS total,
+               SUM(CASE WHEN is_visible = 1 THEN 1 ELSE 0 END) AS visible
         FROM news
     ");
     $newsStats = $stmt->fetch() ?: $newsStats;
 
-    // Adminok: összes / aktív
     $stmt = $pdo->query("
-        SELECT 
-            COUNT(*) AS total,
-            SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) AS active
+        SELECT COUNT(*) AS total,
+               SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) AS active
         FROM admin_users
     ");
     $adminStats = $stmt->fetch() ?: $adminStats;
 
-    // Saját profil info
     if ($currentUserId > 0) {
         $stmt = $pdo->prepare("
             SELECT created_at, last_login, role
@@ -82,7 +77,6 @@ try {
         }
     }
 
-    // Legutóbbi napló bejegyzések (ha már van admin_logs tábla)
     $stmt = $pdo->query("
         SELECT 
             created_at,
@@ -95,11 +89,8 @@ try {
     ");
     $recentLogs = $stmt->fetchAll();
 
-} catch (Exception $e) {
-    // ha valami elhasal, a dashboard akkor is betölt, max üres számokkal
-}
+} catch (Exception $e) {}
 
-/* --- helper --- */
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
@@ -116,8 +107,8 @@ function h($str) {
   <div class="admin-layout">
 
     <?php
-      // közös sidebar
-      $activePage = 'dashboard'; // jelenleg egyik menüpont sem ezt használja, de később jól jön
+      // KÖZÖS SIDEBAR
+      $activePage = 'main'; // <<< EZ TESZI AKTÍVVÁ A FŐOLDALT
       require __DIR__ . '/_sidebar.php';
     ?>
 

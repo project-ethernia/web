@@ -8,7 +8,7 @@ if (!function_exists('h')) {
     }
 }
 
-// aktív menü (news, admins, logs, stb.)
+// aktív menü (dashboard, news, admins, stb.)
 if (!isset($activePage)) {
     $activePage = '';
 }
@@ -34,13 +34,19 @@ function admin_nav_item_class($page, $activePage) {
   </div>
 
   <nav class="sidebar-nav">
+    <!-- Főoldal / Dashboard -->
+    <a href="/admin/index.php" class="<?php echo admin_nav_item_class('dashboard', $activePage); ?>">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Főoldal</span>
+    </a>
+
     <!-- Hírek -->
     <a href="/admin/news.php" class="<?php echo admin_nav_item_class('news', $activePage); ?>">
       <span class="nav-icon">📰</span>
       <span class="nav-label">Hírek</span>
     </a>
 
-    <!-- Adminok -->
+    <!-- Adminok – közvetlenül a hírek alatt -->
     <a href="/admin/admins.php" class="<?php echo admin_nav_item_class('admins', $activePage); ?>">
       <span class="nav-icon">🛡️</span>
       <span class="nav-label">Adminok</span>
