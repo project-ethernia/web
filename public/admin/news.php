@@ -1,18 +1,26 @@
 <?php
 session_start();
 
-/* ---- IDEIGLENESEN: hiba kiírás, hogy lássuk, mi a baja ---- */
+/* --- Hibák ideiglenes kiírása, ha gond van (fejlesztéshez jó) --- */
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 /*
- * Itt tudsz jogosultságot ellenőrizni.
+ * Jogosultság ellenőrzést ide tudsz rakni, ha kell:
  * if (empty($_SESSION['is_admin'])) {
- *     header('Location: /login.html');
+ *     header('Location: /login.php');
  *     exit;
  * }
  */
+
+// --- Bejelentkezett felhasználó neve (szerző) ---
+$currentUser = 'Ismeretlen';
+if (isset($_SESSION['admin_username']) && $_SESSION['admin_username'] !== '') {
+    $currentUser = $_SESSION['admin_username'];
+} elseif (isset($_SESSION['username']) && $_SESSION['username'] !== '') {
+    $currentUser = $_SESSION['username'];
+}
 
 // --- DB beállítások: TÖLTSD KI SAJÁT ADATOKKAL ---
 $DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
@@ -43,7 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id          = (isset($_POST['id']) && $_POST['id'] !== '') ? (int)$_POST['id'] : null;
             $title       = isset($_POST['title']) ? trim($_POST['title']) : '';
             $tag         = isset($_POST['tag']) ? trim($_POST['tag']) : 'Info';
-            $date        = isset($_POST['date_display']) ? trim($_POST['date_display']) : '';
             $short       = isset($_POST['short_text']) ? trim($_POST['short_text']) : '';
             $full        = isset($_POST['full_text']) ? trim($_POST['full_text']) : '';
             $order_index = isset($_POST['order_index']) ? (int)$_POST['order_index'] : 0;
@@ -54,16 +61,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($id === null) {
+                // ÚJ HÍR: dátum = mai nap, szerző = bejelentkezett user
+                $dateDisplay = date('Y. m. d.');
+                $author      = $currentUser;
+
                 $stmt = $pdo->prepare(
-                    "INSERT INTO news (title, tag, date_display, short_text, full_text, order_index, is_visible)
-                     VALUES (:title, :tag, :date_display, :short_text, :full_text, :order_index, :is_visible)"
+                    "INSERT INTO news (title, tag, date_display, short_text, full_text, order_index, is_visible, author)
+                     VALUES (:title, :tag, :date_display, :short_text, :full_text, :order_index, :is_visible, :author)"
                 );
+                $stmt->bindValue(':date_display', $dateDisplay);
+                $stmt->bindValue(':author', $author);
             } else {
+                // MEGLÉVŐ HÍR: dátum + szerző nem változik
                 $stmt = $pdo->prepare(
                     "UPDATE news
                      SET title = :title,
                          tag = :tag,
-                         date_display = :date_display,
                          short_text = :short_text,
                          full_text = :full_text,
                          order_index = :order_index,
@@ -75,7 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $stmt->bindValue(':title', $title);
             $stmt->bindValue(':tag', $tag);
-            $stmt->bindValue(':date_display', $date);
             $stmt->bindValue(':short_text', $short);
             $stmt->bindValue(':full_text', $full);
             $stmt->bindValue(':order_index', $order_index, PDO::PARAM_INT);
@@ -128,7 +140,7 @@ $news = $stmt->fetchAll();
     <div class="admin-header-inner">
       <div class="admin-logo">ETHERNIA <span>Admin</span></div>
       <div class="admin-header-right">
-        <!-- később: admin név, kilépés -->
+        Bejelentkezve: <strong><?php echo htmlspecialchars($currentUser, ENT_QUOTES, 'UTF-8'); ?></strong>
       </div>
     </div>
   </header>
@@ -140,6 +152,7 @@ $news = $stmt->fetchAll();
           <h1>Hírek kezelése</h1>
           <p class="admin-section-sub">
             Itt tudod szerkeszteni azokat a híreket, amik a bejelentkezési oldalon a felső sliderben megjelennek.
+            A dátum és a szerző automatikusan kerül mentésre.
           </p>
         </div>
         <button type="button" class="btn btn-primary" id="btn-add-news">
@@ -155,6 +168,7 @@ $news = $stmt->fetchAll();
               <th>Cím</th>
               <th>Tag</th>
               <th>Dátum</th>
+              <th>Szerző</th>
               <th>Sorrend</th>
               <th>Látható</th>
               <th>Műveletek</th>
@@ -163,7 +177,7 @@ $news = $stmt->fetchAll();
           <tbody>
           <?php if (empty($news)): ?>
             <tr>
-              <td colspan="7" class="admin-table-empty">
+              <td colspan="8" class="admin-table-empty">
                 Még nincs egyetlen hír sem. Kattints az „Új hír” gombra a létrehozáshoz.
               </td>
             </tr>
@@ -178,11 +192,13 @@ $news = $stmt->fetchAll();
                 data-full_text="<?php echo htmlspecialchars($row['full_text']); ?>"
                 data-order_index="<?php echo (int)$row['order_index']; ?>"
                 data-is_visible="<?php echo (int)$row['is_visible']; ?>"
+                data-author="<?php echo htmlspecialchars($row['author']); ?>"
               >
                 <td>#<?php echo (int)$row['id']; ?></td>
                 <td class="title-cell"><?php echo htmlspecialchars($row['title']); ?></td>
                 <td><?php echo htmlspecialchars($row['tag']); ?></td>
                 <td><?php echo htmlspecialchars($row['date_display']); ?></td>
+                <td><?php echo htmlspecialchars($row['author']); ?></td>
                 <td><?php echo (int)$row['order_index']; ?></td>
                 <td><?php echo $row['is_visible'] ? 'Igen' : 'Nem'; ?></td>
                 <td>
@@ -225,10 +241,6 @@ $news = $stmt->fetchAll();
               <option value="Teszt">Teszt</option>
             </select>
           </div>
-          <div class="form-group">
-            <label for="news-date">Dátum (szövegként)</label>
-            <input type="text" id="news-date" name="date_display" placeholder="pl. 2025. 01. 01. vagy Hamarosan">
-          </div>
         </div>
 
         <div class="form-group">
@@ -254,6 +266,11 @@ $news = $stmt->fetchAll();
           </div>
         </div>
 
+        <p class="form-meta">
+          <span>Közzétette: <strong id="news-meta-author">Mentés után</strong></span>
+          <span style="margin-left: 1rem;">Dátum: <strong id="news-meta-date">Mentés után</strong></span>
+        </p>
+
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary" id="news-cancel">Mégse</button>
           <button type="submit" class="btn btn-primary">Mentés</button>
@@ -264,6 +281,10 @@ $news = $stmt->fetchAll();
     </div>
   </div>
 
+  <script>
+    // átadjuk a bejelentkezett nevet JS-nek is, ha kellene később
+    window.ETHERNIA_ADMIN_USER = <?php echo json_encode($currentUser); ?>;
+  </script>
   <script src="/admin/news.js"></script>
 </body>
 </html>

@@ -646,3 +646,9 @@ a {
     align-items: flex-start;
   }
 }
+
+.news-author {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-top: 0.25rem;
+}

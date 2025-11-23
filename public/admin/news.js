@@ -4,8 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("news-modal");
   const form = document.getElementById("news-form");
   const errorEl = document.getElementById("news-error");
-  const closeBtn = modal?.querySelector(".modal-close");
-  const backdrop = modal?.querySelector(".modal-backdrop");
+  const closeBtn = modal ? modal.querySelector(".modal-close") : null;
+  const backdrop = modal ? modal.querySelector(".modal-backdrop") : null;
   const cancelBtn = document.getElementById("news-cancel");
   const addBtn = document.getElementById("btn-add-news");
   const modalTitle = document.getElementById("news-modal-title");
@@ -13,11 +13,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const idInput = document.getElementById("news-id");
   const titleInput = document.getElementById("news-title");
   const tagSelect = document.getElementById("news-tag");
-  const dateInput = document.getElementById("news-date");
   const shortInput = document.getElementById("news-short");
   const fullInput = document.getElementById("news-full");
   const orderInput = document.getElementById("news-order");
   const visibleInput = document.getElementById("news-visible");
+  const metaAuthor = document.getElementById("news-meta-author");
+  const metaDate = document.getElementById("news-meta-date");
 
   function openModal() {
     if (!modal) return;
@@ -39,17 +40,20 @@ document.addEventListener("DOMContentLoaded", () => {
     idInput.value = "";
     orderInput.value = "0";
     visibleInput.checked = true;
+    if (metaAuthor) metaAuthor.textContent = "Mentés után";
+    if (metaDate) metaDate.textContent = "Mentés után";
   }
 
   function fillFormFromRow(tr) {
     idInput.value = tr.dataset.id || "";
     titleInput.value = tr.dataset.title || "";
     tagSelect.value = tr.dataset.tag || "Info";
-    dateInput.value = tr.dataset.date_display || "";
     shortInput.value = tr.dataset.short_text || "";
     fullInput.value = tr.dataset.full_text || "";
     orderInput.value = tr.dataset.order_index || "0";
     visibleInput.checked = tr.dataset.is_visible === "1";
+    if (metaAuthor) metaAuthor.textContent = tr.dataset.author || "Ismeretlen";
+    if (metaDate) metaDate.textContent = tr.dataset.date_display || "-";
   }
 
   // Új hír
@@ -81,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const id = tr.dataset.id;
       const title = tr.dataset.title || id;
 
-      if (!confirm(`Biztosan törlöd ezt a hírt?\n\n${title}`)) {
+      if (!confirm('Biztosan törlöd ezt a hírt?\n\n' + title)) {
         return;
       }
 
@@ -145,7 +149,8 @@ document.addEventListener("DOMContentLoaded", () => {
         .then((data) => {
           if (!data.ok) {
             if (errorEl) {
-              errorEl.textContent = data.error || "Ismeretlen hiba történt mentés közben.";
+              errorEl.textContent =
+                data.error || "Ismeretlen hiba történt mentés közben.";
               errorEl.hidden = false;
             } else {
               alert(data.error || "Ismeretlen hiba történt mentés közben.");
@@ -153,8 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
           }
 
-          // Mentés után egyszerű megoldás: frissítsd az oldalt,
-          // így biztosan a legfrissebb listát látod.
+          // egyszerű megoldás: frissítjük az oldalt, hogy a lista is frissüljön
           window.location.reload();
         })
         .catch((err) => {
