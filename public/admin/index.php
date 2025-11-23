@@ -107,12 +107,10 @@ function h($str) {
   <div class="admin-layout">
 
     <?php
-      // KÖZÖS SIDEBAR
-      $activePage = 'main'; // <<< EZ TESZI AKTÍVVÁ A FŐOLDALT
+      $activePage = 'dashboard';
       require __DIR__ . '/_sidebar.php';
     ?>
 
-    <!-- FŐ TARTALOM -->
     <div class="admin-main">
       <header class="admin-header">
         <div>
