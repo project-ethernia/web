@@ -2,7 +2,7 @@
 // /admin/logout.php
 session_start();
 
-require_once __DIR__ . '/_log.php';
+require_once __DIR__ . '/log.php';
 
 // DB adatok – ugyanaz, mint news.php-ben
 $DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
