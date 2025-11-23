@@ -1,0 +1,137 @@
+/* /admin/dashboard.css */
+
+/* alap admin stílus behúzása */
+@import url('/admin/news.css?v=3');
+
+/* GRID a felső kártyáknak */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+/* kártyák */
+.dash-card {
+  background: radial-gradient(circle at top left, rgba(129, 140, 248, 0.25) 0, transparent 55%),
+              rgba(15, 23, 42, 0.96);
+  border-radius: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  padding: 1.2rem 1.4rem;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.dash-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.dash-card h2 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.dash-pill {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.2);
+  color: #e5e7eb;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dash-pill-gold {
+  background: rgba(250, 204, 21, 0.12);
+  color: #facc15;
+}
+
+.dash-pill-role {
+  background: rgba(168, 85, 247, 0.18);
+  color: #e9d5ff;
+}
+
+.dash-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.dash-number-sub {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.dash-muted {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.dash-tip {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.dash-link {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #a855f7;
+  text-decoration: none;
+}
+
+.dash-link:hover {
+  text-decoration: underline;
+}
+
+.dash-link.secondary {
+  opacity: 0.8;
+}
+
+/* szekció header a naplóhoz */
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* napló táblázat */
+.admin-log-table .cell-action-text {
+  max-width: 460px;
+  font-size: 0.86rem;
+}
+
+.admin-log-table .cell-ip {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+/* kicsi kijelzőn */
+@media (max-width: 768px) {
+  .dash-card {
+    padding: 1rem 1.1rem;
+  }
+
+  .dash-number {
+    font-size: 1.5rem;
+  }
+
+  .admin-log-table .cell-action-text {
+    max-width: 260px;
+  }
+}

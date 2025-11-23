@@ -3,7 +3,7 @@ session_start();
 
 /* --- HA MÁR BE VAN LÉPVE, DOBHATJUK RÖGTÖN A HÍREKHEZ --- */
 if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
-    header('Location: /admin/news.php');
+    header('Location: /admin/index.php');
     exit;
 }
 
