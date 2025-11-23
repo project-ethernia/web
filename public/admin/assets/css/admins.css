@@ -13,7 +13,6 @@
 
 .cell-username {
   font-size: 0.9rem;
-  display: flex;
   align-items: center;
   gap: 0.3rem;
 }
@@ -59,7 +58,6 @@
 }
 
 .cell-actions {
-  display: flex;
   gap: 0.4rem;
 }
 
