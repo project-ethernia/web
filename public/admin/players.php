@@ -6,6 +6,15 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+
+$currentUsername = isset($_SESSION['admin_username'])
+    ? $_SESSION['admin_username']
+    : 'Ismeretlen';
+
+// hogy a menü is jó helyen világítson:
+$activePage = 'players';
+
+
 /* --- jogosultság ellenőrzés --- */
 if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
     header('Location: /admin/login.php');
@@ -177,7 +186,7 @@ try {
 </head>
 <body class="admin-body">
   <div class="admin-layout">
-
+  
     <?php
       $activePage = 'players';
       require __DIR__ . '/_sidebar.php';
