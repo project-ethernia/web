@@ -263,7 +263,7 @@ try {
   <meta charset="UTF-8">
   <title>ETHERNIA Admin - Adminok kezelése</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/admin/admins.css?v=3">
+  <link rel="stylesheet" href="/admin/admins.css?v=4">
 </head>
 <body class="admin-body">
   <div class="admin-layout">
@@ -303,7 +303,7 @@ try {
                 <tr>
                   <th>ID</th>
                   <th>Felhasználónév</th>
-                  <th>Szerep</th>
+                  <th>Rang</th>
                   <th>Aktív</th>
                   <th>Létrehozva</th>
                   <th>Utolsó belépés</th>
@@ -425,6 +425,6 @@ try {
     </div>
   </div>
 
-  <script src="/admin/admins.js?v=1"></script>
+  <script src="/admin/admins.js?v=2"></script>
 </body>
 </html>
