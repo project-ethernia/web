@@ -374,7 +374,6 @@ body.admin-body {
 /* Actions */
 
 .cell-actions {
-  display: flex;
   gap: 0.35rem;
 }
 
