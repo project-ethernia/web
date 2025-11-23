@@ -1,28 +1,29 @@
 <?php
 session_start();
 
-/* --- Hibák ideiglenes kiírása, ha gond van (fejlesztéshez jó) --- */
+/* --- HIBÁK (fejlesztésnél hasznos, élesben kikapcsolhatod) --- */
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 /*
- * Jogosultság ellenőrzést ide tudsz rakni, ha kell:
+ * Jogosultság ellenőrzés – ha van admin loginod, ide tedd:
+ *
  * if (empty($_SESSION['is_admin'])) {
  *     header('Location: /login.php');
  *     exit;
  * }
  */
 
-// --- Bejelentkezett felhasználó neve (szerző) ---
+/* --- BEJELENTKEZETT FELHASZNÁLÓ NEVE (szerző) --- */
 $currentUser = 'Ismeretlen';
-if (isset($_SESSION['admin_username']) && $_SESSION['admin_username'] !== '') {
+if (!empty($_SESSION['admin_username'])) {
     $currentUser = $_SESSION['admin_username'];
-} elseif (isset($_SESSION['username']) && $_SESSION['username'] !== '') {
+} elseif (!empty($_SESSION['username'])) {
     $currentUser = $_SESSION['username'];
 }
 
-// --- DB beállítások: TÖLTSD KI SAJÁT ADATOKKAL ---
+/* --- DB BEÁLLÍTÁSOK: ÁLLÍTSD BE PONTOSAN! --- */
 $DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
 $DB_USER = 'ethernia';
 $DB_PASS = 'LrKqjfTKc3Q5H6e1Ohuo';
@@ -39,7 +40,12 @@ function get_pdo() {
     return $pdo;
 }
 
-// ---------- AJAX mentés / törlés ----------
+function h($str) {
+    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
+}
+
+/* ---------------- AJAX RÉSZ: SAVE / DELETE / TOGGLE_VISIBLE ---------------- */
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
 
@@ -65,24 +71,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $dateDisplay = date('Y. m. d.');
                 $author      = $currentUser;
 
-                $stmt = $pdo->prepare(
-                    "INSERT INTO news (title, tag, date_display, short_text, full_text, order_index, is_visible, author)
-                     VALUES (:title, :tag, :date_display, :short_text, :full_text, :order_index, :is_visible, :author)"
-                );
+                $stmt = $pdo->prepare("
+                    INSERT INTO news (title, tag, date_display, short_text, full_text, order_index, is_visible, author)
+                    VALUES (:title, :tag, :date_display, :short_text, :full_text, :order_index, :is_visible, :author)
+                ");
                 $stmt->bindValue(':date_display', $dateDisplay);
                 $stmt->bindValue(':author', $author);
             } else {
-                // MEGLÉVŐ HÍR: dátum + szerző nem változik
-                $stmt = $pdo->prepare(
-                    "UPDATE news
-                     SET title = :title,
-                         tag = :tag,
-                         short_text = :short_text,
-                         full_text = :full_text,
-                         order_index = :order_index,
-                         is_visible = :is_visible
-                     WHERE id = :id"
-                );
+                // LÉTEZŐ HÍR: dátum + szerző nem változik
+                $stmt = $pdo->prepare("
+                    UPDATE news
+                    SET title = :title,
+                        tag = :tag,
+                        short_text = :short_text,
+                        full_text = :full_text,
+                        order_index = :order_index,
+                        is_visible = :is_visible
+                    WHERE id = :id
+                ");
                 $stmt->bindValue(':id', $id, PDO::PARAM_INT);
             }
 
@@ -107,9 +113,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($id <= 0) {
                 throw new Exception('Hiányzó ID.');
             }
+
             $stmt = $pdo->prepare("DELETE FROM news WHERE id = :id");
             $stmt->execute(array(':id' => $id));
+
             echo json_encode(array('ok' => true));
+            exit;
+        }
+
+        if ($action === 'toggle_visible') {
+            $id        = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+            $isVisible = isset($_POST['is_visible']) ? (int)$_POST['is_visible'] : 0;
+
+            if ($id <= 0) {
+                throw new Exception('Hiányzó ID a láthatóság állításához.');
+            }
+
+            $stmt = $pdo->prepare("UPDATE news SET is_visible = :is_visible WHERE id = :id");
+            $stmt->execute(array(
+                ':is_visible' => $isVisible,
+                ':id'         => $id
+            ));
+
+            echo json_encode(array('ok' => true, 'id' => $id, 'is_visible' => $isVisible));
             exit;
         }
 
@@ -121,8 +147,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// ---------- GET: lista megjelenítése ----------
-$pdo  = get_pdo();
+/* ---------------- GET: LISTA / ADMIN FELÜLET ---------------- */
+
+$pdo = get_pdo();
+
 $stmt = $pdo->query("SELECT * FROM news ORDER BY order_index ASC, created_at DESC");
 $news = $stmt->fetchAll();
 
@@ -133,88 +161,154 @@ $news = $stmt->fetchAll();
   <meta charset="UTF-8">
   <title>ETHERNIA Admin - Hírek</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/admin/news.css">
-</head>
-<body>
-  <header class="admin-header">
-    <div class="admin-header-inner">
-      <div class="admin-logo">ETHERNIA <span>Admin</span></div>
-      <div class="admin-header-right">
-        Bejelentkezve: <strong><?php echo htmlspecialchars($currentUser, ENT_QUOTES, 'UTF-8'); ?></strong>
-      </div>
-    </div>
-  </header>
 
-  <main class="admin-main">
-    <section class="admin-section">
-      <div class="admin-section-header">
+  <link rel="stylesheet" href="/admin/news.css?v=2">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-main">ETHERNIA</span>
+        <span class="logo-sub">Admin</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/admin/news.php" class="nav-item active">
+          <span class="nav-icon">📰</span>
+          <span class="nav-label">Hírek</span>
+        </a>
+        <div class="nav-separator"></div>
+        <button class="nav-item nav-item-disabled" type="button" disabled>
+          <span class="nav-icon">💎</span>
+          <span class="nav-label">Bolt / Rangok</span>
+          <span class="nav-pill">Hamarosan</span>
+        </button>
+        <button class="nav-item nav-item-disabled" type="button" disabled>
+          <span class="nav-icon">👥</span>
+          <span class="nav-label">Játékosok</span>
+          <span class="nav-pill">Hamarosan</span>
+        </button>
+        <button class="nav-item nav-item-disabled" type="button" disabled>
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">Beállítások</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <span class="user-label">Bejelentkezve</span>
+          <span class="user-name"><?php echo h($currentUser); ?></span>
+        </div>
+        <!-- Ide jöhet később kijelentkezés link -->
+      </div>
+    </aside>
+
+    <!-- FŐ TARTALOM -->
+    <div class="admin-main">
+      <header class="admin-header">
         <div>
-          <h1>Hírek kezelése</h1>
-          <p class="admin-section-sub">
-            Itt tudod szerkeszteni azokat a híreket, amik a bejelentkezési oldalon a felső sliderben megjelennek.
-            A dátum és a szerző automatikusan kerül mentésre.
+          <h1 class="admin-title">Hírek kezelése</h1>
+          <p class="admin-subtitle">
+            A nyitó oldalon megjelenő híreket tudod itt létrehozni, szerkeszteni és elrejteni.
           </p>
         </div>
         <button type="button" class="btn btn-primary" id="btn-add-news">
           + Új hír
         </button>
-      </div>
+      </header>
 
-      <div class="admin-table-wrapper">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Cím</th>
-              <th>Tag</th>
-              <th>Dátum</th>
-              <th>Szerző</th>
-              <th>Sorrend</th>
-              <th>Látható</th>
-              <th>Műveletek</th>
-            </tr>
-          </thead>
-          <tbody>
-          <?php if (empty($news)): ?>
-            <tr>
-              <td colspan="8" class="admin-table-empty">
-                Még nincs egyetlen hír sem. Kattints az „Új hír” gombra a létrehozáshoz.
-              </td>
-            </tr>
-          <?php else: ?>
-            <?php foreach ($news as $row): ?>
-              <tr
-                data-id="<?php echo htmlspecialchars($row['id']); ?>"
-                data-title="<?php echo htmlspecialchars($row['title']); ?>"
-                data-tag="<?php echo htmlspecialchars($row['tag']); ?>"
-                data-date_display="<?php echo htmlspecialchars($row['date_display']); ?>"
-                data-short_text="<?php echo htmlspecialchars($row['short_text']); ?>"
-                data-full_text="<?php echo htmlspecialchars($row['full_text']); ?>"
-                data-order_index="<?php echo (int)$row['order_index']; ?>"
-                data-is_visible="<?php echo (int)$row['is_visible']; ?>"
-                data-author="<?php echo htmlspecialchars($row['author']); ?>"
-              >
-                <td>#<?php echo (int)$row['id']; ?></td>
-                <td class="title-cell"><?php echo htmlspecialchars($row['title']); ?></td>
-                <td><?php echo htmlspecialchars($row['tag']); ?></td>
-                <td><?php echo htmlspecialchars($row['date_display']); ?></td>
-                <td><?php echo htmlspecialchars($row['author']); ?></td>
-                <td><?php echo (int)$row['order_index']; ?></td>
-                <td><?php echo $row['is_visible'] ? 'Igen' : 'Nem'; ?></td>
-                <td>
-                  <button type="button" class="btn btn-sm btn-secondary btn-edit">Szerkesztés</button>
-                  <button type="button" class="btn btn-sm btn-danger btn-delete">Törlés</button>
-                </td>
-              </tr>
-            <?php endforeach; ?>
-          <?php endif; ?>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+      <section class="admin-section">
+        <?php if (empty($news)): ?>
+          <div class="admin-empty">
+            <p>Még nincs egyetlen hír sem.</p>
+            <button type="button" class="btn btn-primary" id="btn-add-news-empty">
+              + Hozd létre az első hírt
+            </button>
+          </div>
+        <?php else: ?>
+          <div class="admin-table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Sorrend</th>
+                  <th>Cím</th>
+                  <th>Tag</th>
+                  <th>Dátum</th>
+                  <th>Szerző</th>
+                  <th>Látható</th>
+                  <th>Műveletek</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($news as $row): ?>
+                  <tr
+                    data-id="<?php echo h($row['id']); ?>"
+                    data-title="<?php echo h($row['title']); ?>"
+                    data-tag="<?php echo h($row['tag']); ?>"
+                    data-date_display="<?php echo h($row['date_display']); ?>"
+                    data-short_text="<?php echo h($row['short_text']); ?>"
+                    data-full_text="<?php echo h($row['full_text']); ?>"
+                    data-order_index="<?php echo (int)$row['order_index']; ?>"
+                    data-is_visible="<?php echo (int)$row['is_visible']; ?>"
+                    data-author="<?php echo h($row['author']); ?>"
+                  >
+                    <td class="cell-order">
+                      <span class="order-value"><?php echo (int)$row['order_index']; ?></span>
+                    </td>
+                    <td class="cell-title">
+                      <div class="title-main"><?php echo h($row['title']); ?></div>
+                      <div class="title-sub"><?php echo h($row['short_text']); ?></div>
+                    </td>
+                    <td class="cell-tag">
+                      <?php
+                        $tag = $row['tag'] ? $row['tag'] : 'Info';
+                        $tagLower = mb_strtolower($tag, 'UTF-8');
+                        $tagClass = 'tag-pill';
+                        if (strpos($tagLower, 'event') !== false) {
+                            $tagClass .= ' tag-pill-event';
+                        } elseif (strpos($tagLower, 'info') !== false) {
+                            $tagClass .= ' tag-pill-info';
+                        }
+                      ?>
+                      <span class="<?php echo $tagClass; ?>">
+                        <?php echo h($tag); ?>
+                      </span>
+                    </td>
+                    <td class="cell-date">
+                      <?php echo h($row['date_display']); ?>
+                    </td>
+                    <td class="cell-author">
+                      <?php echo h($row['author']); ?>
+                    </td>
+                    <td class="cell-visible">
+                      <?php $visible = (int)$row['is_visible'] === 1; ?>
+                      <button
+                        type="button"
+                        class="visibility-toggle <?php echo $visible ? 'is-on' : 'is-off'; ?>"
+                        data-id="<?php echo (int)$row['id']; ?>"
+                        data-visible="<?php echo $visible ? '1' : '0'; ?>"
+                        aria-pressed="<?php echo $visible ? 'true' : 'false'; ?>"
+                        title="<?php echo $visible ? 'Látható – kattints az elrejtéshez' : 'Rejtett – kattints a megjelenítéshez'; ?>"
+                      >
+                        <span class="toggle-knob"></span>
+                      </button>
+                    </td>
+                    <td class="cell-actions">
+                      <button type="button" class="btn btn-sm btn-secondary btn-edit">Szerkesztés</button>
+                      <button type="button" class="btn btn-sm btn-danger btn-delete">Törlés</button>
+                    </td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php endif; ?>
+      </section>
+    </div>
+  </div>
 
-  <!-- HÍR SZERKESZTŐ MODAL -->
+  <!-- MODAL: HÍR LÉTREHOZÁSA / SZERKESZTÉSE -->
   <div class="modal" id="news-modal" aria-hidden="true">
     <div class="modal-backdrop"></div>
     <div class="modal-dialog" role="dialog" aria-modal="true">
@@ -226,12 +320,11 @@ $news = $stmt->fetchAll();
         <input type="hidden" name="id" id="news-id">
         <input type="hidden" name="action" value="save">
 
-        <div class="form-group">
-          <label for="news-title">Cím</label>
-          <input type="text" id="news-title" name="title" required>
-        </div>
-
         <div class="form-row">
+          <div class="form-group">
+            <label for="news-title">Cím</label>
+            <input type="text" id="news-title" name="title" required>
+          </div>
           <div class="form-group">
             <label for="news-tag">Tag</label>
             <select id="news-tag" name="tag">
@@ -268,23 +361,25 @@ $news = $stmt->fetchAll();
 
         <p class="form-meta">
           <span>Közzétette: <strong id="news-meta-author">Mentés után</strong></span>
-          <span style="margin-left: 1rem;">Dátum: <strong id="news-meta-date">Mentés után</strong></span>
+          <span class="meta-separator">·</span>
+          <span>Dátum: <strong id="news-meta-date">Mentés után</strong></span>
         </p>
 
         <div class="modal-actions">
-          <button type="button" class="btn btn-secondary" id="news-cancel">Mégse</button>
-          <button type="submit" class="btn btn-primary">Mentés</button>
+          <p class="form-error" id="news-error" hidden></p>
+          <div class="actions-right">
+            <button type="button" class="btn btn-secondary" id="news-cancel">Mégse</button>
+            <button type="submit" class="btn btn-primary">Mentés</button>
+          </div>
         </div>
 
-        <p class="form-error" id="news-error" hidden></p>
       </form>
     </div>
   </div>
 
   <script>
-    // átadjuk a bejelentkezett nevet JS-nek is, ha kellene később
     window.ETHERNIA_ADMIN_USER = <?php echo json_encode($currentUser); ?>;
   </script>
-  <script src="/admin/news.js"></script>
+  <script src="/admin/news.js?v=2"></script>
 </body>
 </html>

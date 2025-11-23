@@ -1,4 +1,4 @@
-// admin/news.js
+// /admin/news.js
 
 document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("news-modal");
@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const backdrop = modal ? modal.querySelector(".modal-backdrop") : null;
   const cancelBtn = document.getElementById("news-cancel");
   const addBtn = document.getElementById("btn-add-news");
+  const addBtnEmpty = document.getElementById("btn-add-news-empty");
   const modalTitle = document.getElementById("news-modal-title");
 
   const idInput = document.getElementById("news-id");
@@ -56,14 +57,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (metaDate) metaDate.textContent = tr.dataset.date_display || "-";
   }
 
-  // Új hír
-  if (addBtn) {
-    addBtn.addEventListener("click", () => {
-      resetForm();
-      if (modalTitle) modalTitle.textContent = "Új hír";
-      openModal();
-    });
+  // Új hír gomb(ok)
+  function handleNewClick() {
+    resetForm();
+    if (modalTitle) modalTitle.textContent = "Új hír";
+    openModal();
   }
+
+  if (addBtn) addBtn.addEventListener("click", handleNewClick);
+  if (addBtnEmpty) addBtnEmpty.addEventListener("click", handleNewClick);
 
   // Szerkesztés gombok
   document.querySelectorAll(".btn-edit").forEach((btn) => {
@@ -112,6 +114,50 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Láthatóság toggle
+  document.querySelectorAll(".visibility-toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      const current = btn.dataset.visible === "1";
+      const next = current ? 0 : 1;
+
+      const formData = new FormData();
+      formData.append("action", "toggle_visible");
+      formData.append("id", id);
+      formData.append("is_visible", String(next));
+
+      fetch("news.php", {
+        method: "POST",
+        body: formData,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.ok) {
+            alert(data.error || "Hiba a láthatóság állításakor.");
+            return;
+          }
+          // UI frissítés
+          btn.dataset.visible = String(next);
+          btn.setAttribute("aria-pressed", next ? "true" : "false");
+          btn.classList.toggle("is-on", !!next);
+          btn.classList.toggle("is-off", !next);
+          btn.title = next
+            ? "Látható – kattints az elrejtéshez"
+            : "Rejtett – kattints a megjelenítéshez";
+
+          // sor data attribútum is frissüljön
+          const tr = btn.closest("tr");
+          if (tr) {
+            tr.dataset.is_visible = String(next);
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Hálózati hiba történt a láthatóság állításakor.");
+        });
+    });
+  });
+
   // Modal bezárása
   [closeBtn, backdrop, cancelBtn].forEach((el) => {
     if (el) {
@@ -128,12 +174,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Mentés
+  // Mentor: Mentés
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      if (!form) return;
-
       if (errorEl) {
         errorEl.hidden = true;
         errorEl.textContent = "";
@@ -158,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
           }
 
-          // egyszerű megoldás: frissítjük az oldalt, hogy a lista is frissüljön
+          // egyszerűen frissítjük az oldalt, hogy minden adat frissüljön
           window.location.reload();
         })
         .catch((err) => {
