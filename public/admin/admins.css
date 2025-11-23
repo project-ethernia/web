@@ -1,0 +1,76 @@
+/* /admin/admins.css */
+
+/* Használd ki a már létező admin stílust */
+@import url('/admin/news.css?v=2');
+
+/* plusz dolgok kifejezetten az admin-listához */
+
+.cell-id {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.cell-username {
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.self-pill {
+  font-size: 0.7rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.22);
+  color: #bfdbfe;
+}
+
+/* szerep badge-ek */
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: rgba(55, 65, 81, 0.9);
+  text-transform: lowercase;
+}
+
+.role-owner {
+  background: rgba(251, 191, 36, 0.2);
+  color: #facc15;
+}
+
+.role-admin {
+  background: rgba(168, 85, 247, 0.25);
+  color: #e9d5ff;
+}
+
+.role-mod {
+  background: rgba(52, 211, 153, 0.25);
+  color: #a7f3d0;
+}
+
+.cell-active {
+  text-align: center;
+}
+
+.cell-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* modal finomítás adminhoz */
+
+#admin-modal .modal-content h2 {
+  margin-bottom: 0.75rem;
+}
+
+.form-hint {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
