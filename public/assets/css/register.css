@@ -87,7 +87,7 @@ body.public-body {
   letter-spacing: 0.04em;
   margin: 0 0 12px;
   text-transform: uppercase;
-  color: #b902ce
+  color: #f9fafb
 }
 
 .auth-title-center {
@@ -217,8 +217,6 @@ body.public-body {
   box-shadow: none;
 }
 
-/* Lábjegyzet */
-
 .auth-footnote {
   margin-top: 18px;
   font-size: 0.85rem;
@@ -236,8 +234,6 @@ body.public-body {
   text-decoration: underline;
 }
 
-/* Password strength / helper (ha később szeretnél ilyet) */
-
 .password-meta {
   display: flex;
   justify-content: space-between;
@@ -245,8 +241,6 @@ body.public-body {
   color: var(--text-muted);
   margin-top: 2px;
 }
-
-/* Mobil finomhangolás */
 
 @media (max-width: 480px) {
   .auth-card {
