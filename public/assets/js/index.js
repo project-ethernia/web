@@ -33,7 +33,7 @@ async function updateMinecraftStats() {
     maxEl.textContent =
       data && data.players && typeof data.players.max === "number"
         ? data.players.max
-        : 500;
+        : "?";
   } catch (e) {
     console.error("MC stat hiba:", e);
     onlineEl.textContent = "N/A";
@@ -67,21 +67,45 @@ async function updateDiscordStats() {
 
 function initNewsSlider() {
   const track = document.getElementById("news-track");
-  const prev = document.getElementById("news-prev");
-  const next = document.getElementById("news-next");
-  if (!track || !prev || !next) return;
+  const prevBtn = document.getElementById("news-prev");
+  const nextBtn = document.getElementById("news-next");
+  if (!track || !prevBtn || !nextBtn) return;
 
-  function step() {
-    return track.clientWidth * 0.8;
+  const cards = Array.from(track.querySelectorAll(".news-card"));
+  if (!cards.length) return;
+
+  const gap = 16;
+  let index = 0;
+
+  function cardWidth() {
+    const first = cards[0];
+    const rect = first.getBoundingClientRect();
+    return rect.width + gap;
   }
 
-  prev.addEventListener("click", () => {
-    track.scrollBy({ left: -step(), behavior: "smooth" });
+  function update() {
+    const w = cardWidth();
+    const maxIndex = Math.max(0, cards.length - Math.floor(track.parentElement.offsetWidth / w));
+    if (index < 0) index = 0;
+    if (index > maxIndex) index = maxIndex;
+    track.style.transform = `translateX(${-index * w}px)`;
+  }
+
+  prevBtn.addEventListener("click", () => {
+    index -= 1;
+    update();
   });
 
-  next.addEventListener("click", () => {
-    track.scrollBy({ left: step(), behavior: "smooth" });
+  nextBtn.addEventListener("click", () => {
+    index += 1;
+    update();
   });
+
+  window.addEventListener("resize", () => {
+    update();
+  });
+
+  update();
 }
 
 function initNewsModal() {
@@ -96,22 +120,22 @@ function initNewsModal() {
   function openFromCard(card) {
     if (!card || !contentInner) return;
 
-    const tagEl = card.querySelector(".news-tag-pill");
-    const dateEl = card.querySelector(".news-card-date");
-    const titleEl = card.querySelector(".news-card-title");
-    const textAttr = card.getAttribute("data-full") || "";
-    const bodyEl = card.querySelector(".news-card-body");
+    const tagEl = card.querySelector(".news-tag");
+    const dateEl = card.querySelector(".news-date");
+    const titleEl = card.querySelector(".news-headline");
+    const shortEl = card.querySelector(".news-text");
 
     const tag = tagEl ? tagEl.textContent : "";
     const date = dateEl ? dateEl.textContent : "";
     const title = titleEl ? titleEl.textContent : "";
-    const fallbackText = bodyEl ? bodyEl.textContent : "";
-    const text = textAttr || fallbackText;
+    const textAttr = card.getAttribute("data-full") || "";
+    const shortText = shortEl ? shortEl.textContent : "";
+    const text = textAttr || shortText;
 
     contentInner.innerHTML = `
-      <div class="news-card-top">
-        <span class="news-tag-pill">${tag}</span>
-        <span class="news-card-date">${date}</span>
+      <div class="news-meta">
+        <span class="news-tag">${tag}</span>
+        <span class="news-date">${date}</span>
       </div>
       <h3 class="news-modal-title">${title}</h3>
       <p class="news-modal-text">${text}</p>
@@ -135,6 +159,7 @@ function initNewsModal() {
   if (closeBtn) {
     closeBtn.addEventListener("click", closeModal);
   }
+
   if (backdrop) {
     backdrop.addEventListener("click", closeModal);
   }
