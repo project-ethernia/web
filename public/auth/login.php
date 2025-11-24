@@ -5,6 +5,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// Ha már be van lépve, mehet a főoldalra
 if (!empty($_SESSION['is_user']) && $_SESSION['is_user'] === true) {
     header('Location: /');
     exit;
@@ -12,7 +13,7 @@ if (!empty($_SESSION['is_user']) && $_SESSION['is_user'] === true) {
 
 require_once __DIR__ . '/../database.php';
 
-$error = '';
+$error        = '';
 $old_username = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -20,31 +21,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password     = $_POST['password'] ?? '';
 
     if ($old_username === '' || $password === '') {
-        $error = 'Adj meg felhasználónevet vagy e-mail címet, és jelszót.';
+        $error = 'Adj meg felhasználónevet és jelszót.';
     } else {
         try {
             $pdo = get_pdo();
 
+            // CSAK felhasználónév alapján keresünk, NEM e-maillel
             $stmt = $pdo->prepare("
                 SELECT id, username, email, password_hash
                 FROM web_users
-                WHERE username = :u OR email = :e
+                WHERE username = :u
                 LIMIT 1
             ");
             $stmt->execute([
                 ':u' => $old_username,
-                ':e' => $old_username,
             ]);
+
             $user = $stmt->fetch();
 
             if (!$user || !password_verify($password, $user['password_hash'])) {
-                $error = 'Hibás adatok – ellenőrizd a felhasználónevet / e-mail címet és a jelszót.';
+                $error = 'Hibás felhasználónév vagy jelszó.';
             } else {
+                // sikeres login
                 $_SESSION['user_id']       = (int)$user['id'];
                 $_SESSION['user_username'] = $user['username'];
                 $_SESSION['user_email']    = $user['email'];
                 $_SESSION['is_user']       = true;
 
+                // last_login + last_ip frissítés
                 $ip = $_SERVER['REMOTE_ADDR'] ?? null;
 
                 $upd = $pdo->prepare("
@@ -94,7 +98,7 @@ function h($str) {
 
       <form method="POST" action="/auth/login.php" class="auth-form" id="login-form">
         <div class="form-group">
-          <label for="username">Felhasználónév vagy e-mail cím</label>
+          <label for="username">Felhasználónév</label>
           <input
             type="text"
             id="username"
