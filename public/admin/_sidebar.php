@@ -62,7 +62,7 @@ function admin_nav_item_class($page, $activePage) {
     <a href="/admin/players.php" class="<?php echo admin_nav_item_class('players', $activePage); ?>">
       <span class="nav-icon">👥</span>
       <span class="nav-label">Játékosok</span>
-      <span class="nav-pill">Beta</span>
+      <span class="nav-pill">BETA</span>
     </a>
 
     <div class="nav-separator"></div>

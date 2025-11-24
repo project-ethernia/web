@@ -16,53 +16,43 @@ $currentUserId   = isset($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0
 $currentUsername = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
 $currentRole     = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'admin';
 
-/* --- DB beállítások (ugyanaz, mint máshol) --- */
-$DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
-$DB_USER = 'ethernia';
-$DB_PASS = 'LrKqjfTKc3Q5H6e1Ohuo';
-
-function get_pdo_admin() {
-    static $pdo = null;
-    global $DB_DSN, $DB_USER, $DB_PASS;
-
-    if ($pdo === null) {
-        $pdo = new PDO(
-            $DB_DSN,
-            $DB_USER,
-            $DB_PASS,
-            array(
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            )
-        );
-    }
-    return $pdo;
-}
+/* --- KÖZPONTI DB KAPCSOLAT BEHÚZÁSA --- */
+/* database.php a public rootban van, ezért egy szinttel feljebb lépünk */
+require_once __DIR__ . '/../database.php'; // itt jön létre a $pdo
 
 /* --- kis statok a dashboardra --- */
 
-$newsStats    = ['total' => 0, 'visible' => 0];
-$adminStats   = ['total' => 0, 'active' => 0];
-$selfInfo     = ['created_at' => null, 'last_login' => null];
-$recentLogs   = [];
+$newsStats  = ['total' => 0, 'visible' => 0];
+$adminStats = ['total' => 0, 'active' => 0];
+$selfInfo   = ['created_at' => null, 'last_login' => null, 'role' => $currentRole];
+$recentLogs = [];
 
 try {
-    $pdo = get_pdo_admin();
+    // $pdo a database.php-ből jön
 
+    // Hírek stat
     $stmt = $pdo->query("
         SELECT COUNT(*) AS total,
                SUM(CASE WHEN is_visible = 1 THEN 1 ELSE 0 END) AS visible
         FROM news
     ");
-    $newsStats = $stmt->fetch() ?: $newsStats;
+    $row = $stmt->fetch();
+    if ($row) {
+        $newsStats = $row;
+    }
 
+    // Admin stat
     $stmt = $pdo->query("
         SELECT COUNT(*) AS total,
                SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) AS active
         FROM admin_users
     ");
-    $adminStats = $stmt->fetch() ?: $adminStats;
+    $row = $stmt->fetch();
+    if ($row) {
+        $adminStats = $row;
+    }
 
+    // Saját fiók info
     if ($currentUserId > 0) {
         $stmt = $pdo->prepare("
             SELECT created_at, last_login, role
@@ -77,8 +67,9 @@ try {
         }
     }
 
+    // Legutóbbi napló bejegyzések
     $stmt = $pdo->query("
-        SELECT 
+        SELECT
             created_at,
             COALESCE(username, 'Ismeretlen') AS username,
             action,
@@ -89,7 +80,9 @@ try {
     ");
     $recentLogs = $stmt->fetchAll();
 
-} catch (Exception $e) {}
+} catch (Exception $e) {
+    // Ha valami elhasal, a dashboard akkor is betölt, csak statok nélkül
+}
 
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
@@ -162,19 +155,19 @@ function h($str) {
             <div class="dash-card-header">
               <h2>Te fiókod</h2>
               <span class="dash-pill dash-pill-role">
-                <?php echo strtoupper(h($currentRole)); ?>
+                <?php echo strtoupper(h($selfInfo['role'] ?? $currentRole)); ?>
               </span>
             </div>
             <p class="dash-muted">
               Létrehozva:<br>
               <strong>
-                <?php echo $selfInfo['created_at'] ? h($selfInfo['created_at']) : 'ismeretlen'; ?>
+                <?php echo !empty($selfInfo['created_at']) ? h($selfInfo['created_at']) : 'ismeretlen'; ?>
               </strong>
             </p>
             <p class="dash-muted">
               Utolsó belépés:<br>
               <strong>
-                <?php echo $selfInfo['last_login'] ? h($selfInfo['last_login']) : 'még nincs adat'; ?>
+                <?php echo !empty($selfInfo['last_login']) ? h($selfInfo['last_login']) : 'még nincs adat'; ?>
               </strong>
             </p>
             <p class="dash-tip">

@@ -21,27 +21,12 @@ if (!in_array($role, ['owner', 'admin'], true)) {
 
 $currentUsername = !empty($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
 
-/* --- DB --- */
-$DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
-$DB_USER = 'ethernia';
-$DB_PASS = 'LrKqjfTKc3Q5H6e1Ohuo';
+/* --- KÖZPONTI DB KAPCSOLAT BEHÚZÁSA --- */
+/* database.php a public rootban van, ezért egy szinttel feljebb lépünk */
+require_once __DIR__ . '/../database.php'; // itt jön létre a $pdo
 
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
-}
-
-try {
-    $pdo = new PDO(
-        $DB_DSN,
-        $DB_USER,
-        $DB_PASS,
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]
-    );
-} catch (Exception $e) {
-    die('Adatbázis hiba: ' . $e->getMessage());
 }
 
 /* --- Szűrés: q = kereső (admin név / akció) --- */
@@ -67,7 +52,7 @@ $logs = $stmt->fetchAll();
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>ETHERNIA Admin - Adminok kezelése</title>
+  <title>ETHERNIA Admin - Műveletnapló</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/admin/assets/css/logs.css?v=<?= time(); ?>">
 </head>

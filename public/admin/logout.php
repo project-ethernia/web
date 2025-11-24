@@ -53,6 +53,5 @@ if (ini_get('session.use_cookies')) {
 
 session_destroy();
 
-// vissza a login oldalra
 header('Location: /admin/login.php');
 exit;

@@ -19,22 +19,9 @@ if (!empty($_SESSION['admin_username'])) {
     $currentUser = $_SESSION['username'];
 }
 
-/* --- DB BEÁLLÍTÁSOK --- */
-$DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
-$DB_USER = 'ethernia';
-$DB_PASS = 'LrKqjfTKc3Q5H6e1Ohuo';
-
-function get_pdo() {
-    static $pdo = null;
-    global $DB_DSN, $DB_USER, $DB_PASS;
-    if ($pdo === null) {
-        $pdo = new PDO($DB_DSN, $DB_USER, $DB_PASS, array(
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ));
-    }
-    return $pdo;
-}
+/* --- KÖZPONTI DB KAPCSOLAT BEHÚZÁSA --- */
+/* database.php a public rootban van, ezért egy szinttel feljebb lépünk */
+require_once __DIR__ . '/../database.php'; // itt jön létre a $pdo
 
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
@@ -48,7 +35,8 @@ require_once __DIR__ . '/log.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
 
-    $pdo    = get_pdo();
+    // $pdo a database.php-ből érkezik
+    $pdo    = $pdo ?? null;
     $action = isset($_POST['action']) ? $_POST['action'] : '';
 
     // logoláshoz aktuális admin ID + név
@@ -86,12 +74,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // LÉTEZŐ HÍR: dátum + szerző nem változik
                 $stmt = $pdo->prepare("
                     UPDATE news
-                    SET title = :title,
-                        tag = :tag,
-                        short_text = :short_text,
-                        full_text = :full_text,
+                    SET title       = :title,
+                        tag         = :tag,
+                        short_text  = :short_text,
+                        full_text   = :full_text,
                         order_index = :order_index,
-                        is_visible = :is_visible
+                        is_visible  = :is_visible
                     WHERE id = :id
                 ");
                 $stmt->bindValue(':id', $id, PDO::PARAM_INT);
@@ -116,10 +104,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $adminName,
                         "Új hír létrehozása: '{$title}'",
                         [
-                            'news_id'    => $id,
-                            'tag'        => $tag,
-                            'visible'    => $is_visible,
-                            'order_idx'  => $order_index,
+                            'news_id'   => $id,
+                            'tag'       => $tag,
+                            'visible'   => $is_visible,
+                            'order_idx' => $order_index,
                         ]
                     );
                 } catch (Throwable $e) {
@@ -134,10 +122,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $adminName,
                         "Hír módosítása: '{$title}'",
                         [
-                            'news_id'    => $id,
-                            'tag'        => $tag,
-                            'visible'    => $is_visible,
-                            'order_idx'  => $order_index,
+                            'news_id'   => $id,
+                            'tag'       => $tag,
+                            'visible'   => $is_visible,
+                            'order_idx' => $order_index,
                         ]
                     );
                 } catch (Throwable $e) {
@@ -145,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            echo json_encode(array('ok' => true, 'id' => $id));
+            echo json_encode(['ok' => true, 'id' => $id]);
             exit;
         }
 
@@ -164,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $stmt = $pdo->prepare("DELETE FROM news WHERE id = :id");
-            $stmt->execute(array(':id' => $id));
+            $stmt->execute([':id' => $id]);
 
             // LOG: törlés
             try {
@@ -179,7 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // log hiba ignorálva
             }
 
-            echo json_encode(array('ok' => true));
+            echo json_encode(['ok' => true]);
             exit;
         }
 
@@ -200,10 +188,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $stmt = $pdo->prepare("UPDATE news SET is_visible = :is_visible WHERE id = :id");
-            $stmt->execute(array(
+            $stmt->execute([
                 ':is_visible' => $isVisible,
                 ':id'         => $id
-            ));
+            ]);
 
             $stateText = $isVisible ? 'látható' : 'rejtett';
 
@@ -215,31 +203,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $adminName,
                     "Hír láthatóság módosítása: " . ($titleForLog ? "'{$titleForLog}'" : "ID={$id}") . " → {$stateText}",
                     [
-                        'news_id'  => $id,
-                        'visible'  => $isVisible,
-                        'state'    => $stateText,
+                        'news_id' => $id,
+                        'visible' => $isVisible,
+                        'state'   => $stateText,
                     ]
                 );
             } catch (Throwable $e) {
                 // log hiba ignorálva
             }
 
-            echo json_encode(array('ok' => true, 'id' => $id, 'is_visible' => $isVisible));
+            echo json_encode(['ok' => true, 'id' => $id, 'is_visible' => $isVisible]);
             exit;
         }
 
         throw new Exception('Ismeretlen művelet.');
     } catch (Exception $e) {
         http_response_code(400);
-        echo json_encode(array('ok' => false, 'error' => $e->getMessage()));
+        echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
         exit;
     }
 }
 
 /* ---------------- GET: LISTA / ADMIN FELÜLET ---------------- */
 
-$pdo = get_pdo();
-
+// Itt is a database.php-ből kapott $pdo-t használjuk
 $stmt = $pdo->query("SELECT * FROM news ORDER BY order_index ASC, created_at DESC");
 $news = $stmt->fetchAll();
 

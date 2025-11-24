@@ -7,25 +7,12 @@ if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
     exit;
 }
 
-/* --- DB BEÁLLÍTÁSOK: ÁLLÍTSD BE SAJÁT ADATOKRA --- */
-$DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
-$DB_USER = 'ethernia';
-$DB_PASS = 'LrKqjfTKc3Q5H6e1Ohuo';
+/* --- KÖZPONTI DB KAPCSOLAT BEHÚZÁSA --- */
+/* database.php a public rootban van, ezért egy szinttel feljebb lépünk */
+require_once __DIR__ . '/../database.php'; // itt jön létre a $pdo
 
 /* --- LOG FUNKCIÓ BEHÚZÁSA --- */
 require_once __DIR__ . '/log.php';
-
-function get_pdo() {
-    static $pdo = null;
-    global $DB_DSN, $DB_USER, $DB_PASS;
-    if ($pdo === null) {
-        $pdo = new PDO($DB_DSN, $DB_USER, $DB_PASS, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]);
-    }
-    return $pdo;
-}
 
 $error = '';
 
@@ -37,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Adj meg felhasználónevet és jelszót.';
     } else {
         try {
-            $pdo = get_pdo();
+            // $pdo a database.php-ből jön
             $stmt = $pdo->prepare("SELECT * FROM admin_users WHERE username = :u AND is_active = 1 LIMIT 1");
             $stmt->execute([':u' => $username]);
             $user = $stmt->fetch();
