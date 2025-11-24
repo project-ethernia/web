@@ -1,18 +1,15 @@
 <?php
 session_start();
 
-/* --- HIBÁK FEJLESZTÉS KÖZBEN (élesben majd kikapcsolhatod) --- */
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-/* --- KÖZPONTI DB KAPCSOLAT --- */
-require_once __DIR__ . '/database.php'; // itt jön létre a $pdo
+require_once __DIR__ . '/../database.php';
 
 $errors  = [];
 $success = false;
 
-// régi értékek visszatöltéshez
 $old_username = '';
 $old_email    = '';
 
@@ -22,23 +19,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password     = $_POST['password'] ?? '';
     $password2    = $_POST['password_confirm'] ?? '';
 
-    // --- VALIDÁCIÓK ---
 
-    // felhasználónév
     if ($old_username === '') {
         $errors[] = 'A felhasználónév megadása kötelező.';
     } elseif (mb_strlen($old_username, 'UTF-8') < 3 || mb_strlen($old_username, 'UTF-8') > 32) {
         $errors[] = 'A felhasználónév 3–32 karakter hosszú legyen.';
     }
 
-    // email
     if ($old_email === '') {
         $errors[] = 'Az e-mail cím megadása kötelező.';
     } elseif (!filter_var($old_email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Érvényes e-mail címet adj meg.';
     }
 
-    // jelszó
     if ($password === '' || $password2 === '') {
         $errors[] = 'A jelszó és a jelszó megerősítése is kötelező.';
     } elseif ($password !== $password2) {
