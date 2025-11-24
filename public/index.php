@@ -24,6 +24,7 @@ $stmt = $pdo->query("
     ORDER BY order_index ASC, created_at DESC
 ");
 $news = $stmt->fetchAll();
+$visibleNews = array_slice($news, 0, 5);
 
 $isLoggedIn = !empty($_SESSION['is_user']) && $_SESSION['is_user'] === true;
 $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['user_username'] : null;
@@ -106,60 +107,51 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
             </p>
         </header>
 
-        <?php if (!empty($news)): ?>
-            <div class="news-slider">
-                <button type="button" class="news-nav-btn news-nav-prev" aria-label="Előző hírek">
-                    <span>&lt;</span>
-                </button>
+        <?php if (!empty($visibleNews)): ?>
+            <div class="news-list">
+                <?php foreach ($visibleNews as $row): ?>
+                    <?php
+                    $tag = $row['tag'] ?: 'Info';
+                    $tagLower = mb_strtolower($tag, 'UTF-8');
+                    $tagClass = 'news-tag-pill';
+                    if (strpos($tagLower, 'event') !== false) {
+                        $tagClass .= ' news-tag-event';
+                    } elseif (strpos($tagLower, 'info') !== false) {
+                        $tagClass .= ' news-tag-info';
+                    } elseif (strpos($tagLower, 'teszt') !== false || strpos($tagLower, 'test') !== false) {
+                        $tagClass .= ' news-tag-test';
+                    }
 
-                <div class="news-track" id="news-track">
-                    <?php foreach ($news as $row): ?>
-                        <?php
-                        $tag = $row['tag'] ?: 'Info';
-                        $tagLower = mb_strtolower($tag, 'UTF-8');
-                        $tagClass = 'news-tag-pill';
-                        if (strpos($tagLower, 'event') !== false) {
-                            $tagClass .= ' news-tag-event';
-                        } elseif (strpos($tagLower, 'info') !== false) {
-                            $tagClass .= ' news-tag-info';
-                        } elseif (strpos($tagLower, 'teszt') !== false || strpos($tagLower, 'test') !== false) {
-                            $tagClass .= ' news-tag-test';
-                        }
-
-                        $dateDisplay = $row['date_display'] ?: '';
-                        $shortText = $row['short_text'] ?: '';
-                        $fullText = $row['full_text'] ?: '';
-                        $author = $row['author'] ?: 'Ismeretlen';
-                        ?>
-                        <article
-                            class="news-card"
-                            data-full="<?= h($fullText !== '' ? $fullText : $shortText); ?>"
-                        >
-                            <div class="news-card-inner">
-                                <div class="news-card-header">
-                                    <span class="<?= $tagClass; ?>"><?= h($tag); ?></span>
-                                    <span class="news-card-date"><?= h($dateDisplay); ?></span>
-                                </div>
-
-                                <div class="news-card-body">
-                                    <h3 class="news-card-title"><?= h($row['title']); ?></h3>
-                                    <p class="news-card-short"><?= h($shortText); ?></p>
-                                </div>
-
-                                <div class="news-card-footer">
-                                    <span class="news-card-author">
-                                        Közzétette: <strong><?= h($author); ?></strong>
-                                    </span>
-                                    <button type="button" class="news-readmore">Részletek</button>
-                                </div>
+                    $dateDisplay = $row['date_display'] ?: '';
+                    $shortText = $row['short_text'] ?: '';
+                    $fullText = $row['full_text'] ?: '';
+                    $author = $row['author'] ?: 'Ismeretlen';
+                    $fullForModal = $fullText !== '' ? $fullText : $shortText;
+                    ?>
+                    <article
+                        class="news-card"
+                        data-full="<?= h($fullForModal); ?>"
+                    >
+                        <div class="news-card-inner">
+                            <div class="news-card-header">
+                                <span class="<?= $tagClass; ?>"><?= h($tag); ?></span>
+                                <span class="news-card-date"><?= h($dateDisplay); ?></span>
                             </div>
-                        </article>
-                    <?php endforeach; ?>
-                </div>
 
-                <button type="button" class="news-nav-btn news-nav-next" aria-label="Következő hírek">
-                    <span>&gt;</span>
-                </button>
+                            <div class="news-card-body">
+                                <h3 class="news-card-title"><?= h($row['title']); ?></h3>
+                                <p class="news-card-short"><?= h($shortText); ?></p>
+                            </div>
+
+                            <div class="news-card-footer">
+                                <span class="news-card-author">
+                                    Közzétette: <strong><?= h($author); ?></strong>
+                                </span>
+                                <button type="button" class="news-readmore">Részletek</button>
+                            </div>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
             </div>
         <?php else: ?>
             <p class="news-empty">Jelenleg nincs megjeleníthető hír.</p>

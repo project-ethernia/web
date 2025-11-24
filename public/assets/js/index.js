@@ -3,11 +3,12 @@ const DISCORD_GUILD_ID = "1322224781000577046";
 
 document.addEventListener("DOMContentLoaded", () => {
   const yearEl = document.getElementById("year");
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
+  if (yearEl) {
+    yearEl.textContent = new Date().getFullYear();
+  }
 
   updateMinecraftStats();
   updateDiscordStats();
-  initNewsSlider();
   initNewsModal();
 });
 
@@ -17,8 +18,11 @@ async function updateMinecraftStats() {
   if (!onlineEl || !maxEl) return;
 
   try {
-    const res = await fetch(`https://api.mcsrvstat.us/2/${MC_SERVER}`, { cache: "no-store" });
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    const res = await fetch(`https://api.mcsrvstat.us/2/${MC_SERVER}`, {
+      cache: "no-store"
+    });
+
+    if (!res.ok) throw new Error("HTTP error: " + res.status);
     const data = await res.json();
 
     onlineEl.textContent =
@@ -42,11 +46,11 @@ async function updateDiscordStats() {
   if (!onlineEl) return;
 
   try {
-    const res = await fetch(
-      `https://discord.com/api/guilds/${DISCORD_GUILD_ID}/widget.json`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    const url = `https://discord.com/api/guilds/${DISCORD_GUILD_ID}/widget.json`;
+    const res = await fetch(url, { cache: "no-store" });
+
+    if (!res.ok) throw new Error("HTTP error: " + res.status);
+
     const data = await res.json();
 
     const count =
@@ -63,61 +67,6 @@ async function updateDiscordStats() {
   }
 }
 
-function initNewsSlider() {
-  const track = document.getElementById("news-track");
-  const prevBtn = document.querySelector(".news-nav-prev");
-  const nextBtn = document.querySelector(".news-nav-next");
-  if (!track || !prevBtn || !nextBtn) return;
-
-  const cards = Array.from(track.querySelectorAll(".news-card"));
-  if (!cards.length) return;
-
-  let index = 0;
-  const visibleDesktop = 4;
-  const visibleMobile = 1;
-  const gapPx = 16;
-
-  function visibleCount() {
-    return window.innerWidth <= 900 ? visibleMobile : visibleDesktop;
-  }
-
-  function cardWidth() {
-    const first = cards[0];
-    const rect = first.getBoundingClientRect();
-    return rect.width;
-  }
-
-  function clampIndex() {
-    const maxIndex = Math.max(0, cards.length - visibleCount());
-    if (index < 0) index = 0;
-    if (index > maxIndex) index = maxIndex;
-  }
-
-  function update() {
-    clampIndex();
-    const w = cardWidth() + gapPx;
-    const offset = -(index * w);
-    track.style.transform = `translateX(${offset}px)`;
-  }
-
-  prevBtn.addEventListener("click", () => {
-    index -= visibleCount();
-    update();
-  });
-
-  nextBtn.addEventListener("click", () => {
-    index += visibleCount();
-    update();
-  });
-
-  window.addEventListener("resize", () => {
-    update();
-  });
-
-  track.style.transition = "transform 0.3s ease";
-  update();
-}
-
 function initNewsModal() {
   const modal = document.getElementById("news-modal");
   if (!modal) return;
@@ -125,7 +74,7 @@ function initNewsModal() {
   const contentInner = modal.querySelector(".news-modal-content-inner");
   const closeBtn = modal.querySelector(".news-modal-close");
   const backdrop = modal.querySelector(".news-modal-backdrop");
-  const buttons = document.querySelectorAll(".news-readmore");
+  const readMoreButtons = document.querySelectorAll(".news-readmore");
 
   function openFromCard(card) {
     if (!card || !contentInner) return;
@@ -133,19 +82,22 @@ function initNewsModal() {
     const tagEl = card.querySelector(".news-tag-pill");
     const dateEl = card.querySelector(".news-card-date");
     const titleEl = card.querySelector(".news-card-title");
+    const shortEl = card.querySelector(".news-card-short");
 
     const tag = tagEl ? tagEl.textContent : "";
     const date = dateEl ? dateEl.textContent : "";
     const title = titleEl ? titleEl.textContent : "";
-    const text = card.getAttribute("data-full") || "";
+    const textAttr = card.getAttribute("data-full") || "";
+    const shortText = shortEl ? shortEl.textContent : "";
+    const text = textAttr || shortText;
 
     contentInner.innerHTML = `
-      <div class="news-card-header">
+      <div class="news-meta">
         <span class="news-tag-pill">${tag}</span>
         <span class="news-card-date">${date}</span>
       </div>
-      <h3 class="news-card-title">${title}</h3>
-      <p class="news-card-short">${text}</p>
+      <h3 class="news-modal-title">${title}</h3>
+      <p class="news-modal-text">${text}</p>
     `;
 
     modal.classList.add("open");
@@ -155,18 +107,24 @@ function initNewsModal() {
     modal.classList.remove("open");
   }
 
-  buttons.forEach(btn => {
-    btn.addEventListener("click", e => {
+  readMoreButtons.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
       e.stopPropagation();
       const card = btn.closest(".news-card");
       openFromCard(card);
     });
   });
 
-  if (closeBtn) closeBtn.addEventListener("click", closeModal);
-  if (backdrop) backdrop.addEventListener("click", closeModal);
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeModal);
+  }
+  if (backdrop) {
+    backdrop.addEventListener("click", closeModal);
+  }
 
-  document.addEventListener("keydown", e => {
-    if (e.key === "Escape") closeModal();
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeModal();
+    }
   });
 }
