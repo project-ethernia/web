@@ -1,654 +1,192 @@
-/* RESET */
-* {
+/* login.css – kinézet egységes a regisztrációval */
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+html,
+body {
   margin: 0;
   padding: 0;
 }
 
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(168, 85, 247, 0.35) 0, transparent 55%),
-    radial-gradient(circle at bottom, rgba(59, 130, 246, 0.2) 0, transparent 55%),
-    linear-gradient(160deg, #020014 0%, #020010 50%, #020008 100%);
-  color: #f9fafb;
-  line-height: 1.5;
+body.auth-body {
   min-height: 100vh;
-
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #312e81 0, transparent 55%),
+              radial-gradient(circle at bottom, #1f2937 0, transparent 55%),
+              #020013;
+  color: #f9fafb;
   display: flex;
-  flex-direction: column;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* ---------- FELSŐ HÍR SÁV (COVERFLOW SLIDER) ---------- */
-
-.news-header {
-  padding: 3.5rem 2.5rem 1.5rem;
-}
-
-.news-header-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.news-title {
-  font-size: 1.05rem;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  opacity: 0.95;
-  margin-bottom: 0.9rem;
-}
-
-/* slider keret */
-.news-strip {
-  position: relative;
-  height: 210px; /* kb. kártya magasság */
-  overflow: visible;
-}
-
-/* belső wrapper – a kártyák abszolútban lesznek */
-.news-strip-inner {
-  position: absolute;
-  inset: 0;
-}
-
-/* alap kártya – középről indul, aztán pos class mozgatja el */
-.news-card {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 260px;
-
-  border-radius: 1rem;
-  padding: 0.95rem 1rem 1.1rem;
-  border: 1px solid rgba(55, 65, 81, 0.9);
-  background:
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.18) 0, transparent 60%),
-    rgba(15, 23, 42, 0.96);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.55);
-
-  opacity: 0;
-  transform: translateX(-50%) scale(0.85);
-  pointer-events: none;
-  transition:
-    transform 0.3s ease,
-    opacity 0.3s ease,
-    box-shadow 0.3s ease,
-    border-color 0.3s ease;
-  cursor: pointer;
-  z-index: 1;
-}
-
-/* középső, aktív */
-.news-card.pos0 {
-  opacity: 1;
-  transform: translateX(-50%) scale(1.08);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.9);
-  border-color: rgba(168, 85, 247, 0.9);
-  pointer-events: auto;
-  z-index: 5;
-}
-
-/* balra 1 */
-.news-card.pos-1 {
-  opacity: 0.8;
-  transform: translateX(calc(-50% - 190px)) scale(0.95);
-  pointer-events: auto;
-  z-index: 3;
-}
-
-/* balra 2 */
-.news-card.pos-2 {
-  opacity: 0.5;
-  transform: translateX(calc(-50% - 360px)) scale(0.9);
-  pointer-events: auto;
-  z-index: 2;
-}
-
-/* jobbra 1 */
-.news-card.pos1 {
-  opacity: 0.8;
-  transform: translateX(calc(-50% + 190px)) scale(0.95);
-  pointer-events: auto;
-  z-index: 3;
-}
-
-/* jobbra 2 */
-.news-card.pos2 {
-  opacity: 0.5;
-  transform: translateX(calc(-50% + 360px)) scale(0.9);
-  pointer-events: auto;
-  z-index: 2;
-}
-
-/* minden más (túl távol): ne látszódjon */
-.news-card.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.news-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.4rem;
-  font-size: 0.75rem;
-  opacity: 0.85;
-}
-
-.news-tag {
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  background: rgba(168, 85, 247, 0.18);
-  border: 1px solid rgba(168, 85, 247, 0.6);
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.news-tag-event {
-  background: rgba(96, 165, 250, 0.18);
-  border-color: rgba(96, 165, 250, 0.7);
-}
-
-.news-tag-info {
-  background: rgba(52, 211, 153, 0.18);
-  border-color: rgba(52, 211, 153, 0.7);
-}
-
-.news-date {
-  opacity: 0.8;
-}
-
-.news-headline {
-  font-size: 0.98rem;
-  font-weight: 600;
-  margin-bottom: 0.3rem;
-}
-
-.news-text {
-  font-size: 0.85rem;
-  opacity: 0.85;
-  margin-bottom: 0.6rem;
-}
-
-.news-readmore {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.3rem 0.75rem;
-  font-size: 0.78rem;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.8);
-  background: transparent;
-  cursor: pointer;
-  transition:
-    background 0.12s ease,
-    border-color 0.12s ease,
-    transform 0.12s ease;
 }
 
-.news-readmore:hover {
-  background: rgba(148, 163, 184, 0.12);
-  border-color: #e5e7eb;
-  transform: translateY(-1px);
-}
-
-/* ---------- ALSÓ SÁV: STATOK + LOGIN ---------- */
-
-.page {
-  flex: 1;
-  padding: 1rem 2.5rem 2.5rem;
+.auth-wrapper {
+  width: 100%;
+  padding: 1.5rem;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 2rem;
-
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* BAL OLDAL: INFÓ + STATOK */
-
-.info-panel {
-  flex: 0 0 330px;
-  display: flex;
-  flex-direction: column;
-  gap: 1.8rem;
-}
-
-.brand-block {
-  margin-bottom: 0.5rem;
-}
-
-.brand-logo {
-  font-weight: 800;
-  font-size: 1.4rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  background: linear-gradient(120deg, #b364fd, #9e03e6);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.stats-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 1.1rem;
-}
-
-.stat-card {
-  border-radius: 1.1rem;
-  padding: 1.2rem 1.3rem;
-  border: 1px solid rgba(55, 65, 81, 0.9);
-  background:
-    radial-gradient(circle at top left, rgba(168, 85, 247, 0.18) 0, transparent 60%),
-    rgba(15, 23, 42, 0.95);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.75);
-}
-
-.stat-card h2 {
-  font-size: 1rem;
-  margin-bottom: 0.4rem;
-}
-
-.stat-main {
-  display: flex;
-  align-items: baseline;
-  gap: 0.25rem;
-  font-size: 1.7rem;
-  font-weight: 800;
-  color: #a855f7;
-}
-
-.stat-separator {
-  opacity: 0.7;
-}
-
-.stat-label {
-  font-size: 0.85rem;
-  opacity: 0.8;
-  margin-top: 0.1rem;
-}
-
-.stat-sub {
-  font-size: 0.85rem;
-  opacity: 0.8;
-  margin-top: 0.4rem;
-}
-
-.stat-discord {
-  border-color: rgba(59, 130, 246, 0.7);
-}
-
-.stat-discord .stat-main {
-  color: #60a5fa;
-}
-
-.feature-list {
-  list-style: none;
-  margin: 0.5rem 0 0.5rem;
-  font-size: 0.9rem;
-}
-
-.feature-list li {
-  position: relative;
-  padding-left: 1rem;
-  margin-bottom: 0.3rem;
-}
-
-.feature-list li::before {
-  content: "◆";
-  position: absolute;
-  left: 0;
-  top: 0.15rem;
-  font-size: 0.6rem;
-  color: #a855f7;
-}
-
-.btn-outline {
-  display: inline-flex;
-  align-items: center;
   justify-content: center;
-  margin-top: 0.6rem;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.8);
-  background: transparent;
-  cursor: pointer;
-  transition:
-    background 0.12s ease,
-    border-color 0.12s ease,
-    transform 0.12s ease;
-}
-
-.btn-outline:hover {
-  background: rgba(148, 163, 184, 0.1);
-  border-color: #e5e7eb;
-  transform: translateY(-1px);
-}
-
-/* JOBB OLDAL: LOGIN PANEL */
-
-.auth-section {
-  flex: 0 0 360px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  margin-top: 1.5rem;
 }
 
 .auth-card {
   width: 100%;
   max-width: 420px;
-  background:
-    radial-gradient(circle at top left, rgba(168, 85, 247, 0.22) 0, transparent 60%),
-    #020013;
+  background: rgba(15, 23, 42, 0.98);
   border-radius: 1.25rem;
-  border: 1px solid #312e81;
-  padding: 1.75rem 1.75rem 1.5rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+  padding: 1.5rem 1.75rem 1.5rem;
+}
+
+.auth-brand {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.auth-logo-main {
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  background: linear-gradient(120deg, #c4b5fd, #a855f7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.auth-logo-sub {
+  font-size: 0.75rem;
+  opacity: 0.75;
 }
 
 .auth-title {
-  font-size: 1.6rem;
-  font-weight: 800;
-  margin-bottom: 0.3rem;
-}
-
-.auth-note {
-  font-size: 0.8rem;
-  opacity: 0.8;
-  margin-top: 0.2rem;
-  margin-bottom: 0.9rem;
+  margin: 0.4rem 0 1.1rem;
+  font-size: 1.4rem;
+  text-align: center; /* középen, ahogy kérted */
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 0.75rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  font-size: 0.9rem;
+  gap: 0.25rem;
+  font-size: 0.85rem;
 }
 
 .form-group label {
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .form-group input {
-  padding: 0.6rem 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid #1f2937;
-  background: rgba(15, 23, 42, 0.9);
+  border-radius: 0.7rem;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  background: rgba(15, 23, 42, 0.95);
+  padding: 0.55rem 0.7rem;
   color: #f9fafb;
   font-size: 0.9rem;
   outline: none;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease;
-}
-
-.form-group input::placeholder {
-  opacity: 0.6;
 }
 
 .form-group input:focus {
-  border-color: #a855f7;
+  border-color: rgba(168, 85, 247, 0.9);
   box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.5);
-  background: rgba(15, 23, 42, 1);
 }
 
-.form-row {
+.password-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  margin-bottom: 0.3rem;
+  gap: 0.35rem;
 }
 
-.checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  cursor: pointer;
-  user-select: none;
+.password-row input {
+  flex: 1;
 }
 
-.checkbox input {
-  width: 14px;
-  height: 14px;
-  accent-color: #a855f7;
-}
-
-.link-small {
-  opacity: 0.8;
-  text-decoration: underline;
-  text-decoration-style: dotted;
-}
-
-.link-small:hover {
-  opacity: 1;
-}
-
-.btn {
-  padding: 0.7rem 1.3rem;
-  border-radius: 999px;
-  font-size: 0.9rem;
+.btn-eye {
   border: none;
-  cursor: pointer;
-  background: #a855f7;
-  color: #020617;
-  font-weight: 600;
+  border-radius: 999px;
+  width: 38px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+  font-size: 0.9rem;
+}
+
+.btn-eye:hover {
+  background: rgba(31, 41, 55, 1);
+}
+
+/* Fő CTA gomb */
+
+.btn-primary.auth-submit {
+  margin-top: 0.4rem;
   width: 100%;
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease,
-    background 0.12s ease,
-    opacity 0.12s ease;
-  box-shadow: 0 10px 25px rgba(168, 85, 247, 0.45);
+  border: none;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: radial-gradient(circle at top left, #c4b5fd, #a855f7);
+  color: #020617;
+  box-shadow: 0 18px 40px rgba(168, 85, 247, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 35px rgba(168, 85, 247, 0.65);
-  background: #9333ea;
+.btn-primary.auth-submit:hover {
+  background: radial-gradient(circle at top left, #a855f7, #9333ea);
 }
 
-.auth-btn {
-  margin-top: 0.2rem;
+/* Hibaüzenet */
+
+.auth-error {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: #fecaca;
 }
+
+/* Footer linkek */
 
 .auth-footer-text {
-  margin-top: 0.6rem;
-  font-size: 0.85rem;
-  opacity: 0.8;
-}
-
-.link-accent {
-  color: #a855f7;
-}
-
-.link-accent:hover {
-  text-decoration: underline;
-}
-
-.auth-help {
+  margin: 0.9rem 0 0;
   font-size: 0.8rem;
-  opacity: 0.8;
-  margin-top: 0.6rem;
-}
-
-.auth-help a {
-  text-decoration: underline;
-  text-decoration-style: dotted;
-}
-
-/* ---------- FOOTER ---------- */
-
-.footer {
-  font-size: 0.8rem;
-  opacity: 0.7;
   text-align: center;
-  padding: 0.5rem 1.5rem 1.2rem;
+  opacity: 0.9;
 }
 
-/* ---------- HÍR MODAL ---------- */
-
-.news-modal {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 80;
+.auth-footer-text.small {
+  margin-top: 0.4rem;
+  opacity: 0.75;
 }
 
-.news-modal.open {
-  display: flex;
+.auth-link,
+.auth-footer-text a {
+  color: #a855f7;
+  text-decoration: none;
 }
 
-.news-modal-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+.auth-link:hover,
+.auth-footer-text a:hover {
+  text-decoration: underline;
 }
 
-.news-modal-dialog {
-  position: relative;
-  max-width: 480px;
-  width: 90%;
-  z-index: 81;
-}
-
-.news-modal-content {
-  border-radius: 1.2rem;
-  padding: 1.3rem 1.4rem 1.4rem;
-  background:
-    radial-gradient(circle at top left, rgba(168, 85, 247, 0.24) 0, transparent 60%),
-    rgba(15, 23, 42, 0.98);
-  border: 1px solid rgba(55, 65, 81, 0.9);
-  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.9);
-}
-
-.news-modal-content-inner .news-meta {
-  margin-bottom: 0.5rem;
-}
-
-.news-modal-title {
-  font-size: 1.05rem;
-  font-weight: 600;
-  margin-bottom: 0.4rem;
-}
-
-.news-modal-text {
-  font-size: 0.9rem;
-  opacity: 0.88;
-}
-
-.news-modal-close {
-  position: absolute;
-  top: 0.4rem;
-  right: 0.7rem;
-  border: none;
-  background: transparent;
-  color: #e5e7eb;
-  font-size: 1.4rem;
-  cursor: pointer;
-}
-
-/* ---------- RESPONSIVE ---------- */
-
-@media (max-width: 1100px) {
-  .page {
-    gap: 1.6rem;
-  }
-
-  .info-panel {
-    flex-basis: 300px;
-  }
-
-  .auth-section {
-    flex-basis: 340px;
-  }
-}
-
-@media (max-width: 900px) {
-  .news-header {
-    padding: 3rem 1.5rem 1.2rem;
-  }
-
-  .news-strip {
-    height: 230px;
-  }
-
-  .page {
-    flex-direction: column;
-    padding: 1rem 1.5rem 2.5rem;
-  }
-
-  .info-panel,
-  .auth-section {
-    flex: 1 1 auto;
-    max-width: none;
-  }
-
-  .auth-section {
-    align-items: stretch;
-    margin-top: 2rem;
-  }
-
-  .footer {
-    text-align: center;
-  }
-}
-
-@media (max-width: 600px) {
-  /* mobilon csak a középső látszódjon */
-  .news-card.pos-2,
-  .news-card.pos-1,
-  .news-card.pos1,
-  .news-card.pos2 {
-    opacity: 0;
-    pointer-events: none;
-  }
-}
+/* Mobil */
 
 @media (max-width: 480px) {
   .auth-card {
-    padding: 1.4rem 1.2rem 1.2rem;
+    padding: 1.25rem 1.2rem 1.25rem;
   }
-
-  .auth-title {
-    font-size: 1.4rem;
-  }
-
-  .form-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-.news-author {
-  font-size: 0.75rem;
-  opacity: 0.7;
-  margin-top: 0.25rem;
 }
