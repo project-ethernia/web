@@ -33,31 +33,27 @@ function h($str) {
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>ETHERNIA – Minecraft szerver</title>
+  <title>ETHERNIA – Főoldal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Főoldal stílus -->
-  <link rel="stylesheet" href="/kell.css?v=<?= time(); ?>">
+  <link rel="stylesheet" href="/assets/css/index.css?v=<?= time(); ?>">
 </head>
 <body class="home-body">
   <div class="page-shell">
 
-    <!-- HERO + NAV -->
     <header class="hero">
       <div class="hero-top">
-        <!-- BAL: Discord panel -->
         <div class="hero-panel hero-panel-left">
           <div class="hero-panel-label">Discord</div>
           <div class="hero-panel-value">
             <span id="discord-online">--</span>
           </div>
           <div class="hero-panel-sub">tag a szerveren</div>
-          <a href="https://discord.gg/SAJATMEGHIVO" target="_blank" class="hero-panel-link">
+          <a href="dc.ethernia.hu" target="_blank" class="hero-panel-link">
             Csatlakozom →
           </a>
         </div>
 
-        <!-- KÖZÉP: ETHERNIA logó -->
         <div class="hero-logo-block">
           <div class="hero-logo">ETHERNIA</div>
           <div class="hero-logo-sub">Magyar Minecraft közösség</div>
@@ -245,6 +241,6 @@ function h($str) {
     </div>
   </div>
 
-  <script src="/assets/js/index.js?v=10"></script>
+  <script src="/assets/js/index.js?v=<?= time(); ?>"></script>
 </body>
 </html>
