@@ -128,6 +128,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
 
-  <script src="/admin/assets/js/login.js?v=1"></script>
+  <script src="/admin/assets/js/login.js?v=<?= time(); ?>"></script>
 </body>
 </html>

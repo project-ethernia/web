@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-/* --- HIBÁK (fejlesztésnél hasznos, élesben kikapcsolhatod) --- */
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -11,7 +10,6 @@ if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
     exit;
 }
 
-/* --- BEJELENTKEZETT FELHASZNÁLÓ NEVE (szerző) --- */
 $currentUser = 'Ismeretlen';
 if (!empty($_SESSION['admin_username'])) {
     $currentUser = $_SESSION['admin_username'];
@@ -19,27 +17,20 @@ if (!empty($_SESSION['admin_username'])) {
     $currentUser = $_SESSION['username'];
 }
 
-/* --- KÖZPONTI DB KAPCSOLAT BEHÚZÁSA --- */
-/* database.php a public rootban van, ezért egy szinttel feljebb lépünk */
-require_once __DIR__ . '/../database.php'; // itt jön létre a $pdo
+require_once __DIR__ . '/../database.php';
 
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
-/* --- LOG FUNKCIÓ --- */
 require_once __DIR__ . '/log.php';
-
-/* ---------------- AJAX RÉSZ: SAVE / DELETE / TOGGLE_VISIBLE ---------------- */
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
 
-    // $pdo a database.php-ből érkezik
     $pdo    = $pdo ?? null;
     $action = isset($_POST['action']) ? $_POST['action'] : '';
 
-    // logoláshoz aktuális admin ID + név
     $adminId   = !empty($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0;
     $adminName = $currentUser;
 
@@ -57,10 +48,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('A cím kötelező.');
             }
 
+            if (mb_strlen($short, 'UTF-8') > 100) {
+                throw new Exception('A rövid szöveg legfeljebb 100 karakter lehet.');
+            }
+
             $isNew = ($id === null);
 
             if ($isNew) {
-                // ÚJ HÍR: dátum = mai nap, szerző = bejelentkezett user
                 $dateDisplay = date('Y. m. d.');
                 $author      = $currentUser;
 
@@ -71,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->bindValue(':date_display', $dateDisplay);
                 $stmt->bindValue(':author', $author);
             } else {
-                // LÉTEZŐ HÍR: dátum + szerző nem változik
                 $stmt = $pdo->prepare("
                     UPDATE news
                     SET title       = :title,
@@ -96,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($isNew) {
                 $id = (int)$pdo->lastInsertId();
 
-                // LOG: új hír
                 try {
                     log_admin_action(
                         $pdo,
@@ -111,10 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ]
                     );
                 } catch (Throwable $e) {
-                    // log hiba ignorálva
                 }
             } else {
-                // LOG: hír módosítása
                 try {
                     log_admin_action(
                         $pdo,
@@ -129,7 +119,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ]
                     );
                 } catch (Throwable $e) {
-                    // log hiba ignorálva
                 }
             }
 
@@ -143,7 +132,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Hiányzó ID.');
             }
 
-            // cím lekérdezése a loghoz
             $titleForLog = null;
             $stmt = $pdo->prepare("SELECT title FROM news WHERE id = :id");
             $stmt->execute([':id' => $id]);
@@ -154,7 +142,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("DELETE FROM news WHERE id = :id");
             $stmt->execute([':id' => $id]);
 
-            // LOG: törlés
             try {
                 log_admin_action(
                     $pdo,
@@ -164,7 +151,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ['news_id' => $id]
                 );
             } catch (Throwable $e) {
-                // log hiba ignorálva
             }
 
             echo json_encode(['ok' => true]);
@@ -179,7 +165,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Hiányzó ID a láthatóság állításához.');
             }
 
-            // cím lekérdezése a loghoz
             $titleForLog = null;
             $stmt = $pdo->prepare("SELECT title FROM news WHERE id = :id");
             $stmt->execute([':id' => $id]);
@@ -195,7 +180,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $stateText = $isVisible ? 'látható' : 'rejtett';
 
-            // LOG: láthatóság módosítása
             try {
                 log_admin_action(
                     $pdo,
@@ -209,7 +193,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ]
                 );
             } catch (Throwable $e) {
-                // log hiba ignorálva
             }
 
             echo json_encode(['ok' => true, 'id' => $id, 'is_visible' => $isVisible]);
@@ -224,9 +207,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-/* ---------------- GET: LISTA / ADMIN FELÜLET ---------------- */
-
-// Itt is a database.php-ből kapott $pdo-t használjuk
 $stmt = $pdo->query("SELECT * FROM news ORDER BY order_index ASC, created_at DESC");
 $news = $stmt->fetchAll();
 
@@ -243,13 +223,11 @@ $news = $stmt->fetchAll();
   <div class="admin-layout">
 
     <?php
-      // közös sidebar include
       $activePage      = 'news';
       $currentUsername = $currentUser;
       require __DIR__ . '/_sidebar.php';
     ?>
 
-    <!-- FŐ TARTALOM -->
     <div class="admin-main">
       <header class="admin-header">
         <div>
@@ -353,7 +331,6 @@ $news = $stmt->fetchAll();
     </div>
   </div>
 
-  <!-- MODAL: HÍR LÉTREHOZÁSA / SZERKESZTÉSE -->
   <div class="modal" id="news-modal" aria-hidden="true">
     <div class="modal-backdrop"></div>
     <div class="modal-dialog" role="dialog" aria-modal="true">
@@ -382,8 +359,8 @@ $news = $stmt->fetchAll();
         </div>
 
         <div class="form-group">
-          <label for="news-short">Rövid szöveg (slider kártyára)</label>
-          <textarea id="news-short" name="short_text" rows="3"></textarea>
+          <label for="news-short">Rövid szöveg (max. 100 karakter)</label>
+          <textarea id="news-short" name="short_text" rows="3" maxlength="100"></textarea>
         </div>
 
         <div class="form-group">
@@ -425,6 +402,6 @@ $news = $stmt->fetchAll();
   <script>
     window.ETHERNIA_ADMIN_USER = <?php echo json_encode($currentUser); ?>;
   </script>
-  <script src="/admin/assets/js/news.js?v=2"></script>
+  <script src="/admin/assets/js/news.js?v=<?= time(); ?>"></script>
 </body>
 </html>
