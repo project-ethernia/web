@@ -3,9 +3,7 @@ const DISCORD_GUILD_ID = "1322224781000577046";
 
 document.addEventListener("DOMContentLoaded", () => {
   const yearEl = document.getElementById("year");
-  if (yearEl) {
-    yearEl.textContent = new Date().getFullYear();
-  }
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
 
   updateMinecraftStats();
   updateDiscordStats();
@@ -19,24 +17,19 @@ async function updateMinecraftStats() {
   if (!onlineEl || !maxEl) return;
 
   try {
-    const res = await fetch(`https://api.mcsrvstat.us/2/${MC_SERVER}`, {
-      cache: "no-store"
-    });
-
+    const res = await fetch(`https://api.mcsrvstat.us/2/${MC_SERVER}`, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
 
-    const online =
+    onlineEl.textContent =
       data && data.players && typeof data.players.online === "number"
         ? data.players.online
         : 0;
-    const max =
+
+    maxEl.textContent =
       data && data.players && typeof data.players.max === "number"
         ? data.players.max
         : "?";
-
-    onlineEl.textContent = online;
-    maxEl.textContent = max;
   } catch (e) {
     console.error("MC stat hiba:", e);
     onlineEl.textContent = "N/A";
@@ -53,16 +46,15 @@ async function updateDiscordStats() {
       `https://discord.com/api/guilds/${DISCORD_GUILD_ID}/widget.json`,
       { cache: "no-store" }
     );
-
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
 
-    let count = null;
-    if (typeof data.presence_count === "number") {
-      count = data.presence_count;
-    } else if (Array.isArray(data.members)) {
-      count = data.members.length;
-    }
+    const count =
+      typeof data.presence_count === "number"
+        ? data.presence_count
+        : Array.isArray(data.members)
+        ? data.members.length
+        : null;
 
     onlineEl.textContent = typeof count === "number" ? count : "N/A";
   } catch (e) {
@@ -72,43 +64,57 @@ async function updateDiscordStats() {
 }
 
 function initNewsSlider() {
-  const row = document.querySelector(".news-row");
-  const cards = Array.from(document.querySelectorAll(".news-card"));
-  const leftBtn = document.querySelector(".news-arrow-left");
-  const rightBtn = document.querySelector(".news-arrow-right");
+  const track = document.getElementById("news-track");
+  const prevBtn = document.querySelector(".news-nav-prev");
+  const nextBtn = document.querySelector(".news-nav-next");
+  if (!track || !prevBtn || !nextBtn) return;
 
-  if (!row || !cards.length || !leftBtn || !rightBtn) return;
+  const cards = Array.from(track.querySelectorAll(".news-card"));
+  if (!cards.length) return;
 
-  const visibleCount = 4;
-  let start = 0;
+  let index = 0;
+  const visibleDesktop = 4;
+  const visibleMobile = 1;
+  const gapPx = 16;
 
-  function update() {
-    cards.forEach((card, index) => {
-      if (index < start || index >= start + visibleCount) {
-        card.classList.add("news-card-hidden");
-      } else {
-        card.classList.remove("news-card-hidden");
-      }
-    });
-
-    leftBtn.disabled = start === 0;
-    rightBtn.disabled = start + visibleCount >= cards.length;
+  function visibleCount() {
+    return window.innerWidth <= 900 ? visibleMobile : visibleDesktop;
   }
 
-  leftBtn.addEventListener("click", () => {
-    if (start > 0) {
-      start -= 1;
-      update();
-    }
+  function cardWidth() {
+    const first = cards[0];
+    const rect = first.getBoundingClientRect();
+    return rect.width;
+  }
+
+  function clampIndex() {
+    const maxIndex = Math.max(0, cards.length - visibleCount());
+    if (index < 0) index = 0;
+    if (index > maxIndex) index = maxIndex;
+  }
+
+  function update() {
+    clampIndex();
+    const w = cardWidth() + gapPx;
+    const offset = -(index * w);
+    track.style.transform = `translateX(${offset}px)`;
+  }
+
+  prevBtn.addEventListener("click", () => {
+    index -= visibleCount();
+    update();
   });
 
-  rightBtn.addEventListener("click", () => {
-    if (start + visibleCount < cards.length) {
-      start += 1;
-      update();
-    }
+  nextBtn.addEventListener("click", () => {
+    index += visibleCount();
+    update();
   });
 
+  window.addEventListener("resize", () => {
+    update();
+  });
+
+  track.style.transition = "transform 0.3s ease";
   update();
 }
 
@@ -119,30 +125,27 @@ function initNewsModal() {
   const contentInner = modal.querySelector(".news-modal-content-inner");
   const closeBtn = modal.querySelector(".news-modal-close");
   const backdrop = modal.querySelector(".news-modal-backdrop");
-  const readMoreButtons = document.querySelectorAll(".news-readmore");
+  const buttons = document.querySelectorAll(".news-readmore");
 
   function openFromCard(card) {
     if (!card || !contentInner) return;
 
-    const tagEl = card.querySelector(".news-tag");
-    const dateEl = card.querySelector(".news-date");
-    const titleEl = card.querySelector(".news-headline");
-    const shortEl = card.querySelector(".news-text");
+    const tagEl = card.querySelector(".news-tag-pill");
+    const dateEl = card.querySelector(".news-card-date");
+    const titleEl = card.querySelector(".news-card-title");
 
     const tag = tagEl ? tagEl.textContent : "";
     const date = dateEl ? dateEl.textContent : "";
     const title = titleEl ? titleEl.textContent : "";
-    const textAttr = card.getAttribute("data-full") || "";
-    const shortText = shortEl ? shortEl.textContent : "";
-    const text = textAttr || shortText;
+    const text = card.getAttribute("data-full") || "";
 
     contentInner.innerHTML = `
-      <div class="news-meta">
-        <span class="news-tag">${tag}</span>
-        <span class="news-date">${date}</span>
+      <div class="news-card-header">
+        <span class="news-tag-pill">${tag}</span>
+        <span class="news-card-date">${date}</span>
       </div>
-      <h3 class="news-modal-title">${title}</h3>
-      <p class="news-modal-text">${text}</p>
+      <h3 class="news-card-title">${title}</h3>
+      <p class="news-card-short">${text}</p>
     `;
 
     modal.classList.add("open");
@@ -152,25 +155,18 @@ function initNewsModal() {
     modal.classList.remove("open");
   }
 
-  readMoreButtons.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
+  buttons.forEach(btn => {
+    btn.addEventListener("click", e => {
       e.stopPropagation();
       const card = btn.closest(".news-card");
       openFromCard(card);
     });
   });
 
-  if (closeBtn) {
-    closeBtn.addEventListener("click", closeModal);
-  }
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (backdrop) backdrop.addEventListener("click", closeModal);
 
-  if (backdrop) {
-    backdrop.addEventListener("click", closeModal);
-  }
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeModal();
-    }
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeModal();
   });
 }
