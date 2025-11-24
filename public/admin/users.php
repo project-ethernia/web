@@ -303,7 +303,7 @@ try {
       <!-- MODALOK -->
       <div class="modal" id="modal-change-email" aria-hidden="true">
         <div class="modal-backdrop"></div>
-        <div class="modal-dialog" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-dialog-narrow" role="dialog" aria-modal="true">
           <button type="button" class="modal-close" data-modal-close>×</button>
           <form class="modal-content" id="form-change-email">
             <h2>E‑mail módosítása</h2>
@@ -332,7 +332,7 @@ try {
 
       <div class="modal" id="modal-change-password" aria-hidden="true">
         <div class="modal-backdrop"></div>
-        <div class="modal-dialog" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-dialog-narrow" role="dialog" aria-modal="true">
           <button type="button" class="modal-close" data-modal-close>×</button>
           <form class="modal-content" id="form-change-password">
             <h2>Jelszó csere</h2>
@@ -366,7 +366,7 @@ try {
 
       <div class="modal" id="modal-delete-user" aria-hidden="true">
         <div class="modal-backdrop"></div>
-        <div class="modal-dialog" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-dialog-narrow" role="dialog" aria-modal="true">
           <button type="button" class="modal-close" data-modal-close>×</button>
           <form class="modal-content" id="form-delete-user">
             <h2>Fiók törlése</h2>

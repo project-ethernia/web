@@ -22,3 +22,21 @@
   flex-wrap: wrap;
   gap: 0.25rem;
 }
+
+.modal-dialog-narrow {
+  max-width: 480px;
+}
+
+.modal-dialog-narrow .modal-content {
+  padding: 1.1rem 1.5rem 0.9rem;
+}
+
+.modal-dialog-narrow .modal-close {
+  top: 0.6rem;
+  right: 0.7rem;
+}
+
+#form-change-email input[type="email"],
+#form-change-password input[type="password"] {
+  width: 100%;
+}
