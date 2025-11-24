@@ -42,7 +42,7 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- KÖZÖS + USERS STÍLUS -->
-  <link rel="stylesheet" href="/admin/assets/css/users.css?v=1">
+  <link rel="stylesheet" href="/admin/assets/css/users.css?v=<?= time(); ?>">
 </head>
 <body class="admin-body">
   <div class="admin-layout">
