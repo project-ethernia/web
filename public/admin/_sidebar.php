@@ -30,7 +30,7 @@ function admin_nav_item_class($page, $activePage) {
 <aside class="admin-sidebar">
   <div class="sidebar-logo">
     <span class="logo-main">ETHERNIA</span>
-    <span class="logo-sub">Admin</span>
+    <span class="logo-sub">Admin Panel</span>
   </div>
 
   <nav class="sidebar-nav">
@@ -65,12 +65,17 @@ function admin_nav_item_class($page, $activePage) {
       <span class="nav-pill">BETA</span>
     </a>
 
+    <a href="/admin/users.php" class="<?php echo admin_nav_item_class('users', $activePage); ?>">
+      <span class="nav-icon"></span>
+      <span class="nav-label">Regisztrált Fiókok</span>
+    </a>
+
     <div class="nav-separator"></div>
 
     <!-- Későbbi menük -->
     <button class="nav-item nav-item-disabled" type="button" disabled>
       <span class="nav-icon">💎</span>
-      <span class="nav-label">Bolt / Rangok</span>
+      <span class="nav-label">Bolt</span>
       <span class="nav-pill">Hamarosan</span>
     </button>
   </nav>
