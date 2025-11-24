@@ -42,14 +42,14 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
     <div class="hero-inner">
         <div class="hero-stat hero-stat-left">
             <div class="hero-stat-icon hero-stat-icon-discord">
-                <span class="hero-icon-symbol"></span>
+                <span class="hero-icon-symbol"></span>
             </div>
             <div class="hero-stat-text">
                 <div class="hero-stat-line">
-                    <span id="discord-online">--</span> tag a szerveren
+                    <span id="discord-online">--</span> elérhető tag
                 </div>
-                <a href="https://discord.gg/ethernia" target="_blank" rel="noopener" class="hero-stat-link">
-                    discord.gg/ethernia
+                <a href="https://dc.ethernia.hu" target="_blank" rel="noopener" class="hero-stat-link">
+                    dc.ethernia.hu
                 </a>
             </div>
         </div>
@@ -66,7 +66,7 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
                 </div>
             </div>
             <div class="hero-stat-icon hero-stat-icon-mc">
-                <span class="hero-icon-symbol">🎮</span>
+                <span class="hero-icon-symbol"></span>
             </div>
         </div>
     </div>
