@@ -1,7 +1,7 @@
-// index.js – Minecraft / Discord statok + hírek karusszel + modal
+// index.js – Minecraft / Discord statok + hírek scroll + modal
 
 const MC_SERVER = "play.ethernia.hu";
-const DISCORD_GUILD_ID = "1322224781000577046"; // ETHERNIA guild ID
+const DISCORD_GUILD_ID = "1322224781000577046";
 
 document.addEventListener("DOMContentLoaded", () => {
   // Lábléc év
@@ -12,9 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateMinecraftStats();
   updateDiscordStats();
-
-  // Ha a hírek már PHP-ből jönnek és .news-card elemek léteznek:
-  initNewsCarousel();
+  initNewsScroller();
   initNewsModal();
 });
 
@@ -77,72 +75,28 @@ async function updateDiscordStats() {
   }
 }
 
-// ---------- HÍR COVERFLOW KARUSSZEL (meglévő .news-card elemekre) ----------
+// ---------- HÍREK SCROLL (bal / jobb nyíl) ----------
 
-function initNewsCarousel() {
-  const cards = Array.from(document.querySelectorAll(".news-card"));
-  if (!cards.length) {
-    // Ha nincsenek hírek, nincs mit csinálni
-    return;
+function initNewsScroller() {
+  const list = document.getElementById("news-list");
+  if (!list) return;
+
+  const prevBtn = document.querySelector('[data-news-nav="prev"]');
+  const nextBtn = document.querySelector('[data-news-nav="next"]');
+
+  const scrollAmount = 320; // px
+
+  function scrollDir(dir) {
+    const delta = dir === "prev" ? -scrollAmount : scrollAmount;
+    list.scrollBy({ left: delta, behavior: "smooth" });
   }
 
-  let index = 0;
-  const intervalMs = 5000;
-  let intervalId;
-
-  function updatePositions() {
-    const n = cards.length;
-
-    cards.forEach((card, i) => {
-      let offset = i - index;
-
-      if (offset > n / 2) offset -= n;
-      if (offset < -n / 2) offset += n;
-
-      card.classList.remove("pos-2", "pos-1", "pos0", "pos1", "pos2", "hidden");
-
-      if (offset === 0) {
-        card.classList.add("pos0");
-      } else if (offset === -1) {
-        card.classList.add("pos-1");
-      } else if (offset === -2) {
-        card.classList.add("pos-2");
-      } else if (offset === 1) {
-        card.classList.add("pos1");
-      } else if (offset === 2) {
-        card.classList.add("pos2");
-      } else {
-        card.classList.add("hidden");
-      }
-    });
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => scrollDir("prev"));
   }
-
-  function setActive(i) {
-    const n = cards.length;
-    index = ((i % n) + n) % n;
-    updatePositions();
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => scrollDir("next"));
   }
-
-  function startAuto() {
-    stopAuto();
-    intervalId = setInterval(() => {
-      setActive(index + 1);
-    }, intervalMs);
-  }
-
-  function stopAuto() {
-    if (intervalId) clearInterval(intervalId);
-  }
-
-  setActive(index);
-  startAuto();
-
-  cards.forEach((card, i) => {
-    card.addEventListener("click", () => {
-      setActive(i);
-      startAuto();
-    });
-  });
 }
 
 // ---------- HÍR MODAL ----------
@@ -162,14 +116,14 @@ function initNewsModal() {
     const tagEl = card.querySelector(".news-tag");
     const dateEl = card.querySelector(".news-date");
     const titleEl = card.querySelector(".news-headline");
-    const shortEl = card.querySelector(".news-text");
 
     const tag = tagEl ? tagEl.textContent : "";
     const date = dateEl ? dateEl.textContent : "";
     const title = titleEl ? titleEl.textContent : "";
     const textAttr = card.getAttribute("data-full") || "";
-    const shortText = shortEl ? shortEl.textContent : "";
-    const text = textAttr || shortText;
+    const excerptEl = card.querySelector(".news-excerpt");
+    const excerpt = excerptEl ? excerptEl.textContent : "";
+    const text = textAttr || excerpt;
 
     contentInner.innerHTML = `
       <div class="news-meta">
