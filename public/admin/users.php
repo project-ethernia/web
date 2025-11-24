@@ -31,7 +31,7 @@ try {
     $pdo = get_pdo();
 
     $stmt = $pdo->query("
-        SELECT id, username, email, created_at, last_login, last_ip
+        SELECT id, username, email, registered_at, last_login, last_ip
         FROM web_users
         ORDER BY id DESC
     ");
@@ -99,7 +99,7 @@ try {
                     <td><?php echo (int)$u['id']; ?></td>
                     <td><?php echo h($u['username']); ?></td>
                     <td><?php echo h($u['email']); ?></td>
-                    <td><?php echo h($u['created_at'] ?: 'ismeretlen'); ?></td>
+                    <td><?php echo h($u['registered_at'] ?: 'ismeretlen'); ?></td>
                     <td><?php echo h($u['last_login'] ?: '—'); ?></td>
                     <td><?php echo h($u['last_ip'] ?: '—'); ?></td>
                     <td class="cell-actions">
