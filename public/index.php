@@ -205,6 +205,6 @@ $news = $stmt->fetchAll();
     </div>
   </div>
 
-  <script src="/login.js?v=7"></script>
+  <script src="/assets/js/index.js?v=7"></script>
 </body>
 </html>
