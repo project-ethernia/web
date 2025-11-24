@@ -28,10 +28,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("
                 SELECT id, username, email, password_hash
                 FROM web_users
-                WHERE username = :ue OR email = :ue
+                WHERE username = :u OR email = :e
                 LIMIT 1
             ");
-            $stmt->execute([':ue' => $old_username]);
+            $stmt->execute([
+                ':u' => $old_username,
+                ':e' => $old_username,
+            ]);
             $user = $stmt->fetch();
 
             if (!$user || !password_verify($password, $user['password_hash'])) {
@@ -58,7 +61,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
         } catch (Exception $e) {
-            $error = 'Adatbázis hiba: ' . $e->getMessage();
+            // ha debugolni akarsz:
+            // $error = 'Adatbázis hiba: ' . $e->getMessage();
+            $error = 'Adatbázis hiba történt. Próbáld újra később.';
         }
     }
 }
