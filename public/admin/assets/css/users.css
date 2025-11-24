@@ -1,87 +1,24 @@
-@import url('/admin/assets/css/base.css?v=<?= time(); ?>');
+@import url("/admin/assets/css/base.css");
 
-.users-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+.users-table-wrapper {
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
-.users-header-row .hint {
-  font-size: 0.8rem;
-  opacity: 0.8;
-}
-
-.user-search {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.user-search input[type="text"] {
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  background: rgba(15, 23, 42, 0.95);
-  padding: 0.4rem 0.8rem;
-  color: #f9fafb;
-  font-size: 0.8rem;
-  min-width: 180px;
-}
-
-.user-search button {
-  border-radius: 999px;
-  border: none;
-  padding: 0.35rem 0.9rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-  background: rgba(31, 41, 55, 0.95);
-  color: #e5e7eb;
-}
-
-.user-search button:hover {
-  background: rgba(55, 65, 81, 1);
-}
-
-/* Oszlopok finomhangolása */
-
-.cell-username {
-  font-weight: 500;
-}
-
-.cell-email {
-  font-size: 0.8rem;
-  opacity: 0.9;
-}
-
-.cell-date {
-  font-size: 0.8rem;
+.users-table td,
+.users-table th {
   white-space: nowrap;
 }
 
-/* Művelet gombok */
+.users-table td:nth-child(2),
+.users-table td:nth-child(3) {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-.cell-actions {
+.users-table .cell-actions {
   display: flex;
-  gap: 0.3rem;
-}
-
-/* Modal – felhasználó neve a cím alatt halványan */
-
-.modal-user-label {
-  margin: 0 0 0.5rem;
-  font-size: 0.8rem;
-  opacity: 0.75;
-}
-
-/* Inline error a modalban */
-
-.form-error-inline {
-  margin-top: 0.25rem;
-  font-size: 0.78rem;
-  color: #fecaca;
-}
-
-.form-group.has-error input {
-  border-color: #f87171;
-  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.4);
+  flex-wrap: wrap;
+  gap: 0.25rem;
 }

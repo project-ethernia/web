@@ -1,32 +1,31 @@
 <?php
 session_start();
 
-/* --- HIBÁK (fejlesztéshez) --- */
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-/* --- KÖZÖS ADATBÁZIS KAPCSOLAT --- */
-require_once __DIR__ . '/../database.php'; // <-- EZ A LÉNYEG
+/* --- KÖZÖS DB --- */
+require_once __DIR__ . '/../database.php';
 
-/* --- jogosultság --- */
 if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
     header('Location: /admin/login.php');
     exit;
 }
 
-$currentUsername = isset($_SESSION['admin_username'])
+$currentUsername = !empty($_SESSION['admin_username'])
     ? $_SESSION['admin_username']
     : 'Ismeretlen';
-
-$currentUserId = isset($_SESSION['admin_id'])
-    ? (int)$_SESSION['admin_id']
-    : 0;
 
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
+/* --- FELHASZNÁLÓK LEKÉRDEZÉSE --- */
+/*
+   web_users tábla:
+   id, username, email, password_hash, registered_at, last_login, last_ip
+*/
 try {
     $pdo = get_pdo();
 
@@ -39,7 +38,6 @@ try {
 } catch (Exception $e) {
     die('Adatbázis hiba: ' . $e->getMessage());
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -48,9 +46,9 @@ try {
   <title>ETHERNIA Admin - Felhasználók</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- KÖZÖS + USERS STÍLUS -->
   <link rel="stylesheet" href="/admin/assets/css/users.css?v=<?= time(); ?>">
 </head>
-
 <body class="admin-body">
   <div class="admin-layout">
 
@@ -60,12 +58,11 @@ try {
     ?>
 
     <div class="admin-main">
-
       <header class="admin-header">
         <div>
           <h1 class="admin-title">Felhasználók</h1>
           <p class="admin-subtitle">
-            Regisztrált ETHERNIA fiókok listája – e-mail cím, regisztráció dátuma, utolsó belépés és IP cím.
+            Regisztrált ETHERNIA fiókok – e‑mail cím, regisztráció dátuma, utolsó belépés és IP cím.
           </p>
         </div>
       </header>
@@ -130,12 +127,11 @@ try {
         <?php endif; ?>
       </section>
 
-      <!-- Itt majd lesznek a modalok js-hez (email/jelszó/törlés) -->
+      <!-- ide fognak jönni a modalok (email/jelszó/törlés) -->
       <div id="user-modals-root"></div>
-
     </div>
   </div>
 
-  <script src="/admin/assets/js/users.js?v=<?= time(); ?>"></script>
+  <script src="/admin/assets/js/users.js?v=1"></script>
 </body>
 </html>
