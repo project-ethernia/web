@@ -398,6 +398,7 @@ a {
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.85);
   background: rgba(15, 23, 42, 0.95);
+  color: #f9fafb;
   font-size: 0.8rem;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, transform 0.12s ease;
