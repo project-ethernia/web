@@ -1,41 +1,48 @@
 <?php
 session_start();
 
-/* --- Ha már be van lépve a sima user, mehet a főoldalra --- */
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+/**
+ * Ha már be van lépve a felhasználó, mehet a főoldalra (vagy /profil, ha majd lesz).
+ */
 if (!empty($_SESSION['is_user']) && $_SESSION['is_user'] === true) {
     header('Location: /');
     exit;
 }
 
-/* --- Közös DB kapcsolat --- */
-require_once __DIR__ . '/../database.php'; // itt van a get_pdo()
+require_once __DIR__ . '/../database.php';
 
 $error = '';
+$old_username = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $usernameOrEmail = isset($_POST['username']) ? trim($_POST['username']) : '';
-    $password        = isset($_POST['password']) ? $_POST['password'] : '';
+    $old_username = trim($_POST['username'] ?? '');
+    $password     = $_POST['password'] ?? '';
 
-    if ($usernameOrEmail === '' || $password === '') {
-        $error = 'Adj meg felhasználónevet/E-mail címet és jelszót.';
+    if ($old_username === '' || $password === '') {
+        $error = 'Adj meg felhasználónevet vagy e-mail címet, és jelszót.';
     } else {
         try {
+            // PDO a database.php-ből
             $pdo = get_pdo();
 
-            // Lehet felhasználónév VAGY e-mail
+            // Felhasználónév VAGY e-mail alapján keresünk
             $stmt = $pdo->prepare("
                 SELECT id, username, email, password_hash
                 FROM web_users
                 WHERE username = :ue OR email = :ue
                 LIMIT 1
             ");
-            $stmt->execute([':ue' => $usernameOrEmail]);
+            $stmt->execute([':ue' => $old_username]);
             $user = $stmt->fetch();
 
             if (!$user || !password_verify($password, $user['password_hash'])) {
-                $error = 'Hibás adatok – ellenőrizd a felhasználónevet/E-mail címet és a jelszót.';
+                $error = 'Hibás adatok – ellenőrizd a felhasználónevet / e-mail címet és a jelszót.';
             } else {
-                // Sikeres belépés
+                // Sikeres belépés – session beállítása
                 $_SESSION['user_id']       = (int)$user['id'];
                 $_SESSION['user_username'] = $user['username'];
                 $_SESSION['user_email']    = $user['email'];
@@ -53,15 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':ip' => $ip,
                     ':id' => $user['id'],
                 ]);
-
-                // TODO: ha később lesz webes log tábla, itt lehet logolni
-
-                header('Location: /'); // ha inkább /profile.php kell, itt átírhatod
+                             
+                header('Location: /');
                 exit;
             }
-
         } catch (Exception $e) {
-            $error = 'Adatbázis hiba: ' . $e->getMessage();
+            $error = 'Adatbázis hiba történt. Próbáld újra később.';
         }
     }
 }
@@ -73,69 +77,59 @@ function h($str) {
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-    <meta charset="UTF-8">
-    <title>ETHERNIA – Bejelentkezés</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link rel="stylesheet" href="/assets/css/login.css?v=1">
+  <meta charset="UTF-8">
+  <title>ETHERNIA - Bejelentkezés</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/css/login.css?v=<?= time(); ?>">
 </head>
-<body class="auth-body">
-    <div class="auth-wrapper">
-        <div class="auth-card">
-            <div class="auth-brand">
-                <div class="auth-logo-main">ETHERNIA</div>
-                <div class="auth-logo-sub">Webes fiók</div>
-            </div>
+<body class="public-body">
 
-            <h1 class="auth-title">Bejelentkezés</h1>
+  <main class="auth-page">
+    <section class="auth-card">
+      <h1 class="auth-title auth-title-center">Bejelentkezés</h1>
 
-            <form class="auth-form" method="POST" action="/auth/login.php">
-                <div class="form-group">
-                    <label for="username">Felhasználónév vagy e‑mail</label>
-                    <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        autocomplete="username"
-                        required
-                        value="<?php echo isset($usernameOrEmail) ? h($usernameOrEmail) : ''; ?>"
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Jelszó</label>
-                    <div class="password-row">
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            autocomplete="current-password"
-                            required
-                        >
-                        <button type="button" class="btn-eye" id="btn-toggle-password" aria-label="Jelszó mutatása/elrejtése">
-                            👁
-                        </button>
-                    </div>
-                </div>
-
-                <?php if ($error): ?>
-                    <p class="auth-error"><?php echo h($error); ?></p>
-                <?php endif; ?>
-
-                <button type="submit" class="btn-primary auth-submit">Bejelentkezés</button>
-            </form>
-
-            <p class="auth-footer-text">
-                Nincs még fiókod?
-                <a href="/auth/register.php" class="auth-link">Regisztráció</a>
-            </p>
-
-            <p class="auth-footer-text small">
-                <a href="/">← Vissza a főoldalra</a>
-            </p>
+      <?php if ($error): ?>
+        <div class="alert alert-error">
+          <?php echo h($error); ?>
         </div>
-    </div>
+      <?php endif; ?>
 
-    <script src="/assets/js/login.js?v=1"></script>
+      <form method="POST" action="/auth/login.php" class="auth-form" id="login-form">
+        <div class="form-group">
+          <label for="username">Felhasználónév vagy e-mail cím</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            value="<?php echo h($old_username); ?>"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Jelszó</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn auth-btn">Bejelentkezés</button>
+      </form>
+
+      <p class="auth-footnote">
+        Nincs még fiókod?
+        <a href="/auth/register.php" class="link-accent">Regisztráció</a>
+      </p>
+
+      <p class="auth-footnote">
+        <a href="/" class="link-accent">← Vissza a főoldalra</a>
+      </p>
+    </section>
+  </main>
+
+  <script src="/assets/js/login.js?v=<?= time(); ?>"></script>
 </body>
 </html>

@@ -1,11 +1,17 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const passwordInput = document.getElementById("password");
-  const toggleBtn = document.getElementById("btn-toggle-password");
+  const form = document.getElementById("login-form");
+  if (!form) return;
 
-  if (!passwordInput || !toggleBtn) return;
+  let isSubmitting = false;
 
-  toggleBtn.addEventListener("click", () => {
-    const isPassword = passwordInput.type === "password";
-    passwordInput.type = isPassword ? "text" : "password";
+  form.addEventListener("submit", () => {
+    if (isSubmitting) return;
+    isSubmitting = true;
+
+    const btn = form.querySelector("button[type=submit]");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Beléptetés...";
+    }
   });
 });
