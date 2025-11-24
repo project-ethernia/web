@@ -55,10 +55,14 @@ function h($str) {
         </div>
 
         <div class="hero-logo-block">
-          <div class="hero-logo">PLAY.ETHERNIA.HU</div>
+          <div class="hero-logo">ETHERNIA</div>
+          <div class="hero-logo-sub">Magyar Minecraft közösség</div>
+          <div class="hero-logo-ip">
+            IP: <code>play.ethernia.hu</code>
           </div>
         </div>
 
+        <!-- JOBB: Minecraft panel -->
         <div class="hero-panel hero-panel-right">
           <div class="hero-panel-label">Minecraft</div>
           <div class="hero-panel-value">
