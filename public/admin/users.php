@@ -21,11 +21,6 @@ function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
-/* --- FELHASZNÁLÓK LEKÉRDEZÉSE --- */
-/*
-   web_users tábla:
-   id, username, email, password_hash, registered_at, last_login, last_ip
-*/
 try {
     $pdo = get_pdo();
 
