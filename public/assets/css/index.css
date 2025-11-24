@@ -252,8 +252,8 @@ a {
 }
 
 .nav-btn-secondary:hover {
-  background: rgba(30, 64, 175, 0.9);
-  border-color: rgba(129, 140, 248, 0.9);
+  background: rgba(177, 4, 4, 0.9);
+  border-color: rgba(255, 27, 27, 0.9);
 }
 
 .nav-btn-primary {
