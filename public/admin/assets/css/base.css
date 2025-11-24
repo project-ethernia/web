@@ -87,6 +87,7 @@ body.admin-body {
   font-size: 0.85rem;
   cursor: pointer;
   opacity: 0.9;
+  text-transform: uppercase;
 }
 
 .nav-item:hover:not(.nav-item-disabled) {
