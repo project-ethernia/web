@@ -393,6 +393,6 @@ try {
     </div>
   </div>
 
-  <script src="/admin/assets/js/users.js?v=1"></script>
+  <script src="/admin/assets/js/users.js?v=<?= time(); ?>"></script>
 </body>
 </html>
