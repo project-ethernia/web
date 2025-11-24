@@ -37,37 +37,37 @@ function admin_nav_item_class($page, $activePage) {
     <!-- Főoldal / Dashboard -->
     <a href="/admin/index.php" class="<?php echo admin_nav_item_class('dashboard', $activePage); ?>">
       <span class="nav-icon">🏠</span>
-      <span class="nav-label">Főoldal</span>
+      <span class="nav-label">FŐOLDAL</span>
     </a>
 
     <!-- Hírek -->
     <a href="/admin/news.php" class="<?php echo admin_nav_item_class('news', $activePage); ?>">
       <span class="nav-icon">📰</span>
-      <span class="nav-label">Hírek</span>
+      <span class="nav-label">HÍREK KEZELÉSE</span>
     </a>
 
     <!-- Adminok -->
     <a href="/admin/admins.php" class="<?php echo admin_nav_item_class('admins', $activePage); ?>">
       <span class="nav-icon">🛡️</span>
-      <span class="nav-label">Adminok</span>
+      <span class="nav-label">HOZZÁFÉRÉS</span>
     </a>
 
     <!-- Napló -->
     <a href="/admin/logs.php" class="<?php echo admin_nav_item_class('logs', $activePage); ?>">
       <span class="nav-icon">📜</span>
-      <span class="nav-label">Napló</span>
+      <span class="nav-label">TEVÉKENYSÉG NAPLÓ</span>
     </a>
 
     <!-- Játékosok -->
     <a href="/admin/players.php" class="<?php echo admin_nav_item_class('players', $activePage); ?>">
       <span class="nav-icon">👥</span>
-      <span class="nav-label">Játékosok</span>
+      <span class="nav-label">JÁTÉKOSOK KEZELÉSE</span>
       <span class="nav-pill">BETA</span>
     </a>
 
     <a href="/admin/users.php" class="<?php echo admin_nav_item_class('users', $activePage); ?>">
       <span class="nav-icon"></span>
-      <span class="nav-label">Regisztrált Fiókok</span>
+      <span class="nav-label">JÁTÉKOS FIÓKOK KEZELÉSE</span>
     </a>
 
     <div class="nav-separator"></div>
