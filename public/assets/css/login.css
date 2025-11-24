@@ -1,4 +1,4 @@
-@import url('/assets/css/register.css');
+@import url('/assets/css/register.css?v=<?= time(); ?>');
 
 .auth-title.auth-title-center {
   margin-bottom: 16px;
