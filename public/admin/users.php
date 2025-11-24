@@ -32,7 +32,7 @@ try {
 
     $stmt = $pdo->query("
         SELECT id, username, email, created_at, last_login, last_ip
-        FROM users
+        FROM web_users
         ORDER BY id DESC
     ");
     $users = $stmt->fetchAll();
