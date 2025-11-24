@@ -21,28 +21,9 @@ if (empty($_SESSION['admin_role']) || $_SESSION['admin_role'] !== 'owner') {
 $currentUserId   = isset($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0;
 $currentUsername = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
 
-/* --- DB beállítások: ÁLLÍTSD BE UGYANÚGY, MINT A TÖBBI FÁJLBAN --- */
-$DB_DSN  = 'mysql:host=localhost;dbname=ethernia_web;charset=utf8mb4';
-$DB_USER = 'ethernia';
-$DB_PASS = 'LrKqjfTKc3Q5H6e1Ohuo';
-
-function get_pdo_admin() {
-    static $pdo = null;
-    global $DB_DSN, $DB_USER, $DB_PASS;
-
-    if ($pdo === null) {
-        $pdo = new PDO(
-            $DB_DSN,
-            $DB_USER,
-            $DB_PASS,
-            array(
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            )
-        );
-    }
-    return $pdo;
-}
+/* --- KÖZPONTI DB KAPCSOLAT BEHÚZÁSA --- */
+/* database.php a public rootban van, ezért egy szinttel feljebb lépünk */
+require_once __DIR__ . '/../database.php'; // itt jön létre a $pdo
 
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
@@ -57,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
 
     try {
-        $pdo    = get_pdo_admin();
+        // $pdo már elérhető a database.php-ből
         $action = isset($_POST['action']) ? $_POST['action'] : '';
 
         // jelenlegi admin adatok logoláshoz
@@ -130,8 +111,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($action === 'toggle_active') {
-            $id        = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-            $isActive  = isset($_POST['is_active']) ? (int)$_POST['is_active'] : 0;
+            $id       = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+            $isActive = isset($_POST['is_active']) ? (int)$_POST['is_active'] : 0;
 
             if ($id <= 0) {
                 throw new Exception('Hiányzó admin ID.');
@@ -182,9 +163,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             echo json_encode(array(
-                'ok'        => true,
-                'id'        => $id,
-                'is_active' => $isActive,
+                'ok'       => true,
+                'id'       => $id,
+                'is_active'=> $isActive,
             ));
             exit;
         }
@@ -245,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 /* ---------------- GET: admin lista ---------------- */
 
 try {
-    $pdo = get_pdo_admin();
+    // $pdo már elérhető a database.php-ből
 
     $stmt = $pdo->query("
         SELECT id, username, role, is_active, created_at, last_login
