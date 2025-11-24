@@ -15,8 +15,10 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
 } catch (Exception $e) {
-    die("Adatbázis hiba: " . $e->getMessage());
+    die('Adatbázis hiba: ' . $e->getMessage());
 }
+
+require_once __DIR__ . '/news_tags.php';
 
 $stmt = $pdo->query("
     SELECT id, title, tag, date_display, short_text, full_text, order_index, author
@@ -26,160 +28,186 @@ $stmt = $pdo->query("
 ");
 $news = $stmt->fetchAll();
 
-$isUser       = !empty($_SESSION['is_user']) && $_SESSION['is_user'] === true;
-$currentUser  = $isUser ? ($_SESSION['user_username'] ?? 'Ismeretlen') : null;
-
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
+
+$isLoggedIn = !empty($_SESSION['is_user']);
+$currentUser = $isLoggedIn ? ($_SESSION['user_username'] ?? 'Ismeretlen') : null;
 ?>
 <!DOCTYPE html>
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>ETHERNIA - Főoldal</title>
+  <title>ETHERNIA – Főoldal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/assets/css/index.css?v=<?= time(); ?>">
 </head>
-<body>
+<body class="front-body">
+  <header class="hero">
+    <div class="hero-shell">
+      <div class="hero-row">
+        <section class="hero-stat-card">
+          <div class="hero-stat-label">Discord</div>
+          <div class="hero-stat-value" id="discord-online">--</div>
+          <div class="hero-stat-sub">tag a szerveren</div>
+          <a href="https://discord.gg/SAJATMEGHIVO" target="_blank" class="hero-stat-link">Csatlakozom →</a>
+        </section>
 
-<header class="hero">
-  <div class="hero-top">
-    <div class="hero-stat-card">
-      <div class="hero-stat-label">Discord</div>
-      <div class="hero-stat-value" id="discord-online">--</div>
-      <div class="hero-stat-sub">tag a szerveren</div>
-      <a href="https://discord.gg/SAJATMEGHIVO" target="_blank" class="hero-stat-link">Csatlakozom →</a>
-    </div>
+        <div class="hero-title-wrap">
+          <div class="hero-title">ETHERNIA</div>
+        </div>
 
-    <div class="hero-title">ETHERNIA</div>
-
-    <div class="hero-stat-card">
-      <div class="hero-stat-label">Minecraft</div>
-      <div class="hero-stat-value">
-        <span id="mc-online">--</span>
-        <span class="hero-stat-sep">/</span>
-        <span id="mc-max">--</span>
-      </div>
-      <div class="hero-stat-sub">játékos online</div>
-      <div class="hero-stat-sub hero-stat-ip">IP: <code>play.ethernia.hu</code></div>
-    </div>
-  </div>
-
-  <nav class="main-nav">
-    <div class="nav-center">
-      <ul class="nav-links">
-        <li><a href="/" class="nav-link nav-link-active">Főoldal</a></li>
-        <li><a href="#" class="nav-link">Webshop</a></li>
-        <li><a href="#" class="nav-link">Szabályzat</a></li>
-        <li><a href="#" class="nav-link">Statisztikák</a></li>
-        <li><a href="#" class="nav-link">Kapcsolat</a></li>
-      </ul>
-    </div>
-    <div class="nav-right">
-      <?php if ($isUser): ?>
-        <span class="nav-user-pill">Bejelentkezve: <strong><?= h($currentUser); ?></strong></span>
-        <a href="/auth/logout.php" class="nav-btn nav-btn-outline">Kijelentkezés</a>
-      <?php else: ?>
-        <a href="/auth/login.php" class="nav-btn nav-btn-outline">Bejelentkezés</a>
-        <a href="/auth/register.php" class="nav-btn nav-btn-main">Regisztráció</a>
-      <?php endif; ?>
-    </div>
-  </nav>
-</header>
-
-<main class="page-main">
-  <section class="news-section">
-    <div class="news-header-row">
-      <div>
-        <h2 class="news-section-title">Hírek &amp; frissítések</h2>
-        <p class="news-section-subtitle">A legfrissebb információk az ETHERNIA világából.</p>
-      </div>
-      <div class="news-arrows">
-        <button type="button" class="news-arrow" id="news-prev" aria-label="Előző hír">‹</button>
-        <button type="button" class="news-arrow" id="news-next" aria-label="Következő hír">›</button>
-      </div>
-    </div>
-
-    <div class="news-viewport">
-      <div class="news-track" id="news-track">
-        <?php foreach ($news as $row): ?>
-          <?php
-            $tag        = $row['tag'] ?? 'Info';
-            $tagLower   = mb_strtolower($tag, 'UTF-8');
-            $tagClass   = 'news-tag';
-            if (strpos($tagLower, 'event') !== false) {
-              $tagClass .= ' news-tag-event';
-            } elseif (strpos($tagLower, 'info') !== false) {
-              $tagClass .= ' news-tag-info';
-            } elseif (strpos($tagLower, 'újdonság') !== false || strpos($tagLower, 'ujdonsag') !== false) {
-              $tagClass .= ' news-tag-new';
-            }
-
-            $dateDisplay = $row['date_display'] ?: '';
-            $shortText   = $row['short_text'] ?: '';
-            $fullText    = $row['full_text'] ?: '';
-            $author      = $row['author'] ?: 'Ismeretlen';
-          ?>
-          <article
-            class="news-card"
-            data-full="<?= $fullText !== '' ? h($fullText) : ''; ?>"
-          >
-            <div class="news-meta">
-              <span class="<?= $tagClass; ?>"><?= h($tag); ?></span>
-              <span class="news-date"><?= h($dateDisplay); ?></span>
-            </div>
-
-            <h3 class="news-headline"><?= h($row['title']); ?></h3>
-
-            <p class="news-text"><?= h($shortText); ?></p>
-
-            <div class="news-footer">
-              <p class="news-author">Közzétette: <strong><?= h($author); ?></strong></p>
-              <button type="button" class="news-readmore">Részletek</button>
-            </div>
-          </article>
-        <?php endforeach; ?>
-
-        <?php if (empty($news)): ?>
-          <div class="news-empty">
-            Jelenleg nincs megjeleníthető hír. Nézz vissza később!
+        <section class="hero-stat-card">
+          <div class="hero-stat-label">Minecraft</div>
+          <div class="hero-stat-value">
+            <span id="mc-online">--</span>
+            <span class="hero-stat-separator">/</span>
+            <span id="mc-max">--</span>
           </div>
+          <div class="hero-stat-sub">játékos online</div>
+          <div class="hero-stat-sub hero-stat-ip">IP: <span>play.ethernia.hu</span></div>
+        </section>
+      </div>
+
+      <nav class="main-nav">
+        <div class="main-nav-inner">
+          <ul class="nav-links">
+            <li><a href="/" class="nav-link is-active">Főoldal</a></li>
+            <li><a href="#" class="nav-link">Webshop</a></li>
+            <li><a href="#" class="nav-link">Szabályzat</a></li>
+            <li><a href="#" class="nav-link">Statisztikák</a></li>
+            <li><a href="#" class="nav-link">Kapcsolat</a></li>
+          </ul>
+
+          <div class="nav-user">
+            <?php if ($isLoggedIn): ?>
+              <span class="nav-user-label">Bejelentkezve:</span>
+              <span class="nav-user-name"><?= h($currentUser); ?></span>
+              <a href="/auth/logout.php" class="nav-user-button">Kijelentkezés</a>
+            <?php else: ?>
+              <a href="/auth/login.php" class="nav-user-button nav-user-button-ghost">Bejelentkezés</a>
+              <a href="/auth/register.php" class="nav-user-button">Regisztráció</a>
+            <?php endif; ?>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-shell">
+    <section class="news-section">
+      <div class="news-shell">
+        <header class="news-header-row">
+          <div>
+            <h2 class="news-heading">Hírek &amp; frissítések</h2>
+            <p class="news-subtitle">
+              A legfrissebb információk az ETHERNIA világából.
+            </p>
+          </div>
+        </header>
+
+        <?php if (!empty($news)): ?>
+          <div class="news-slider">
+            <button type="button" class="news-arrow news-arrow-left" aria-label="Előző">
+              <span class="news-arrow-icon">‹</span>
+            </button>
+
+            <div class="news-viewport">
+              <div class="news-row">
+                <?php foreach ($news as $row): ?>
+                  <?php
+                    $rawTag = $row['tag'] ?: 'Info';
+                    $tagConfig = $NEWS_TAGS[$rawTag] ?? $NEWS_TAGS['_default'];
+                    $tagStyle = $tagConfig['style'];
+                    $tagLabel = $tagConfig['label'];
+                    $dateDisplay = $row['date_display'] ?: '';
+                    $shortText = $row['short_text'] ?: '';
+                    $fullText = $row['full_text'] ?: '';
+                    $author = $row['author'] ?: 'Ismeretlen';
+                  ?>
+                  <article
+                    class="news-card"
+                    data-full="<?= h($fullText); ?>"
+                  >
+                    <div class="news-card-body">
+                      <div class="news-meta">
+                        <span class="news-tag" style="<?= h($tagStyle); ?>">
+                          <?= h($tagLabel); ?>
+                        </span>
+                        <span class="news-date"><?= h($dateDisplay); ?></span>
+                      </div>
+
+                      <h3 class="news-headline"><?= h($row['title']); ?></h3>
+
+                      <p class="news-text">
+                        <?= h($shortText); ?>
+                      </p>
+                    </div>
+
+                    <div class="news-card-footer">
+                      <p class="news-author">
+                        Közzétette: <strong><?= h($author); ?></strong>
+                      </p>
+                      <button type="button" class="news-btn news-readmore">
+                        Részletek
+                      </button>
+                    </div>
+                  </article>
+                <?php endforeach; ?>
+              </div>
+            </div>
+
+            <button type="button" class="news-arrow news-arrow-right" aria-label="Következő">
+              <span class="news-arrow-icon">›</span>
+            </button>
+          </div>
+        <?php else: ?>
+          <p class="news-empty">Még nincs megjeleníthető hír.</p>
         <?php endif; ?>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="feature-row">
-    <div class="feature-card">
-      <h3>Mi az ETHERNIA?</h3>
-      <p>Egy modern, közösségközpontú magyar Minecraft szerver, ahol a hangulat és az élmény fontosabb, mint a pay-to-win.</p>
-    </div>
-    <div class="feature-card">
-      <h3>Események és jutalmak</h3>
-      <p>Rendszeres eventek, szezonális jutalmak, egyedi rangok és webes statisztikák várnak.</p>
-    </div>
-    <div class="feature-card">
-      <h3>Csatlakozz most</h3>
-      <p>Lépj be Discordra, kérdezz bátran, és ugorj fel a szerverre – a kaland már vár rád!</p>
-    </div>
-  </section>
-</main>
+    <section class="feature-section">
+      <div class="feature-grid">
+        <article class="feature-card">
+          <h3 class="feature-title">Mi az ETHERNIA?</h3>
+          <p class="feature-text">
+            Egy modern, közösségközpontú magyar Minecraft szerver, ahol a hangulat és az élmény fontosabb, mint a pay-to-win.
+          </p>
+        </article>
 
-<footer class="footer">
-  &copy; <span id="year"></span> ETHERNIA · Nem hivatalos Minecraft oldal.
-</footer>
+        <article class="feature-card">
+          <h3 class="feature-title">Események és jutalmak</h3>
+          <p class="feature-text">
+            Rendszeres eventek, szezonális jutalmak, egyedi rangok és webes statisztikák várnak.
+          </p>
+        </article>
 
-<div class="news-modal" id="news-modal">
-  <div class="news-modal-backdrop"></div>
-  <div class="news-modal-dialog">
-    <button type="button" class="news-modal-close" aria-label="Bezárás">×</button>
-    <div class="news-modal-content">
-      <div class="news-modal-content-inner"></div>
+        <article class="feature-card">
+          <h3 class="feature-title">Csatlakozz most</h3>
+          <p class="feature-text">
+            Lépj be Discordra, kérdezz bátran, és ugorj fel a szerverre – a kaland már vár rád.
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    © <span id="year"></span> ETHERNIA – Nem hivatalos Minecraft oldal.
+  </footer>
+
+  <div class="news-modal" id="news-modal">
+    <div class="news-modal-backdrop"></div>
+    <div class="news-modal-dialog">
+      <button type="button" class="news-modal-close" aria-label="Bezárás">×</button>
+      <div class="news-modal-content">
+        <div class="news-modal-content-inner"></div>
+      </div>
     </div>
   </div>
-</div>
 
-<script src="/assets/js/index.js?v=<?= time(); ?>"></script>
+  <script src="/assets/js/index.js?v=<?= time(); ?>"></script>
 </body>
 </html>

@@ -22,18 +22,21 @@ async function updateMinecraftStats() {
     const res = await fetch(`https://api.mcsrvstat.us/2/${MC_SERVER}`, {
       cache: "no-store"
     });
+
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
 
-    onlineEl.textContent =
+    const online =
       data && data.players && typeof data.players.online === "number"
         ? data.players.online
         : 0;
-
-    maxEl.textContent =
+    const max =
       data && data.players && typeof data.players.max === "number"
         ? data.players.max
         : "?";
+
+    onlineEl.textContent = online;
+    maxEl.textContent = max;
   } catch (e) {
     console.error("MC stat hiba:", e);
     onlineEl.textContent = "N/A";
@@ -46,17 +49,20 @@ async function updateDiscordStats() {
   if (!onlineEl) return;
 
   try {
-    const url = `https://discord.com/api/guilds/${DISCORD_GUILD_ID}/widget.json`;
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(
+      `https://discord.com/api/guilds/${DISCORD_GUILD_ID}/widget.json`,
+      { cache: "no-store" }
+    );
+
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
 
-    const count =
-      typeof data.presence_count === "number"
-        ? data.presence_count
-        : Array.isArray(data.members)
-        ? data.members.length
-        : null;
+    let count = null;
+    if (typeof data.presence_count === "number") {
+      count = data.presence_count;
+    } else if (Array.isArray(data.members)) {
+      count = data.members.length;
+    }
 
     onlineEl.textContent = typeof count === "number" ? count : "N/A";
   } catch (e) {
@@ -66,43 +72,41 @@ async function updateDiscordStats() {
 }
 
 function initNewsSlider() {
-  const track = document.getElementById("news-track");
-  const prevBtn = document.getElementById("news-prev");
-  const nextBtn = document.getElementById("news-next");
-  if (!track || !prevBtn || !nextBtn) return;
+  const row = document.querySelector(".news-row");
+  const cards = Array.from(document.querySelectorAll(".news-card"));
+  const leftBtn = document.querySelector(".news-arrow-left");
+  const rightBtn = document.querySelector(".news-arrow-right");
 
-  const cards = Array.from(track.querySelectorAll(".news-card"));
-  if (!cards.length) return;
+  if (!row || !cards.length || !leftBtn || !rightBtn) return;
 
-  const gap = 16;
-  let index = 0;
-
-  function cardWidth() {
-    const first = cards[0];
-    const rect = first.getBoundingClientRect();
-    return rect.width + gap;
-  }
+  const visibleCount = 4;
+  let start = 0;
 
   function update() {
-    const w = cardWidth();
-    const maxIndex = Math.max(0, cards.length - Math.floor(track.parentElement.offsetWidth / w));
-    if (index < 0) index = 0;
-    if (index > maxIndex) index = maxIndex;
-    track.style.transform = `translateX(${-index * w}px)`;
+    cards.forEach((card, index) => {
+      if (index < start || index >= start + visibleCount) {
+        card.classList.add("news-card-hidden");
+      } else {
+        card.classList.remove("news-card-hidden");
+      }
+    });
+
+    leftBtn.disabled = start === 0;
+    rightBtn.disabled = start + visibleCount >= cards.length;
   }
 
-  prevBtn.addEventListener("click", () => {
-    index -= 1;
-    update();
+  leftBtn.addEventListener("click", () => {
+    if (start > 0) {
+      start -= 1;
+      update();
+    }
   });
 
-  nextBtn.addEventListener("click", () => {
-    index += 1;
-    update();
-  });
-
-  window.addEventListener("resize", () => {
-    update();
+  rightBtn.addEventListener("click", () => {
+    if (start + visibleCount < cards.length) {
+      start += 1;
+      update();
+    }
   });
 
   update();
