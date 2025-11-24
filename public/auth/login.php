@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 
 // Ha már be van lépve, mehet a főoldalra
 if (!empty($_SESSION['is_user']) && $_SESSION['is_user'] === true) {
-    header('Location: /');
+    header('Location: /login.php');
     exit;
 }
 

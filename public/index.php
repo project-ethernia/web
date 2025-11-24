@@ -35,7 +35,7 @@ $news = $stmt->fetchAll();
   <title>ETHERNIA - Bejelentkezés</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="assets/css/kell.css?v=<?= time(); ?>">
+  <link rel="stylesheet" href="kell.css?v=<?= time(); ?>">
 </head>
 <body>
 
