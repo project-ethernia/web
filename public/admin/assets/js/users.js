@@ -1,195 +1,225 @@
+// users.js – felhasználók kezelése (e‑mail, jelszó, törlés)
+
 document.addEventListener("DOMContentLoaded", () => {
-  const table = document.querySelector(".admin-table tbody");
-  if (!table) return;
+  const rows = document.querySelectorAll(".users-table tbody tr");
+  if (!rows.length) return;
 
-  const emailModal = document.getElementById("user-email-modal");
-  const passModal = document.getElementById("user-password-modal");
-  const delModal = document.getElementById("user-delete-modal");
-
-  // -------- helper függvények --------
-  function openModal(modal) {
-    if (!modal) return;
-    modal.classList.add("open");
-    modal.setAttribute("aria-hidden", "false");
+  // --- MODAL helper ---
+  function openModal(id) {
+    const m = document.getElementById(id);
+    if (m) m.classList.add("open");
   }
-
-  function closeModal(modal) {
-    if (!modal) return;
-    modal.classList.remove("open");
-    modal.setAttribute("aria-hidden", "true");
+  function closeModal(el) {
+    const m = el.closest(".modal");
+    if (m) m.classList.remove("open");
   }
-
-  document.querySelectorAll(".modal-backdrop, .modal-close, [data-close]")
-    .forEach((el) => {
-      el.addEventListener("click", (e) => {
-        const target = e.currentTarget;
-        const id = target.dataset.close || target.closest(".modal")?.id;
-        if (!id) return;
-        const m = document.getElementById(id);
-        closeModal(m);
-      });
-    });
-
-  // esc-re zárás
+  document.querySelectorAll("[data-modal-close]").forEach((btn) => {
+    btn.addEventListener("click", () => closeModal(btn));
+  });
+  document.querySelectorAll(".modal-backdrop").forEach((bd) => {
+    bd.addEventListener("click", () => closeModal(bd));
+  });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
-      [emailModal, passModal, delModal].forEach(closeModal);
+      document
+        .querySelectorAll(".modal.open")
+        .forEach((m) => m.classList.remove("open"));
     }
   });
 
-  // -------- gomb események a táblában --------
-  table.addEventListener("click", (e) => {
-    const row = e.target.closest("tr");
-    if (!row) return;
+  // --- E‑MAIL MÓDOSÍTÁS ---
+  const emailModal = document.getElementById("modal-change-email");
+  const emailForm = document.getElementById("form-change-email");
+  const emailUserId = document.getElementById("email-user-id");
+  const emailUsername = document.getElementById("email-username");
+  const emailInput = document.getElementById("email-new");
+  const emailError = document.getElementById("email-error");
 
+  // --- JELSZÓ CSERE ---
+  const pwModal = document.getElementById("modal-change-password");
+  const pwForm = document.getElementById("form-change-password");
+  const pwUserId = document.getElementById("pw-user-id");
+  const pwUsername = document.getElementById("pw-username");
+  const pwNew = document.getElementById("pw-new");
+  const pwNew2 = document.getElementById("pw-new2");
+  const pwError = document.getElementById("pw-error");
+
+  // --- TÖRLÉS ---
+  const delModal = document.getElementById("modal-delete-user");
+  const delForm = document.getElementById("form-delete-user");
+  const delUserId = document.getElementById("del-user-id");
+  const delUsername = document.getElementById("del-username");
+  const delEmail = document.getElementById("del-email");
+  const delError = document.getElementById("del-error");
+
+  rows.forEach((row) => {
     const id = row.dataset.id;
     const username = row.dataset.username;
     const email = row.dataset.email;
 
-    if (e.target.classList.contains("btn-user-email")) {
-      // email modal
-      document.getElementById("user-email-id").value = id;
-      document.getElementById("user-email-name").textContent = username;
-      const emailInput = document.getElementById("user-email-new");
-      emailInput.value = email || "";
-      document.getElementById("user-email-error").hidden = true;
-      openModal(emailModal);
+    const btnEmail = row.querySelector(".js-change-email");
+    const btnPw = row.querySelector(".js-change-password");
+    const btnDel = row.querySelector(".js-delete-user");
+
+    if (btnEmail) {
+      btnEmail.addEventListener("click", () => {
+        emailUserId.value = id;
+        emailUsername.textContent = username;
+        emailInput.value = email;
+        emailError.hidden = true;
+        emailError.textContent = "";
+        openModal("modal-change-email");
+        emailInput.focus();
+      });
     }
 
-    if (e.target.classList.contains("btn-user-password")) {
-      document.getElementById("user-password-id").value = id;
-      document.getElementById("user-password-name").textContent = username;
-      document.getElementById("user-password-new").value = "";
-      document.getElementById("user-password-confirm").value = "";
-      document.getElementById("user-password-error").hidden = true;
-      openModal(passModal);
+    if (btnPw) {
+      btnPw.addEventListener("click", () => {
+        pwUserId.value = id;
+        pwUsername.textContent = username;
+        pwNew.value = "";
+        pwNew2.value = "";
+        pwError.hidden = true;
+        pwError.textContent = "";
+        openModal("modal-change-password");
+        pwNew.focus();
+      });
     }
 
-    if (e.target.classList.contains("btn-user-delete")) {
-      document.getElementById("user-delete-id").value = id;
-      document.getElementById("user-delete-name").textContent = username;
-      document.getElementById("user-delete-email").textContent = email;
-      document.getElementById("user-delete-error").hidden = true;
-      openModal(delModal);
+    if (btnDel) {
+      btnDel.addEventListener("click", () => {
+        delUserId.value = id;
+        delUsername.textContent = username;
+        delEmail.textContent = email;
+        delError.hidden = true;
+        delError.textContent = "";
+        openModal("modal-delete-user");
+      });
     }
   });
 
-  // -------- E‑MAIL FORM --------
-  const emailForm = document.getElementById("user-email-form");
+  function postUsers(data) {
+    return fetch("/admin/users.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams(data),
+    }).then(async (res) => {
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.ok) {
+        const msg =
+          (json && json.error) ||
+          `Ismeretlen hiba (HTTP ${res.status})`;
+        throw new Error(msg);
+      }
+      return json;
+    });
+  }
+
+  // --- e‑mail form submit ---
   if (emailForm) {
-    emailForm.addEventListener("submit", async (e) => {
+    emailForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      const errEl = document.getElementById("user-email-error");
-      errEl.hidden = true;
-      const group = document.getElementById("group-email");
-      group.classList.remove("has-error");
+      emailError.hidden = true;
+      emailError.textContent = "";
 
-      const formData = new FormData(emailForm);
+      const id = emailUserId.value;
+      const newEmail = emailInput.value.trim();
 
-      try {
-        const res = await fetch("/admin/users.php", {
-          method: "POST",
-          body: formData,
-        });
-
-        const data = await res.json();
-        if (!data.ok) {
-          throw new Error(data.error || "Ismeretlen hiba.");
-        }
-
-        const id = formData.get("id");
-        const row = document.querySelector(`tr[data-id="${id}"]`);
-        if (row && data.email) {
-          row.dataset.email = data.email;
-          const cell = row.querySelector(".cell-email");
-          if (cell) cell.textContent = data.email;
-        }
-
-        closeModal(emailModal);
-      } catch (err) {
-        group.classList.add("has-error");
-        errEl.textContent = err.message;
-        errEl.hidden = false;
-      }
-    });
-  }
-
-  // -------- JELSZÓ FORM --------
-  const passForm = document.getElementById("user-password-form");
-  if (passForm) {
-    passForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const errEl = document.getElementById("user-password-error");
-      errEl.hidden = true;
-      document.getElementById("group-pass1").classList.remove("has-error");
-      document.getElementById("group-pass2").classList.remove("has-error");
-
-      const pass1 = document.getElementById("user-password-new").value;
-      const pass2 = document.getElementById("user-password-confirm").value;
-
-      if (pass1.length < 8) {
-        errEl.textContent = "A jelszó legalább 8 karakter legyen.";
-        errEl.hidden = false;
-        document.getElementById("group-pass1").classList.add("has-error");
-        return;
-      }
-      if (pass1 !== pass2) {
-        errEl.textContent = "A két jelszó nem egyezik.";
-        errEl.hidden = false;
-        document.getElementById("group-pass2").classList.add("has-error");
+      if (!newEmail) {
+        emailError.textContent = "Adj meg egy e‑mail címet.";
+        emailError.hidden = false;
         return;
       }
 
-      const formData = new FormData(passForm);
-      formData.set("password", pass1);
-
-      try {
-        const res = await fetch("/admin/users.php", {
-          method: "POST",
-          body: formData,
+      postUsers({
+        action: "change_email",
+        id,
+        email: newEmail,
+      })
+        .then((json) => {
+          // update sorban
+          const row = document.querySelector(
+            `.users-table tbody tr[data-id="${json.id}"]`
+          );
+          if (row) {
+            row.dataset.email = json.email;
+            const cell = row.querySelector(".cell-email");
+            if (cell) cell.textContent = json.email;
+          }
+          closeModal(emailForm);
+        })
+        .catch((err) => {
+          emailError.textContent = err.message;
+          emailError.hidden = false;
         });
-        const data = await res.json();
-        if (!data.ok) {
-          throw new Error(data.error || "Ismeretlen hiba.");
-        }
-
-        closeModal(passModal);
-      } catch (err) {
-        errEl.textContent = err.message;
-        errEl.hidden = false;
-      }
     });
   }
 
-  // -------- TÖRLÉS FORM --------
-  const delForm = document.getElementById("user-delete-form");
+  // --- jelszó form submit ---
+  if (pwForm) {
+    pwForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      pwError.hidden = true;
+      pwError.textContent = "";
+
+      const id = pwUserId.value;
+      const p1 = pwNew.value;
+      const p2 = pwNew2.value;
+
+      if (!p1 || !p2) {
+        pwError.textContent = "Töltsd ki mindkét jelszó mezőt.";
+        pwError.hidden = false;
+        return;
+      }
+      if (p1 !== p2) {
+        pwError.textContent = "A két jelszó nem egyezik.";
+        pwError.hidden = false;
+        return;
+      }
+
+      postUsers({
+        action: "change_password",
+        id,
+        password: p1,
+      })
+        .then(() => {
+          closeModal(pwForm);
+        })
+        .catch((err) => {
+          pwError.textContent = err.message;
+          pwError.hidden = false;
+        });
+    });
+  }
+
+  // --- törlés form submit ---
   if (delForm) {
-    delForm.addEventListener("submit", async (e) => {
+    delForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      const errEl = document.getElementById("user-delete-error");
-      errEl.hidden = true;
+      delError.hidden = true;
+      delError.textContent = "";
 
-      const formData = new FormData(delForm);
+      const id = delUserId.value;
 
-      try {
-        const res = await fetch("/admin/users.php", {
-          method: "POST",
-          body: formData,
+      postUsers({
+        action: "delete_user",
+        id,
+      })
+        .then((json) => {
+          const row = document.querySelector(
+            `.users-table tbody tr[data-id="${json.id}"]`
+          );
+          if (row && row.parentElement) {
+            row.parentElement.removeChild(row);
+          }
+          closeModal(delForm);
+        })
+        .catch((err) => {
+          delError.textContent = err.message;
+          delError.hidden = false;
         });
-        const data = await res.json();
-        if (!data.ok) {
-          throw new Error(data.error || "Ismeretlen hiba.");
-        }
-
-        const id = formData.get("id");
-        const row = document.querySelector(`tr[data-id="${id}"]`);
-        if (row) row.remove();
-
-        closeModal(delModal);
-      } catch (err) {
-        errEl.textContent = err.message;
-        errEl.hidden = false;
-      }
     });
   }
 });
