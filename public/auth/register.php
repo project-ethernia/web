@@ -105,16 +105,13 @@ function h($str) {
 
   <main class="auth-page">
     <section class="auth-card">
-      <h1 class="auth-title">Regisztráció</h1>
-      <p class="auth-subtitle">
-        Hozz létre ETHERNIA fiókot, hogy elérd a webes statokat és jutalmakat.
-      </p>
+    <h1 class="auth-title auth-title-center">Regisztráció</h1>
 
       <?php if ($success): ?>
         <div class="alert alert-success">
           Sikeres regisztráció! Most már bejelentkezhetsz.
           <br>
-          <a href="/login.php" class="link-accent">Ugrás a bejelentkezéshez →</a>
+          <a href="/auth/login.php" class="link-accent">Ugrás a bejelentkezéshez →</a>
         </div>
       <?php else: ?>
 
