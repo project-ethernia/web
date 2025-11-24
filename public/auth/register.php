@@ -106,7 +106,7 @@ function h($str) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- Ide tehetsz külön register.css-t is később -->
-  <link rel="stylesheet" href="/register.css?v=1">
+  <link rel="stylesheet" href="/assets/css/register.css?v=<?= time(); ?>">
 </head>
 <body class="public-body">
 
@@ -190,6 +190,6 @@ function h($str) {
     </section>
   </main>
 
-  <script src="/register.js?v=1"></script>
+  <script src="/assets/js/register.js?v=<?= time(); ?>"></script>
 </body>
 </html>
