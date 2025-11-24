@@ -5,9 +5,6 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-/**
- * Ha már be van lépve a felhasználó, mehet a főoldalra (vagy /profil, ha majd lesz).
- */
 if (!empty($_SESSION['is_user']) && $_SESSION['is_user'] === true) {
     header('Location: /');
     exit;
@@ -26,10 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Adj meg felhasználónevet vagy e-mail címet, és jelszót.';
     } else {
         try {
-            // PDO a database.php-ből
             $pdo = get_pdo();
 
-            // Felhasználónév VAGY e-mail alapján keresünk
             $stmt = $pdo->prepare("
                 SELECT id, username, email, password_hash
                 FROM web_users
@@ -42,13 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$user || !password_verify($password, $user['password_hash'])) {
                 $error = 'Hibás adatok – ellenőrizd a felhasználónevet / e-mail címet és a jelszót.';
             } else {
-                // Sikeres belépés – session beállítása
                 $_SESSION['user_id']       = (int)$user['id'];
                 $_SESSION['user_username'] = $user['username'];
                 $_SESSION['user_email']    = $user['email'];
                 $_SESSION['is_user']       = true;
 
-                // last_login + last_ip frissítés
                 $ip = $_SERVER['REMOTE_ADDR'] ?? null;
 
                 $upd = $pdo->prepare("
@@ -60,12 +53,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':ip' => $ip,
                     ':id' => $user['id'],
                 ]);
-                             
+
                 header('Location: /');
                 exit;
             }
         } catch (Exception $e) {
-            $error = 'Adatbázis hiba történt. Próbáld újra később.';
+            $error = 'Adatbázis hiba: ' . $e->getMessage();
         }
     }
 }
