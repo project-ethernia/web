@@ -82,18 +82,6 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
             <li><a href="#">Statisztikák</a></li>
             <li><a href="#">Kapcsolat</a></li>
         </ul>
-
-        <div class="main-nav-user">
-            <?php if ($isLoggedIn): ?>
-                <span class="user-pill">
-                    Bejelentkezve: <strong><?= h($currentUser); ?></strong>
-                </span>
-                <a href="/auth/logout.php" class="nav-btn nav-btn-secondary">Kijelentkezés</a>
-            <?php else: ?>
-                <a href="/auth/login.php" class="nav-btn nav-btn-secondary">Bejelentkezés</a>
-                <a href="/auth/register.php" class="nav-btn nav-btn-primary">Regisztráció</a>
-            <?php endif; ?>
-        </div>
     </div>
 </nav>
 
