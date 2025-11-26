@@ -198,7 +198,7 @@ a {
 
 .main-nav-links li.active a {
   color: #f9fafb;
-  border-color: var(--accent-strong);
+/*  border-color: var(--accent-strong);*/
   box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.4);
 }
 
