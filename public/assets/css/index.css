@@ -198,14 +198,16 @@ a {
 
 .main-nav-links li.active a {
   color: #f9fafb;
-/*  border-color: var(--accent-strong);*/
+  border-color: rgba(139, 92, 246, 0.9);
   box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.4);
+  text-transform: uppercase;
 }
 
 .main-nav-links li:not(.active) a:hover {
   background: rgba(15, 23, 42, 0.96);
   border-color: rgba(139, 92, 246, 0.9);
   color: #f9fafb;
+  text-transform: uppercase;
 }
 
 .main-nav-user {
