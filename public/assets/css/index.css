@@ -199,8 +199,7 @@ a {
 .main-nav-links li.active a {
   color: #f9fafb;
   border-color: rgba(139, 92, 246, 0.9);
-  box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.4);
-  text-transform: uppercase;
+/*  box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.4); */
 }
 
 .main-nav-links li:not(.active) a:hover {
