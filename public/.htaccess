@@ -1,0 +1,32 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Ne irányítsuk át a 404 oldalt magát (kerüljük a loop-ot)
+  RewriteCond %{REQUEST_URI} !^/404(\.php|\.html)?$
+
+  # 1) Régi .php vagy .html URL-eket irányítsuk át az új, kiterjesztés nélküli verzióra (csak GET-re)
+  RewriteCond %{REQUEST_METHOD} =GET
+  RewriteCond %{THE_REQUEST} \s/([^\s]+)\.php(?:\s|\?)
+  RewriteRule ^ %1 [R=301,L]
+
+  RewriteCond %{REQUEST_METHOD} =GET
+  RewriteCond %{THE_REQUEST} \s/([^\s]+)\.html(?:\s|\?)
+  RewriteRule ^ %1 [R=301,L]
+
+  # 2) Létező fájlok / könyvtárak menjenek közvetlenül (CSS/JS/képek stb.)
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # 3) Ha a kért útvonalhoz létezik .php, belsőleg arra irányítsunk
+  RewriteCond %{REQUEST_FILENAME}.php -f
+  RewriteRule ^(.+)$ $1.php [L,QSA]
+
+  # 4) Ha a kért útvonalhoz létezik .html, belsőleg arra irányítsunk
+  RewriteCond %{REQUEST_FILENAME}.html -f
+  RewriteRule ^(.+)$ $1.html [L,QSA]
+</IfModule>
+
+# Dinamikus 404 PHP oldal
+ErrorDocument 404 /404.php

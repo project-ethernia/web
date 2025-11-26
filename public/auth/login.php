@@ -123,7 +123,7 @@ function h($str) {
 
       <p class="auth-footnote">
         Nincs még fiókod?
-        <a href="/auth/register.php" class="link-accent">Regisztráció</a>
+        <a href="/auth/register" class="link-accent">Regisztráció</a>
       </p>
 
       <p class="auth-footnote">
