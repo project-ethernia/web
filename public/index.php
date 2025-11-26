@@ -24,7 +24,6 @@ $stmt = $pdo->query("
     ORDER BY order_index ASC, created_at DESC
 ");
 $news = $stmt->fetchAll();
-$visibleNews = array_slice($news, 0, 5);
 
 $isLoggedIn = !empty($_SESSION['is_user']) && $_SESSION['is_user'] === true;
 $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['user_username'] : null;
@@ -82,6 +81,18 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
             <li><a href="#">Statisztikák</a></li>
             <li><a href="#">Kapcsolat</a></li>
         </ul>
+
+        <div class="main-nav-user">
+            <?php if ($isLoggedIn): ?>
+                <span class="user-pill">
+                    Bejelentkezve: <strong><?= h($currentUser); ?></strong>
+                </span>
+                <a href="/auth/logout.php" class="nav-btn nav-btn-secondary">Kijelentkezés</a>
+            <?php else: ?>
+                <a href="/auth/login.php" class="nav-btn nav-btn-secondary">Bejelentkezés</a>
+                <a href="/auth/register.php" class="nav-btn nav-btn-primary">Regisztráció</a>
+            <?php endif; ?>
+        </div>
     </div>
 </nav>
 
@@ -95,9 +106,9 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
             </p>
         </header>
 
-        <?php if (!empty($visibleNews)): ?>
+        <?php if (!empty($news)): ?>
             <div class="news-list">
-                <?php foreach ($visibleNews as $row): ?>
+                <?php foreach (array_slice($news, 0, 5) as $row): ?>
                     <?php
                     $tag = $row['tag'] ?: 'Info';
                     $tagLower = mb_strtolower($tag, 'UTF-8');
@@ -114,11 +125,10 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
                     $shortText = $row['short_text'] ?: '';
                     $fullText = $row['full_text'] ?: '';
                     $author = $row['author'] ?: 'Ismeretlen';
-                    $fullForModal = $fullText !== '' ? $fullText : $shortText;
                     ?>
                     <article
                         class="news-card"
-                        data-full="<?= h($fullForModal); ?>"
+                        data-full="<?= h($fullText !== '' ? $fullText : $shortText); ?>"
                     >
                         <div class="news-card-inner">
                             <div class="news-card-header">
