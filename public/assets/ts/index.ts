@@ -97,6 +97,7 @@ function initNavbarStyles(): void {
   navbarItems.forEach((item) => {
     const element = item as HTMLElement;
     element.style.justifyContent = "center";
+
     if (element.classList.contains("active")) {
       element.style.border = "2px solid #A020F0";
       element.style.borderRadius = "5px";
