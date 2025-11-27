@@ -10,8 +10,17 @@ require_once __DIR__ . '/../database.php';
 require_once __DIR__ . '/log.php';
 
 $error = '';
+$mode = 'form';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+$pendingRequestId = isset($_SESSION['admin_pending_login_request_id']) ? (int)$_SESSION['admin_pending_login_request_id'] : 0;
+$pendingAdminId   = isset($_SESSION['admin_pending_admin_id']) ? (int)$_SESSION['admin_pending_admin_id'] : 0;
+$pendingUsername  = isset($_SESSION['admin_pending_username']) ? (string)$_SESSION['admin_pending_username'] : '';
+
+if ($pendingRequestId > 0 && $pendingAdminId > 0) {
+    $mode = 'wait';
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $mode === 'form') {
     $username = isset($_POST['username']) ? trim($_POST['username']) : '';
     $password = isset($_POST['password']) ? $_POST['password'] : '';
 
@@ -40,24 +49,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ip = $_SERVER['REMOTE_ADDR'] ?? null;
                 $ua = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
-                $stmtIns = $pdo->prepare('INSERT INTO admin_login_requests (admin_id, status, notified, ip, user_agent) VALUES (:aid, :status, 0, :ip, :ua)');
+                $stmtIns = $pdo->prepare('
+                    INSERT INTO admin_login_requests (admin_id, status, notified, ip, user_agent)
+                    VALUES (:aid, :status, 0, :ip, :ua)
+                ');
                 $stmtIns->execute([
-                    ':aid' => (int)$user['id'],
+                    ':aid'    => (int)$user['id'],
                     ':status' => 'pending',
-                    ':ip' => $ip,
-                    ':ua' => $ua
+                    ':ip'     => $ip,
+                    ':ua'     => $ua
                 ]);
 
                 $requestId = (int)$pdo->lastInsertId();
 
                 $_SESSION['admin_pending_login_request_id'] = $requestId;
-                $_SESSION['admin_pending_admin_id'] = (int)$user['id'];
-                $_SESSION['admin_pending_username'] = (string)$user['username'];
+                $_SESSION['admin_pending_admin_id']         = (int)$user['id'];
+                $_SESSION['admin_pending_username']         = (string)$user['username'];
 
                 unset($_SESSION['admin_id'], $_SESSION['admin_username'], $_SESSION['admin_role'], $_SESSION['is_admin']);
 
-                header('Location: /admin/login_wait.php');
-                exit;
+                $mode = 'wait';
+                $pendingRequestId = $requestId;
+                $pendingAdminId   = (int)$user['id'];
+                $pendingUsername  = (string)$user['username'];
             }
         } catch (Exception $e) {
             $error = 'Adatbázis hiba: ' . $e->getMessage();
@@ -80,48 +94,78 @@ function h($str) {
 <body class="public-body">
   <main class="auth-page">
     <section class="auth-card">
-      <h1 class="auth-title auth-title-center">Admin bejelentkezés</h1>
-      <p class="auth-footnote" style="margin-top:4px;margin-bottom:10px;font-size:0.8rem;">
-        Add meg az admin felhasználóneved és jelszavad. Ezután a Discord boton keresztül kell jóváhagynod a belépést.
-      </p>
+      <?php if ($mode === 'form'): ?>
+        <h1 class="auth-title auth-title-center">Admin bejelentkezés</h1>
+        <p class="auth-footnote" style="margin-top:4px;margin-bottom:10px;font-size:0.8rem;">
+          Add meg az admin felhasználóneved és jelszavad. Ezután a Discord boton keresztül kell jóváhagynod a belépést.
+        </p>
 
-      <?php if ($error): ?>
-        <div class="alert alert-error">
-          <?= h($error); ?>
+        <?php if ($error): ?>
+          <div class="alert alert-error">
+            <?= h($error); ?>
+          </div>
+        <?php endif; ?>
+
+        <form method="POST" action="/admin/login.php" class="auth-form" id="admin-login-form">
+          <div class="form-group">
+            <label for="username">Felhasználónév</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              autocomplete="username"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="password">Jelszó</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              autocomplete="current-password"
+              required
+            >
+          </div>
+
+          <button type="submit" class="btn auth-btn">Belépés</button>
+        </form>
+
+        <p class="auth-footnote">
+          <a href="/">← Vissza a főoldalra</a>
+        </p>
+      <?php else: ?>
+        <h1 class="auth-title auth-title-center">Jóváhagyás Discordon</h1>
+        <?php if ($pendingUsername): ?>
+          <p class="auth-footnote" style="margin-top:4px;margin-bottom:6px;font-size:0.85rem;">
+            Folyamatban lévő bejelentkezés: <strong><?= h($pendingUsername); ?></strong>
+          </p>
+        <?php endif; ?>
+        <p class="auth-footnote" style="margin-top:0;margin-bottom:12px;font-size:0.8rem;">
+          Nyisd meg a Discordot. A bot üzenetet küldött neked, ahol 3 percen belül jóváhagyhatod vagy elutasíthatod a belépést.
+        </p>
+
+        <div id="wait-message" class="auth-footnote" style="font-size:0.82rem;">
+          Várakozás a jóváhagyásra…
         </div>
+        <div id="wait-error" class="alert alert-error" style="margin-top:10px;display:none;"></div>
+
+        <p class="auth-footnote" style="margin-top:18px;">
+          Ha nem te kezdeményezted ezt a belépést, azonnal változtasd meg a jelszavad.
+        </p>
+
+        <p class="auth-footnote">
+          <a href="/admin/login.php">← Másik fiókkal jelentkeznék be</a>
+        </p>
+
+        <p class="auth-footnote">
+          <a href="/">Vissza a főoldalra</a>
+        </p>
+
+        <script src="/admin/assets/js/login_2fa.js?v=<?= time(); ?>"></script>
       <?php endif; ?>
-
-      <form method="POST" action="/admin/login.php" class="auth-form" id="admin-login-form">
-        <div class="form-group">
-          <label for="username">Felhasználónév</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            autocomplete="username"
-            required
-          >
-        </div>
-
-        <div class="form-group">
-          <label for="password">Jelszó</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            autocomplete="current-password"
-            required
-          >
-        </div>
-
-        <button type="submit" class="btn auth-btn">Belépés</button>
-      </form>
-
-      <p class="auth-footnote">
-        <a href="/">← Vissza a főoldalra</a>
-      </p>
     </section>
   </main>
-  <script src="/assets/js/login.js?v=<?= time(); ?>"></script>
 </body>
 </html>

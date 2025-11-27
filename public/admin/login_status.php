@@ -9,7 +9,7 @@ if (empty($_SESSION['admin_pending_login_request_id']) || empty($_SESSION['admin
 }
 
 $requestId = (int)$_SESSION['admin_pending_login_request_id'];
-$adminId = (int)$_SESSION['admin_pending_admin_id'];
+$adminId   = (int)$_SESSION['admin_pending_admin_id'];
 
 require_once __DIR__ . '/../database.php';
 require_once __DIR__ . '/log.php';
@@ -17,7 +17,7 @@ require_once __DIR__ . '/log.php';
 try {
     $stmt = $pdo->prepare('SELECT * FROM admin_login_requests WHERE id = :id AND admin_id = :aid LIMIT 1');
     $stmt->execute([
-        ':id' => $requestId,
+        ':id'  => $requestId,
         ':aid' => $adminId
     ]);
     $row = $stmt->fetch();
@@ -32,7 +32,7 @@ try {
 
     if ($status === 'pending') {
         $created = strtotime($row['created_at']);
-        if ($created !== false && (time() - $created) > 300) {
+        if ($created !== false && (time() - $created) > 180) {
             $upd = $pdo->prepare('UPDATE admin_login_requests SET status = :st WHERE id = :id');
             $upd->execute([
                 ':st' => 'expired',
@@ -40,8 +40,8 @@ try {
             ]);
             unset($_SESSION['admin_pending_login_request_id'], $_SESSION['admin_pending_admin_id'], $_SESSION['admin_pending_username']);
             echo json_encode([
-                'status' => 'expired',
-                'message' => 'A bejelentkezési kérés lejárt.'
+                'status'  => 'expired',
+                'message' => 'A bejelentkezési kérés lejárt (3 perc után automatikusan lejár).'
             ]);
             exit;
         }
@@ -58,16 +58,16 @@ try {
         if (!$user) {
             unset($_SESSION['admin_pending_login_request_id'], $_SESSION['admin_pending_admin_id'], $_SESSION['admin_pending_username']);
             echo json_encode([
-                'status' => 'expired',
+                'status'  => 'expired',
                 'message' => 'A felhasználó már nem aktív.'
             ]);
             exit;
         }
 
-        $_SESSION['admin_id'] = (int)$user['id'];
+        $_SESSION['admin_id']       = (int)$user['id'];
         $_SESSION['admin_username'] = $user['username'];
-        $_SESSION['admin_role'] = $user['role'];
-        $_SESSION['is_admin'] = true;
+        $_SESSION['admin_role']     = $user['role'];
+        $_SESSION['is_admin']       = true;
 
         unset($_SESSION['admin_pending_login_request_id'], $_SESSION['admin_pending_admin_id'], $_SESSION['admin_pending_username']);
 
@@ -86,7 +86,7 @@ try {
         }
 
         echo json_encode([
-            'status' => 'approved',
+            'status'   => 'approved',
             'redirect' => '/admin/index.php'
         ]);
         exit;
@@ -95,7 +95,7 @@ try {
     if ($status === 'rejected') {
         unset($_SESSION['admin_pending_login_request_id'], $_SESSION['admin_pending_admin_id'], $_SESSION['admin_pending_username']);
         echo json_encode([
-            'status' => 'rejected',
+            'status'  => 'rejected',
             'message' => 'A bejelentkezési kérelmet elutasítottad Discordon.'
         ]);
         exit;
@@ -104,7 +104,7 @@ try {
     if ($status === 'expired') {
         unset($_SESSION['admin_pending_login_request_id'], $_SESSION['admin_pending_admin_id'], $_SESSION['admin_pending_username']);
         echo json_encode([
-            'status' => 'expired',
+            'status'  => 'expired',
             'message' => 'A bejelentkezési kérés lejárt.'
         ]);
         exit;
@@ -113,7 +113,7 @@ try {
     echo json_encode(['status' => 'none']);
 } catch (Exception $e) {
     echo json_encode([
-        'status' => 'error',
+        'status'  => 'error',
         'message' => 'Szerver hiba.'
     ]);
 }
