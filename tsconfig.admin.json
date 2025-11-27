@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "none",
+    "lib": ["DOM", "ES2015"],
+    "strict": true,
+    "noImplicitAny": false,
+    "noEmitOnError": false,
+    "sourceMap": false,
+    "rootDir": "./public/admin/assets/ts",
+    "outDir": "./public/admin/assets/js",
+    "allowJs": false
+  },
+  "include": [
+    "public/admin/assets/ts/**/*.ts"
+  ],
+  "exclude": [
+    "public/admin/assets/js"
+  ]
+}
