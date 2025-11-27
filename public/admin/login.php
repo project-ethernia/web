@@ -37,18 +37,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } catch (Throwable $e2) {
                 }
             } else {
-                $_SESSION['admin_2fa_user_id'] = (int)$user['id'];
-                $_SESSION['admin_2fa_username'] = (string)$user['username'];
+                $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+                $ua = $_SERVER['HTTP_USER_AGENT'] ?? null;
+
+                $stmtIns = $pdo->prepare('INSERT INTO admin_login_requests (admin_id, status, notified, ip, user_agent) VALUES (:aid, :status, 0, :ip, :ua)');
+                $stmtIns->execute([
+                    ':aid' => (int)$user['id'],
+                    ':status' => 'pending',
+                    ':ip' => $ip,
+                    ':ua' => $ua
+                ]);
+
+                $requestId = (int)$pdo->lastInsertId();
+
+                $_SESSION['admin_pending_login_request_id'] = $requestId;
+                $_SESSION['admin_pending_admin_id'] = (int)$user['id'];
+                $_SESSION['admin_pending_username'] = (string)$user['username'];
 
                 unset($_SESSION['admin_id'], $_SESSION['admin_username'], $_SESSION['admin_role'], $_SESSION['is_admin']);
 
-                header('Location: /admin/2fa.php');
+                header('Location: /admin/login_wait.php');
                 exit;
             }
         } catch (Exception $e) {
             $error = 'Adatbázis hiba: ' . $e->getMessage();
         }
     }
+}
+
+function h($str) {
+    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 ?>
 <!DOCTYPE html>
@@ -57,19 +75,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <title>ETHERNIA Admin - Bejelentkezés</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/assets/css/register.css?v=<?= time(); ?>">
+  <link rel="stylesheet" href="/assets/css/login.css?v=<?= time(); ?>">
 </head>
 <body class="public-body">
   <main class="auth-page">
     <section class="auth-card">
       <h1 class="auth-title auth-title-center">Admin bejelentkezés</h1>
       <p class="auth-footnote" style="margin-top:4px;margin-bottom:10px;font-size:0.8rem;">
-        Először add meg az admin felhasználóneved és jelszavad, majd a Discord 2FA lépés következik.
+        Add meg az admin felhasználóneved és jelszavad. Ezután a Discord boton keresztül kell jóváhagynod a belépést.
       </p>
 
       <?php if ($error): ?>
         <div class="alert alert-error">
-          <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?>
+          <?= h($error); ?>
         </div>
       <?php endif; ?>
 
@@ -96,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           >
         </div>
 
-        <button type="submit" class="btn auth-btn">Tovább a 2FA-hoz</button>
+        <button type="submit" class="btn auth-btn">Belépés</button>
       </form>
 
       <p class="auth-footnote">
