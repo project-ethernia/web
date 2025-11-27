@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Adj meg felhasználónevet és jelszót.';
     } else {
         try {
-            $stmt = $pdo->prepare("SELECT * FROM admin_users WHERE username = :u AND is_active = 1 LIMIT 1");
+            $stmt = $pdo->prepare('SELECT * FROM admin_users WHERE username = :u AND is_active = 1 LIMIT 1');
             $stmt->execute([':u' => $username]);
             $user = $stmt->fetch();
 
@@ -37,36 +37,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } catch (Throwable $e2) {
                 }
             } else {
-                $_SESSION['admin_id']       = (int)$user['id'];
-                $_SESSION['admin_username'] = $user['username'];
-                $_SESSION['admin_role']     = $user['role'];
-                $_SESSION['is_admin']       = true;
+                $_SESSION['admin_2fa_user_id'] = (int)$user['id'];
+                $_SESSION['admin_2fa_username'] = (string)$user['username'];
 
-                $upd = $pdo->prepare("UPDATE admin_users SET last_login = NOW() WHERE id = :id");
-                $upd->execute([':id' => $user['id']]);
+                unset($_SESSION['admin_id'], $_SESSION['admin_username'], $_SESSION['admin_role'], $_SESSION['is_admin']);
 
-                try {
-                    log_admin_action(
-                        $pdo,
-                        (int)$user['id'],
-                        (string)$user['username'],
-                        'Sikeres admin bejelentkezés',
-                        []
-                    );
-                } catch (Throwable $e2) {
-                }
-
-                header('Location: /admin/index.php');
+                header('Location: /admin/2fa.php');
                 exit;
             }
         } catch (Exception $e) {
             $error = 'Adatbázis hiba: ' . $e->getMessage();
         }
     }
-}
-
-function h($str) {
-    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 ?>
 <!DOCTYPE html>
@@ -75,21 +57,23 @@ function h($str) {
   <meta charset="UTF-8">
   <title>ETHERNIA Admin - Bejelentkezés</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/admin/assets/css/login.css?v=<?= time(); ?>">
+  <link rel="stylesheet" href="/assets/css/register.css?v=<?= time(); ?>">
 </head>
 <body class="public-body">
-
   <main class="auth-page">
     <section class="auth-card">
       <h1 class="auth-title auth-title-center">Admin bejelentkezés</h1>
+      <p class="auth-footnote" style="margin-top:4px;margin-bottom:10px;font-size:0.8rem;">
+        Először add meg az admin felhasználóneved és jelszavad, majd a Discord 2FA lépés következik.
+      </p>
 
       <?php if ($error): ?>
         <div class="alert alert-error">
-          <?php echo h($error); ?>
+          <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?>
         </div>
       <?php endif; ?>
 
-      <form method="POST" action="/admin/login.php" class="auth-form" id="login-form">
+      <form method="POST" action="/admin/login.php" class="auth-form" id="admin-login-form">
         <div class="form-group">
           <label for="username">Felhasználónév</label>
           <input
@@ -112,18 +96,14 @@ function h($str) {
           >
         </div>
 
-        <button type="submit" class="btn auth-btn">Bejelentkezés</button>
+        <button type="submit" class="btn auth-btn">Tovább a 2FA-hoz</button>
       </form>
 
       <p class="auth-footnote">
-        Csak jogosult felhasználók számára.
-      </p>
-
-      <p class="auth-footnote">
-        <a href="/" class="link-accent">← Vissza a főoldalra</a>
+        <a href="/">← Vissza a főoldalra</a>
       </p>
     </section>
   </main>
-
+  <script src="/assets/js/login.js?v=<?= time(); ?>"></script>
 </body>
 </html>
