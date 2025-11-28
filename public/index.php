@@ -42,7 +42,7 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
     <div class="hero-inner">
         <div class="hero-stat hero-stat-left">
             <div class="hero-stat-icon hero-stat-icon-discord">
-                <span class="hero-icon-symbol"></span>
+                <img src="/assets/img/discord.png" alt="Discord" class="hero-discord-logo">
             </div>
             <div class="hero-stat-text">
                 <div class="hero-stat-line">
@@ -184,8 +184,34 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
 
 </main>
 
-<footer class="footer">
-    &copy; <span id="year"></span> ETHERNIA – Nem hivatalos Minecraft oldal.
+<footer class="footer site-footer">
+    <div class="footer-inner">
+        <div class="footer-col footer-brand">
+            <div class="footer-logo">ETHERNIA</div>
+            <p class="footer-description">
+                Nem hivatalos Minecraft rajongói oldal. A tartalom nem áll kapcsolatban a Mojang Studios‑szal.
+            </p>
+        </div>
+
+        <div class="footer-col footer-links">
+            <h4>Információk</h4>
+            <ul>
+                <li><a href="#">Általános Szerződési Feltételek</a></li>
+                <li><a href="#">Adatkezelési tájékoztató</a></li>
+                <li><a href="#">Impresszum</a></li>
+                <li><a href="#">Cookie tájékoztató</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col footer-meta">
+            <p class="footer-copy">
+                &copy; <span id="year"></span> ETHERNIA. Minden jog fenntartva.
+            </p>
+            <p class="footer-minecraft-note">
+                Minecraft is a trademark of Mojang Studios and is not affiliated with this website.
+            </p>
+        </div>
+    </div>
 </footer>
 
 <div class="news-modal" id="news-modal">
