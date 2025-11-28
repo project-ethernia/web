@@ -225,12 +225,11 @@ a {
     transform 0.08s ease;
 }
 
-/* csak egy „pill” kiemelés – nincs második, szögletes keret */
 .main-nav-links li.active a {
   color: #f9fafb;
-  border-color: transparent;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  box-shadow: 0 16px 36px rgba(88, 28, 135, 0.75);
+  background: transparent;
+  border-color: rgba(168, 85, 247, 0.9);  /* lila körvonal */
+  box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.5); /* finom glow */
 }
 
 .main-nav-links li:not(.active) a:hover {
