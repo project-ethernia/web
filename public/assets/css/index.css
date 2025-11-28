@@ -225,11 +225,18 @@ a {
     transform 0.08s ease;
 }
 
+/* csak egy vékony, kerek lila körvonal az aktív elem körül */
 .main-nav-links li.active a {
   color: #f9fafb;
   background: transparent;
-  border-color: rgba(168, 85, 247, 0.9);  /* lila körvonal */
-  box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.5); /* finom glow */
+  border-color: rgba(168, 85, 247, 0.9);
+  box-shadow: none;
+}
+
+/* böngésző alap téglalap-outline kikapcsolása */
+.main-nav-links a:focus,
+.main-nav-links a:focus-visible {
+  outline: none;
 }
 
 .main-nav-links li:not(.active) a:hover {
