@@ -39,6 +39,39 @@ document.addEventListener("DOMContentLoaded", function () {
     var table = document.querySelector(".players-table");
     if (!table)
         return;
+    var doPlayerAction = function (id, action) { return __awaiter(void 0, void 0, void 0, function () {
+        var formData, res, data, err_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    formData = new FormData();
+                    formData.append("id", id);
+                    formData.append("action", action);
+                    return [4 /*yield*/, fetch("/admin/players.php", {
+                            method: "POST",
+                            body: formData
+                        })];
+                case 1:
+                    res = _a.sent();
+                    return [4 /*yield*/, res.json()];
+                case 2:
+                    data = _a.sent();
+                    if (!data.ok) {
+                        alert("Hiba: " + (data.error || "ismeretlen hiba"));
+                        return [2 /*return*/];
+                    }
+                    window.location.reload();
+                    return [3 /*break*/, 4];
+                case 3:
+                    err_1 = _a.sent();
+                    console.error(err_1);
+                    alert("Nem sikerült a művelet (hálózati hiba?).");
+                    return [3 /*break*/, 4];
+                case 4: return [2 /*return*/];
+            }
+        });
+    }); };
     table.addEventListener("click", function (e) { return __awaiter(void 0, void 0, void 0, function () {
         var target, btn, row, id, name, action, confirmText, action, confirmText;
         return __generator(this, function (_a) {
@@ -83,36 +116,3 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }); });
 });
-var doPlayerAction = function (id, action) { return __awaiter(void 0, void 0, void 0, function () {
-    var formData, res, data, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 3, , 4]);
-                formData = new FormData();
-                formData.append("id", id);
-                formData.append("action", action);
-                return [4 /*yield*/, fetch("/admin/players.php", {
-                        method: "POST",
-                        body: formData
-                    })];
-            case 1:
-                res = _a.sent();
-                return [4 /*yield*/, res.json()];
-            case 2:
-                data = _a.sent();
-                if (!data.ok) {
-                    alert("Hiba: " + (data.error || "ismeretlen hiba"));
-                    return [2 /*return*/];
-                }
-                window.location.reload();
-                return [3 /*break*/, 4];
-            case 3:
-                err_1 = _a.sent();
-                console.error(err_1);
-                alert("Nem sikerült a művelet (hálózati hiba?).");
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
-        }
-    });
-}); };

@@ -2,6 +2,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const table = document.querySelector(".players-table") as HTMLElement | null;
   if (!table) return;
 
+  const doPlayerAction = async (id: string, action: string): Promise<void> => {
+    try {
+      const formData = new FormData();
+      formData.append("id", id);
+      formData.append("action", action);
+
+      const res = await fetch("/admin/players.php", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (!data.ok) {
+        alert("Hiba: " + (data.error || "ismeretlen hiba"));
+        return;
+      }
+
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert("Nem sikerült a művelet (hálózati hiba?).");
+    }
+  };
+
   table.addEventListener("click", async (e: MouseEvent) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
@@ -23,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
           : `'${name}' unbannolása?`;
 
       if (!window.confirm(confirmText)) return;
-
       await doPlayerAction(id, action);
     } else if (btn.classList.contains("btn-mute-toggle")) {
       const action = btn.dataset.action || "";
@@ -33,33 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
           : `'${name}' némításának feloldása?`;
 
       if (!window.confirm(confirmText)) return;
-
       await doPlayerAction(id, action);
     }
   });
 });
-
-const doPlayerAction = async (id: string, action: string): Promise<void> => {
-  try {
-    const formData = new FormData();
-    formData.append("id", id);
-    formData.append("action", action);
-
-    const res = await fetch("/admin/players.php", {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      alert("Hiba: " + (data.error || "ismeretlen hiba"));
-      return;
-    }
-
-    window.location.reload();
-  } catch (err) {
-    console.error(err);
-    alert("Nem sikerült a művelet (hálózati hiba?).");
-  }
-};
