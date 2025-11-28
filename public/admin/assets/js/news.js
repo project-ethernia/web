@@ -19,12 +19,12 @@ document.addEventListener("DOMContentLoaded", function () {
     var visibleInput = document.getElementById("news-visible");
     var metaAuthor = document.getElementById("news-meta-author");
     var metaDate = document.getElementById("news-meta-date");
-    function openModal() {
+    var openModal = function () {
         if (!modal)
             return;
         modal.classList.add("open");
-    }
-    function closeModal() {
+    };
+    var closeModal = function () {
         if (!modal)
             return;
         modal.classList.remove("open");
@@ -32,8 +32,8 @@ document.addEventListener("DOMContentLoaded", function () {
             errorEl.hidden = true;
             errorEl.textContent = "";
         }
-    }
-    function resetForm() {
+    };
+    var resetForm = function () {
         if (!form)
             return;
         form.reset();
@@ -47,8 +47,8 @@ document.addEventListener("DOMContentLoaded", function () {
             metaAuthor.textContent = "Mentés után";
         if (metaDate)
             metaDate.textContent = "Mentés után";
-    }
-    function fillFormFromRow(tr) {
+    };
+    var fillFormFromRow = function (tr) {
         if (idInput)
             idInput.value = tr.dataset.id || "";
         if (titleInput)
@@ -67,13 +67,13 @@ document.addEventListener("DOMContentLoaded", function () {
             metaAuthor.textContent = tr.dataset.author || "Ismeretlen";
         if (metaDate)
             metaDate.textContent = tr.dataset.date_display || "-";
-    }
-    function handleNewClick() {
+    };
+    var handleNewClick = function () {
         resetForm();
         if (modalTitle)
             modalTitle.textContent = "Új hír";
         openModal();
-    }
+    };
     if (addBtn)
         addBtn.addEventListener("click", handleNewClick);
     if (addBtnEmpty)
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
             var title = tr.dataset.title || id || "";
             if (!id)
                 return;
-            if (!confirm("Biztosan törlöd ezt a hírt?\n\n" + title)) {
+            if (!window.confirm("Biztosan törlöd ezt a hírt?\n\n" + title)) {
                 return;
             }
             var formData = new FormData();
@@ -112,14 +112,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(function (res) { return res.json(); })
                 .then(function (data) {
                 if (!data.ok) {
-                    alert(data.error || "Ismeretlen hiba történt törlés közben.");
+                    window.alert(data.error || "Ismeretlen hiba történt törlés közben.");
                     return;
                 }
                 tr.remove();
             })
                 .catch(function (err) {
                 console.error(err);
-                alert("Hálózati hiba történt a törlés során.");
+                window.alert("Hálózati hiba történt a törlés során.");
             });
         });
     });
@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(function (res) { return res.json(); })
                 .then(function (data) {
                 if (!data.ok) {
-                    alert(data.error || "Hiba a láthatóság állításakor.");
+                    window.alert(data.error || "Hiba a láthatóság állításakor.");
                     return;
                 }
                 btn.dataset.visible = String(next);
@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", function () {
             })
                 .catch(function (err) {
                 console.error(err);
-                alert("Hálózati hiba történt a láthatóság állításakor.");
+                window.alert("Hálózati hiba történt a láthatóság állításakor.");
             });
         });
     });
@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         errorEl.hidden = false;
                     }
                     else {
-                        alert(data.error || "Ismeretlen hiba történt mentés közben.");
+                        window.alert(data.error || "Ismeretlen hiba történt mentés közben.");
                     }
                     return;
                 }
@@ -210,7 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     errorEl.hidden = false;
                 }
                 else {
-                    alert("Hálózati hiba történt a mentés során.");
+                    window.alert("Hálózati hiba történt a mentés során.");
                 }
             });
         });
