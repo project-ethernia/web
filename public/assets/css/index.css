@@ -188,16 +188,14 @@ a {
 .main-nav-links {
   list-style: none;
   margin: 0;
-  padding: 4px 6px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background:
-    radial-gradient(circle at top left, rgba(15, 23, 42, 0.9), transparent 70%),
-    rgba(15, 23, 42, 0.96);
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(30, 64, 175, 0.7);
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+  gap: 10px;
+  /* nincs külső kapszula, nincs border, nincs shadow */
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .main-nav-links li {
@@ -225,7 +223,7 @@ a {
     transform 0.08s ease;
 }
 
-/* csak egy vékony, kerek lila körvonal az aktív elem körül */
+/* csak egy vékony, kerek lila keret az aktív elem körül */
 .main-nav-links li.active a {
   color: #f9fafb;
   background: transparent;
