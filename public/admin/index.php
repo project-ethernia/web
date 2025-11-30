@@ -16,11 +16,15 @@ $currentRole     = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'a
 
 require_once __DIR__ . '/../database.php';
 
-$newsStats   = ['total' => 0, 'visible' => 0];
-$adminStats  = ['total' => 0, 'active' => 0];
-$selfInfo    = ['created_at' => null, 'last_login' => null, 'role' => $currentRole];
-$logSummary  = ['total' => 0, 'last_action' => null, 'last_by' => null, 'last_at' => null];
-$failedLogin = ['last_at' => null, 'ip' => null];
+$newsStats  = ['total' => 0, 'visible' => 0];
+$adminStats = ['total' => 0, 'active' => 0];
+$selfInfo   = ['created_at' => null, 'last_login' => null, 'role' => $currentRole];
+$logSummary = [
+    'total'       => 0,
+    'last'        => [],
+    'last_failed' => []
+];
+$recentLogs = [];
 
 try {
     $stmt = $pdo->query("
@@ -30,10 +34,7 @@ try {
     ");
     $row = $stmt->fetch();
     if ($row) {
-        $newsStats = [
-            'total'   => (int)$row['total'],
-            'visible' => (int)$row['visible']
-        ];
+        $newsStats = $row;
     }
 
     $stmt = $pdo->query("
@@ -43,10 +44,7 @@ try {
     ");
     $row = $stmt->fetch();
     if ($row) {
-        $adminStats = [
-            'total'  => (int)$row['total'],
-            'active' => (int)$row['active']
-        ];
+        $adminStats = $row;
     }
 
     if ($currentUserId > 0) {
@@ -70,32 +68,22 @@ try {
     }
 
     $stmt = $pdo->query("
-        SELECT created_at,
-               COALESCE(username, 'Ismeretlen') AS username,
-               action
+        SELECT created_at, COALESCE(username, 'Ismeretlen') AS username, action, ip_address
         FROM admin_logs
         ORDER BY created_at DESC
-        LIMIT 1
+        LIMIT 5
     ");
-    $row = $stmt->fetch();
-    if ($row) {
-        $logSummary['last_at']     = $row['created_at'];
-        $logSummary['last_by']     = $row['username'];
-        $logSummary['last_action'] = $row['action'];
-    }
+    $recentLogs = $stmt->fetchAll();
 
-    $stmt = $pdo->prepare("
-        SELECT created_at, ip_address
-        FROM admin_logs
-        WHERE action LIKE :fail
-        ORDER BY created_at DESC
-        LIMIT 1
-    ");
-    $stmt->execute([':fail' => 'Sikertelen admin bejelentkezés%']);
-    $row = $stmt->fetch();
-    if ($row) {
-        $failedLogin['last_at'] = $row['created_at'];
-        $failedLogin['ip']      = $row['ip_address'];
+    if (!empty($recentLogs)) {
+        $logSummary['last'] = $recentLogs[0];
+
+        foreach ($recentLogs as $logRow) {
+            if (stripos($logRow['action'], 'Sikertelen admin bejelentkezés') !== false) {
+                $logSummary['last_failed'] = $logRow;
+                break;
+            }
+        }
     }
 } catch (Exception $e) {
 }
@@ -109,176 +97,163 @@ $currentNav = 'dashboard';
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="UTF-8">
-  <title>ETHERNIA Admin – Főoldal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
-  <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
-  <link rel="stylesheet" href="/admin/assets/css/dashboard.css?v=<?= time(); ?>">
-  <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;500&display=swap">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>ETHERNIA Admin – Főoldal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
+    <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
+    <link rel="stylesheet" href="/admin/assets/css/dashboard.css?v=<?= time(); ?>">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;500&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
 </head>
 <body class="admin-body">
-  <div class="admin-layout">
+<div class="admin-layout">
 
     <?php require __DIR__ . '/_sidebar.php'; ?>
 
-    <div class="admin-main admin-main-dashboard">
-      <header class="admin-header">
-        <div>
-          <h1 class="admin-title">Admin áttekintés</h1>
-          <p class="admin-subtitle">
-            Üdv, <?= h($currentUsername); ?>! Itt látod gyorsan, mi történik az ETHERNIA admin felületén.
-          </p>
-        </div>
-      </header>
-
-      <section class="admin-section">
-        <div class="dashboard-grid">
-          <article class="dash-card">
-            <div class="dash-card-header">
-              <h2>Hírek</h2>
-              <span class="dash-pill">Főoldal slider</span>
+    <main class="admin-main">
+        <header class="admin-header">
+            <div>
+                <h1 class="admin-title">Admin áttekintés</h1>
+                <p class="admin-subtitle">
+                    Üdv, <?= h($currentUsername); ?>! Itt látod röviden, milyen állapotban van az ETHERNIA rendszer.
+                </p>
             </div>
-            <p class="dash-number">
-              <?= (int)$newsStats['total']; ?>
-              <span class="dash-number-sub">összes hír</span>
-            </p>
-            <p class="dash-muted">
-              Látható a nyitó oldalon:
-              <strong><?= (int)$newsStats['visible']; ?></strong>
-            </p>
-            <a href="/admin/news.php" class="dash-link">Ugrás a hírek kezeléséhez →</a>
-          </article>
+        </header>
 
-          <article class="dash-card">
-            <div class="dash-card-header">
-              <h2>Adminok</h2>
-              <span class="dash-pill dash-pill-gold">Jogosultság</span>
+        <section class="admin-section admin-section-top">
+            <div class="dashboard-row">
+                <article class="dash-card">
+                    <div class="dash-card-header">
+                        <h2>Hírek</h2>
+                        <span class="dash-pill">Főoldal slider</span>
+                    </div>
+                    <p class="dash-number">
+                        <?= (int)$newsStats['total']; ?>
+                        <span class="dash-number-sub">összes hír</span>
+                    </p>
+                    <p class="dash-muted">
+                        Látható a nyitó oldalon:
+                        <strong><?= (int)$newsStats['visible']; ?></strong>
+                    </p>
+                    <a href="/admin/news.php" class="dash-link">Ugrás a hírek kezeléséhez →</a>
+                </article>
+
+                <article class="dash-card">
+                    <div class="dash-card-header">
+                        <h2>Adminok</h2>
+                        <span class="dash-pill dash-pill-gold">Jogosultság</span>
+                    </div>
+                    <p class="dash-number">
+                        <?= (int)$adminStats['active']; ?>
+                        <span class="dash-number-sub">aktív admin</span>
+                    </p>
+                    <p class="dash-muted">
+                        Összes admin fiók:
+                        <strong><?= (int)$adminStats['total']; ?></strong>
+                    </p>
+                    <a href="/admin/admins.php" class="dash-link">Adminok kezelése →</a>
+                </article>
+
+                <article class="dash-card">
+                    <div class="dash-card-header">
+                        <h2>Te fiókod</h2>
+                        <span class="dash-pill dash-pill-role">
+                            <?= strtoupper(h($selfInfo['role'] ?? $currentRole)); ?>
+                        </span>
+                    </div>
+                    <div class="dash-meta-block">
+                        <div class="dash-meta-item">
+                            <span class="dash-meta-label">Létrehozva</span>
+                            <span class="dash-meta-value">
+                                <?= !empty($selfInfo['created_at']) ? h($selfInfo['created_at']) : 'ismeretlen'; ?>
+                            </span>
+                        </div>
+                        <div class="dash-meta-item">
+                            <span class="dash-meta-label">Utolsó belépés</span>
+                            <span class="dash-meta-value">
+                                <?= !empty($selfInfo['last_login']) ? h($selfInfo['last_login']) : 'még nincs adat'; ?>
+                            </span>
+                        </div>
+                    </div>
+                    <p class="dash-tip">
+                        A jelszavadat egy másik tulaj / owner tudja módosítani az Adminok menüben.
+                    </p>
+                </article>
             </div>
-            <p class="dash-number">
-              <?= (int)$adminStats['active']; ?>
-              <span class="dash-number-sub">aktív admin</span>
-            </p>
-            <p class="dash-muted">
-              Összes admin fiók: <strong><?= (int)$adminStats['total']; ?></strong>
-            </p>
-            <a href="/admin/admins.php" class="dash-link">Adminok kezelése →</a>
-          </article>
+        </section>
 
-          <article class="dash-card">
-            <div class="dash-card-header">
-              <h2>Te fiókod</h2>
-              <span class="dash-pill dash-pill-role">
-                <?= strtoupper(h($selfInfo['role'] ?? $currentRole)); ?>
-              </span>
+        <section class="admin-section admin-section-bottom">
+            <div class="dashboard-row dashboard-row-bottom">
+                <article class="dash-card dash-card-wide">
+                    <div class="dash-card-header dash-card-header-row">
+                        <h2>Rendszer összefoglaló</h2>
+                        <span class="dash-pill">Napló</span>
+                    </div>
+
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="summary-label">Összes naplózott esemény</span>
+                            <span class="summary-value"><?= (int)$logSummary['total']; ?></span>
+                        </div>
+
+                        <div class="summary-item">
+                            <span class="summary-label">Utolsó esemény</span>
+                            <?php if (!empty($logSummary['last'])): ?>
+                                <span class="summary-value">
+                                    <?= h($logSummary['last']['username']); ?> – <?= h($logSummary['last']['action']); ?>
+                                </span>
+                                <span class="summary-meta">
+                                    <?= h($logSummary['last']['created_at']); ?> · IP: <?= h($logSummary['last']['ip_address']); ?>
+                                </span>
+                            <?php else: ?>
+                                <span class="summary-value">Nincs még naplózott esemény.</span>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="summary-item">
+                            <span class="summary-label">Utolsó sikertelen belépés</span>
+                            <?php if (!empty($logSummary['last_failed'])): ?>
+                                <span class="summary-value">
+                                    IP: <?= h($logSummary['last_failed']['ip_address']); ?>
+                                </span>
+                                <span class="summary-meta">
+                                    <?= h($logSummary['last_failed']['created_at']); ?>
+                                </span>
+                            <?php else: ?>
+                                <span class="summary-value">Nem található sikertelen admin belépés.</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <?php if (!empty($recentLogs)): ?>
+                        <div class="timeline">
+                            <div class="timeline-header">
+                                <span class="timeline-title">Legutóbbi műveletek</span>
+                                <a href="/admin/logs.php" class="dash-link secondary">Teljes napló megnyitása →</a>
+                            </div>
+                            <ul class="timeline-list">
+                                <?php foreach ($recentLogs as $log): ?>
+                                    <li class="timeline-item">
+                                        <div class="timeline-main">
+                                            <span class="timeline-user"><?= h($log['username']); ?></span>
+                                            <span class="timeline-action"><?= h($log['action']); ?></span>
+                                        </div>
+                                        <div class="timeline-meta">
+                                            <span><?= h($log['created_at']); ?></span>
+                                            <span>IP: <?= h($log['ip_address']); ?></span>
+                                        </div>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
+                </article>
             </div>
-            <p class="dash-muted">
-              Létrehozva:<br>
-              <strong>
-                <?= !empty($selfInfo['created_at']) ? h($selfInfo['created_at']) : 'ismeretlen'; ?>
-              </strong>
-            </p>
-            <p class="dash-muted">
-              Utolsó belépés:<br>
-              <strong>
-                <?= !empty($selfInfo['last_login']) ? h($selfInfo['last_login']) : 'még nincs adat'; ?>
-              </strong>
-            </p>
-            <p class="dash-tip">
-              Tipp: a jelszavadat egy másik tulaj / owner tudja módosítani az Adminok menüben.
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <section class="admin-section dashboard-bottom">
-        <div class="dashboard-bottom-grid">
-          <article class="dash-card dash-card-small">
-            <div class="dash-card-header">
-              <h2>Rendszer összefoglaló</h2>
-              <span class="dash-pill dash-pill-soft">Napló</span>
-            </div>
-
-            <div class="dash-stats">
-              <div class="dash-stat">
-                <div class="dash-stat-label">Összes naplózott esemény</div>
-                <div class="dash-stat-value">
-                  <?= (int)$logSummary['total']; ?>
-                </div>
-              </div>
-
-              <div class="dash-stat">
-                <div class="dash-stat-label">Utolsó esemény</div>
-                <?php if ($logSummary['last_at']): ?>
-                  <div class="dash-stat-desc">
-                    <strong><?= h($logSummary['last_by']); ?></strong> –
-                    <?= h($logSummary['last_action']); ?>
-                  </div>
-                  <div class="dash-stat-meta">
-                    <?= h($logSummary['last_at']); ?>
-                  </div>
-                <?php else: ?>
-                  <div class="dash-stat-desc dash-muted">
-                    Még nincs naplózott esemény.
-                  </div>
-                <?php endif; ?>
-              </div>
-
-              <div class="dash-stat">
-                <div class="dash-stat-label">Utolsó sikertelen belépés</div>
-                <?php if ($failedLogin['last_at']): ?>
-                  <div class="dash-stat-desc">
-                    IP: <strong><?= h($failedLogin['ip']); ?></strong>
-                  </div>
-                  <div class="dash-stat-meta">
-                    <?= h($failedLogin['last_at']); ?>
-                  </div>
-                <?php else: ?>
-                  <div class="dash-stat-desc dash-muted">
-                    Nincs rögzített sikertelen belépés.
-                  </div>
-                <?php endif; ?>
-              </div>
-            </div>
-
-            <a href="/admin/logs.php" class="dash-link secondary">Teljes napló megnyitása →</a>
-          </article>
-
-          <article class="dash-card dash-card-small">
-            <div class="dash-card-header">
-              <h2>Gyors műveletek</h2>
-              <span class="dash-pill dash-pill-soft">Rövidítések</span>
-            </div>
-
-            <div class="quick-actions">
-              <a href="/admin/news.php" class="quick-action-link">
-                <span class="material-symbols-rounded quick-action-icon">post_add</span>
-                <span>Új hír létrehozása</span>
-              </a>
-              <a href="/admin/admins.php" class="quick-action-link">
-                <span class="material-symbols-rounded quick-action-icon">person_add</span>
-                <span>Új admin hozzáadása</span>
-              </a>
-              <a href="/admin/modlog.php" class="quick-action-link">
-                <span class="material-symbols-rounded quick-action-icon">gavel</span>
-                <span>Discord büntetések megnyitása</span>
-              </a>
-              <a href="/admin/players.php" class="quick-action-link">
-                <span class="material-symbols-rounded quick-action-icon">groups</span>
-                <span>Játékosok kezelése</span>
-              </a>
-            </div>
-
-            <p class="dash-muted dash-note">
-              Ezek a linkek segítenek a leggyakoribb admin feladatok gyors elérésében.
-            </p>
-          </article>
-        </div>
-      </section>
-    </div>
-  </div>
+        </section>
+    </main>
+</div>
 </body>
 </html>
