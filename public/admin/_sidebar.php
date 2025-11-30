@@ -45,8 +45,8 @@ $currentNav = $currentNav ?? '';
                     <span class="material-symbols-rounded sidebar-icon">admin_panel_settings</span>
                     <span class="sidebar-link-text">Hozzáférés</span>
                 </a>
-                <a href="/admin/log.php"
-                   class="sidebar-link<?= $currentNav === 'log' ? ' is-active' : ''; ?>">
+                <a href="/admin/logs.php"
+                   class="sidebar-link<?= $currentNav === 'logs' ? ' is-active' : ''; ?>">
                     <span class="material-symbols-rounded sidebar-icon">history</span>
                     <span class="sidebar-link-text">Tevékenység napló</span>
                 </a>
