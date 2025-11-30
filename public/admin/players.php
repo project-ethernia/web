@@ -66,7 +66,7 @@ $players = $stmt->fetchAll();
   <div class="admin-layout">
 
     <?php
-      $activePage = 'players';
+      $currentNav = 'players';
       require __DIR__ . '/_sidebar.php';
     ?>
 

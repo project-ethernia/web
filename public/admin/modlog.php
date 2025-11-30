@@ -113,7 +113,10 @@ function formatDateTime(string $dt): string {
 </head>
 <body class="admin-body">
 <div class="admin-layout">
-    <?php include __DIR__ . '/_sidebar.php'; ?>
+    <?php
+    $currentNav = 'modlog';
+    include __DIR__ . '/_sidebar.php';
+    ?>
 
     <main class="admin-main">
         <header class="admin-page-header">

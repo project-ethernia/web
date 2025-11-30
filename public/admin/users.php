@@ -231,7 +231,7 @@ try {
   <div class="admin-layout">
 
     <?php
-      $activePage = 'users';
+      $currentNav = 'users';
       require __DIR__ . '/_sidebar.php';
     ?>
 

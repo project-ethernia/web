@@ -256,7 +256,7 @@ try {
   <div class="admin-layout">
 
     <?php
-      $activePage = 'admins';
+      $currentNav = 'admins';
       require __DIR__ . '/_sidebar.php';
     ?>
 

@@ -229,8 +229,7 @@ $news = $stmt->fetchAll();
   <div class="admin-layout">
 
     <?php
-      $activePage      = 'news';
-      $currentUsername = $currentUser;
+      $currentNav = 'news';
       require __DIR__ . '/_sidebar.php';
     ?>
 

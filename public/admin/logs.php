@@ -66,7 +66,7 @@ $logs = $stmt->fetchAll();
   <div class="admin-layout">
 
     <?php
-      $activePage = 'logs';
+      $currentNav = 'logs';
       require __DIR__ . '/_sidebar.php';
     ?>
 
