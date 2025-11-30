@@ -12,13 +12,14 @@ body {
 
 body.admin-body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: radial-gradient(circle at top, #312e81 0, transparent 55%),
-              radial-gradient(circle at bottom, #1f2937 0, transparent 55%),
-              #020013;
+  background:
+    radial-gradient(circle at top, #312e81 0, transparent 55%),
+    radial-gradient(circle at bottom, #1f2937 0, transparent 55%),
+    #020013;
   color: #f9fafb;
 }
 
-/* --------- Layout --------- */
+/* Layout */
 
 .admin-layout {
   min-height: 100vh;
@@ -54,8 +55,8 @@ body.admin-body {
   font-size: 0.85rem;
   text-transform: uppercase;
   background: linear-gradient(120deg, #c4b5fd, #a855f7);
-  background-clip: unset;
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
 }
 
@@ -96,8 +97,9 @@ body.admin-body {
 }
 
 .nav-item.active {
-  background: radial-gradient(circle at top left, rgba(168, 85, 247, 0.35), transparent 60%),
-              rgba(15, 23, 42, 0.9);
+  background:
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.35), transparent 60%),
+    rgba(15, 23, 42, 0.9);
   border: 1px solid rgba(168, 85, 247, 0.7);
   box-shadow: 0 12px 30px rgba(88, 28, 135, 0.8);
   opacity: 1;
@@ -129,27 +131,50 @@ body.admin-body {
   margin: 0.35rem 0;
 }
 
-/* Sidebar footer */
+/* Sidebar footer (összefésült verzió) */
 
 .sidebar-footer {
   margin-top: auto;
-  padding-top: 0.75rem;
-  border-top: 1px dashed rgba(148, 163, 184, 0.4);
+  padding: 1rem 1.25rem 1.25rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.9);
 }
 
 .sidebar-user {
   font-size: 0.8rem;
+  margin-bottom: 0.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
 }
 
-.user-label {
+.sidebar-user .user-label {
+  display: block;
   opacity: 0.7;
 }
 
-.user-name {
+.sidebar-user .user-name {
   font-weight: 600;
+}
+
+.sidebar-logout {
+  margin-top: 0.25rem;
+}
+
+.btn-logout {
+  width: 100%;
+  border: none;
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.btn-logout:hover {
+  background: rgba(55, 65, 81, 1);
+  color: #fefefe;
 }
 
 /* Main */
@@ -182,7 +207,7 @@ body.admin-body {
   opacity: 0.8;
 }
 
-/* Section */
+/* Section wrapper */
 
 .admin-section {
   background: rgba(15, 23, 42, 0.9);
@@ -205,29 +230,31 @@ body.admin-body {
   align-items: center;
 }
 
-/* Buttons */
+/* Buttons – egységes verzió */
 
 .btn {
-  border: none;
-  cursor: pointer;
-  border-radius: 999px;
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  font-weight: 500;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .btn-primary {
-  background: linear-gradient(120deg, #a855f7, #c4b5fd);
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
   color: #020617;
-  box-shadow: 0 10px 25px rgba(168, 85, 247, 0.6);
+  box-shadow: 0 10px 26px rgba(88, 28, 135, 0.8);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(120deg, #9333ea, #a855f7);
+  background: linear-gradient(135deg, #a855f7, #c4b5fd);
 }
 
 .btn-secondary {
@@ -248,13 +275,57 @@ body.admin-body {
   background: #dc2626;
 }
 
+.btn-ghost {
+  background: transparent;
+  color: rgba(209, 213, 219, 0.9);
+  border-color: rgba(55, 65, 81, 0.9);
+}
+
+.btn-ghost:hover {
+  background: rgba(15, 23, 42, 0.9);
+}
+
 .btn-sm {
   padding: 0.25rem 0.6rem;
   font-size: 0.8rem;
 }
 
+/* Admin table (általános) */
+
 .admin-table-wrapper {
   overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.admin-table thead {
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgb(155, 155, 155);
+  text-align: left;
+}
+
+.admin-table th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.admin-table tbody tr:last-child th,
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(31, 41, 55, 0.75);
 }
 
 .cell-order .order-value {
@@ -325,8 +396,6 @@ body.admin-body {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
   transition: transform 0.16s ease;
 }
-
-/* ON state */
 
 .visibility-toggle.is-on {
   border-color: rgba(52, 211, 153, 0.8);
@@ -502,108 +571,7 @@ body.admin-body {
   color: #fecaca;
 }
 
-/* Reszponzív */
-
-@media (max-width: 900px) {
-  .admin-sidebar {
-    display: none;
-  }
-  .admin-main {
-    padding: 1rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .admin-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .form-row {
-    flex-direction: column;
-  }
-  .modal-dialog {
-    max-width: 100%;
-    height: 100%;
-    padding: 0.75rem;
-  }
-  .modal-content {
-    height: 100%;
-    overflow-y: auto;
-  }
-}
-
-.sidebar-footer {
-  margin-top: auto;
-  padding: 1rem 1.25rem 1.25rem;
-  border-top: 1px solid rgba(15, 23, 42, 0.9);
-}
-
-.sidebar-user {
-  font-size: 0.8rem;
-  margin-bottom: 0.5rem;
-}
-
-.sidebar-user .user-label {
-  display: block;
-  opacity: 0.7;
-}
-
-.sidebar-user .user-name {
-  font-weight: 600;
-}
-
-.sidebar-logout {
-  margin-top: 0.25rem;
-}
-
-.btn-logout {
-  width: 100%;
-  border: none;
-  border-radius: 999px;
-  padding: 0.4rem 0.8rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-  background: rgba(15, 23, 42, 0.95);
-  color: #e5e7eb;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.btn-logout:hover {
-  background: rgba(55, 65, 81, 1);
-  color: #fefefe;
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-}
-
-.admin-table thead {
-  background: rgba(15, 23, 42, 0.95);
-}
-
-.admin-table th,
-.admin-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgb(155, 155, 155);
-  text-align: left;
-}
-
-.admin-table th {
-  font-weight: 600;
-  font-size: 0.8rem;
-  opacity: 0.85;
-}
-
-.admin-table tbody tr:last-child th,
-.admin-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.admin-table tbody tr:hover {
-  background: rgba(31, 41, 55, 0.75);
-}
+/* Oldal header + kártyák */
 
 .admin-page-header {
   display: flex;
@@ -663,6 +631,8 @@ body.admin-body {
   padding: 0.9rem 1rem 1rem;
 }
 
+/* Modlog specifikus */
+
 .modlog-filters {
   display: flex;
   flex-wrap: wrap;
@@ -701,41 +671,6 @@ body.admin-body {
 .filter-actions {
   display: flex;
   gap: 0.5rem;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border: 1px solid transparent;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #8b5cf6, #a855f7);
-  color: #020617;
-  box-shadow: 0 10px 26px rgba(88, 28, 135, 0.8);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #a855f7, #c4b5fd);
-}
-
-.btn-ghost {
-  background: transparent;
-  color: rgba(209, 213, 219, 0.9);
-  border-color: rgba(55, 65, 81, 0.9);
-}
-
-.btn-ghost:hover {
-  background: rgba(15, 23, 42, 0.9);
 }
 
 .table-wrapper {
@@ -884,7 +819,17 @@ body.admin-body {
   color: rgba(148, 163, 184, 0.95);
 }
 
+/* Reszponzív */
+
 @media (max-width: 900px) {
+  .admin-sidebar {
+    display: none;
+  }
+
+  .admin-main {
+    padding: 1rem;
+  }
+
   .modlog-filters {
     align-items: stretch;
   }
@@ -896,5 +841,27 @@ body.admin-body {
   .filter-actions {
     width: 100%;
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  .modal-dialog {
+    max-width: 100%;
+    height: 100%;
+    padding: 0.75rem;
+  }
+
+  .modal-content {
+    height: 100%;
+    overflow-y: auto;
   }
 }
