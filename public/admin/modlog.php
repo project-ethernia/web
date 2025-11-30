@@ -8,124 +8,93 @@ if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
 
 require_once __DIR__ . '/../database.php';
 
-function h($str) {
+function h(string $str): string {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
-try {
-    $pdo = get_pdo();
-} catch (Exception $e) {
-    die('Adatbázis hiba: ' . $e->getMessage());
-}
+// SZŰRŐK
+$search      = isset($_GET['q']) ? trim($_GET['q']) : '';
+$actionType  = isset($_GET['action_type']) ? trim($_GET['action_type']) : '';
+$status      = isset($_GET['status']) ? trim($_GET['status']) : '';
 
-$search = isset($_GET['q']) ? trim($_GET['q']) : '';
-$type   = isset($_GET['type']) ? trim($_GET['type']) : 'all';
-$status = isset($_GET['status']) ? trim($_GET['status']) : 'all';
+$where   = [];
+$params  = [];
 
-$where  = [];
-$params = [];
-
+// keresés (user_tag, moderator_tag, reason, user_id, moderator_id)
 if ($search !== '') {
-    $where[] = '(user_tag LIKE :q OR moderator_tag LIKE :q OR user_id LIKE :q OR moderator_id LIKE :q OR reason LIKE :q)';
-    $params[':q'] = '%' . $search . '%';
+    $where[] = '(user_tag LIKE :q OR moderator_tag LIKE :q OR reason LIKE :q OR user_id LIKE :qnum OR moderator_id LIKE :qnum)';
+    $params[':q']    = '%' . $search . '%';
+    $params[':qnum'] = '%' . $search . '%';
 }
 
-if ($type !== '' && $type !== 'all') {
-    $where[] = 'action_type = :t';
-    $params[':t'] = $type;
+// akció típusa
+if ($actionType !== '' && $actionType !== 'all') {
+    $where[] = 'action_type = :action_type';
+    $params[':action_type'] = $actionType;
 }
 
+// státusz (aktív / visszavont / mind)
 if ($status === 'active') {
     $where[] = 'revoked = 0';
 } elseif ($status === 'revoked') {
     $where[] = 'revoked = 1';
 }
 
-$sql = '
-    SELECT
-        id,
-        guild_id,
-        user_id,
-        user_tag,
-        moderator_id,
-        moderator_tag,
-        action_type,
-        reason,
-        duration_seconds,
-        created_at,
-        revoked,
-        related_action_id
-    FROM moderation_actions
-';
+$sql = "SELECT id, guild_id, user_id, user_tag, moderator_id, moderator_tag,
+               action_type, reason, duration_seconds, created_at, revoked, related_action_id
+        FROM moderation_actions";
 
-if ($where) {
+if (!empty($where)) {
     $sql .= ' WHERE ' . implode(' AND ', $where);
 }
 
-$sql .= ' ORDER BY id DESC LIMIT 500';
+$sql .= ' ORDER BY created_at DESC, id DESC LIMIT 200';
 
+$pdo = get_pdo();
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
-$rows = $stmt->fetchAll();
+$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $totalCount = count($rows);
 
-function formatDuration(?int $seconds): string
-{
+function formatActionLabel(string $type): string {
+    $u = strtoupper($type);
+    switch ($u) {
+        case 'BAN':
+        case 'UNBAN':
+        case 'MUTE':
+        case 'UNMUTE':
+        case 'KICK':
+        case 'WARN':
+        case 'UNWARN':
+            return $u;
+        default:
+            return $u ?: 'OTHER';
+    }
+}
+
+function formatDuration(?int $seconds): string {
     if ($seconds === null || $seconds <= 0) {
         return 'Állandó';
     }
-
-    $m = intdiv($seconds, 60);
-    $s = $seconds % 60;
-
-    if ($m < 60) {
-        return $m . ' perc' . ($s ? ' ' . $s . ' mp' : '');
+    $minutes = intdiv($seconds, 60);
+    if ($minutes < 60) {
+        return $minutes . ' perc';
     }
-
-    $h = intdiv($m, 60);
-    $m = $m % 60;
-
-    if ($h < 24) {
-        return $h . ' óra' . ($m ? ' ' . $m . ' perc' : '');
+    $hours = intdiv($minutes, 60);
+    if ($hours < 24) {
+        return $hours . ' óra';
     }
-
-    $d = intdiv($h, 24);
-    $h = $h % 24;
-
-    return $d . ' nap' . ($h ? ' ' . $h . ' óra' : '');
+    $days = intdiv($hours, 24);
+    return $days . ' nap';
 }
 
-function formatActionLabel(string $action): string
-{
-    $upper = strtoupper($action);
-
-    switch ($upper) {
-        case 'BAN':
-            return 'BAN';
-        case 'UNBAN':
-            return 'UNBAN';
-        case 'MUTE':
-            return 'MUTE';
-        case 'UNMUTE':
-            return 'UNMUTE';
-        case 'KICK':
-            return 'KICK';
-        case 'WARN':
-            return 'WARN';
-        case 'UNWARN':
-            return 'UNWARN';
-        default:
-            return $upper;
+function formatDateTime(string $dt): string {
+    $t = strtotime($dt);
+    if ($t === false) {
+        return h($dt);
     }
-}
-
-function formatStatus(bool $revoked): array
-{
-    if ($revoked) {
-        return ['Lejárva / visszavonva', 'status-pill status-pill-off'];
-    }
-    return ['Aktív / lezárt', 'status-pill status-pill-on'];
+    return date('Y.m.d H:i', $t);
 }
 ?>
 <!DOCTYPE html>
@@ -137,168 +106,152 @@ function formatStatus(bool $revoked): array
     <link rel="stylesheet" href="/admin/assets/css/modlog.css?v=<?= time(); ?>">
 </head>
 <body class="admin-body">
+<div class="admin-layout">
+    <?php include __DIR__ . '/_sidebar.php'; ?>
 
-<?php include __DIR__ . '/_sidebar.php'; ?>
-
-<main class="admin-main">
-    <div class="admin-main-inner modlog-page">
-
+    <main class="admin-main">
         <header class="admin-page-header">
-            <div class="admin-page-header-main">
+            <div>
                 <h1 class="admin-page-title">Moderációs napló</h1>
                 <p class="admin-page-subtitle">
                     Discord moderációs műveletek (ban, mute, kick, warn, stb.) naplózása.
                 </p>
             </div>
-            <div class="admin-page-header-meta">
-                <span class="badge-pill">
-                    Összesen <?= (int)$totalCount; ?> bejegyzés
+            <div>
+                <span class="pill-counter">
+                    Összesen <?= (int)$totalCount ?> bejegyzés
                 </span>
             </div>
         </header>
 
-        <section class="admin-card modlog-card">
-            <form class="modlog-filters" method="get" action="/admin/modlog.php">
-                <div class="modlog-filters-left">
-                    <div class="form-group-inline">
-                        <label for="q">Keresés</label>
+        <section class="card">
+            <div class="card-header card-header-flex">
+                <div>Szűrés</div>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="/admin/modlog.php" class="modlog-filters">
+                    <div class="filter-group">
+                        <label for="filter-q">Keresés</label>
                         <input
                             type="text"
-                            id="q"
+                            id="filter-q"
                             name="q"
-                            placeholder="Felhasználó, moderátor, indok…"
+                            placeholder="Felhasználó, moderátor, indok, ID…"
                             value="<?= h($search); ?>"
                         >
                     </div>
 
-                    <div class="form-group-inline">
-                        <label for="type">Akció típusa</label>
-                        <select id="type" name="type">
-                            <option value="all"<?= $type === 'all' ? ' selected' : ''; ?>>Mind</option>
-                            <option value="WARN"<?= strtoupper($type) === 'WARN' ? ' selected' : ''; ?>>Warn</option>
-                            <option value="UNWARN"<?= strtoupper($type) === 'UNWARN' ? ' selected' : ''; ?>>Unwarn</option>
-                            <option value="MUTE"<?= strtoupper($type) === 'MUTE' ? ' selected' : ''; ?>>Mute</option>
-                            <option value="UNMUTE"<?= strtoupper($type) === 'UNMUTE' ? ' selected' : ''; ?>>Unmute</option>
-                            <option value="KICK"<?= strtoupper($type) === 'KICK' ? ' selected' : ''; ?>>Kick</option>
-                            <option value="BAN"<?= strtoupper($type) === 'BAN' ? ' selected' : ''; ?>>Ban</option>
-                            <option value="UNBAN"<?= strtoupper($type) === 'UNBAN' ? ' selected' : ''; ?>>Unban</option>
+                    <div class="filter-group">
+                        <label for="filter-action-type">Akció típusa</label>
+                        <select id="filter-action-type" name="action_type">
+                            <option value="all" <?= ($actionType === '' || $actionType === 'all') ? 'selected' : ''; ?>>Mind</option>
+                            <option value="ban"    <?= $actionType === 'ban'    ? 'selected' : ''; ?>>Ban</option>
+                            <option value="unban"  <?= $actionType === 'unban'  ? 'selected' : ''; ?>>Unban</option>
+                            <option value="mute"   <?= $actionType === 'mute'   ? 'selected' : ''; ?>>Mute</option>
+                            <option value="unmute" <?= $actionType === 'unmute' ? 'selected' : ''; ?>>Unmute</option>
+                            <option value="kick"   <?= $actionType === 'kick'   ? 'selected' : ''; ?>>Kick</option>
+                            <option value="warn"   <?= $actionType === 'warn'   ? 'selected' : ''; ?>>Warn</option>
+                            <option value="unwarn" <?= $actionType === 'unwarn' ? 'selected' : ''; ?>>Unwarn</option>
                         </select>
                     </div>
 
-                    <div class="form-group-inline">
-                        <label for="status">Státusz</label>
-                        <select id="status" name="status">
-                            <option value="all"<?= $status === 'all' ? ' selected' : ''; ?>>Mind</option>
-                            <option value="active"<?= $status === 'active' ? ' selected' : ''; ?>>Csak aktív</option>
-                            <option value="revoked"<?= $status === 'revoked' ? ' selected' : ''; ?>>Lejárt / visszavont</option>
+                    <div class="filter-group">
+                        <label for="filter-status">Státusz</label>
+                        <select id="filter-status" name="status">
+                            <option value="all"     <?= ($status === '' || $status === 'all') ? 'selected' : ''; ?>>Mind</option>
+                            <option value="active"  <?= $status === 'active'  ? 'selected' : ''; ?>>Aktív / lezáratlan</option>
+                            <option value="revoked" <?= $status === 'revoked' ? 'selected' : ''; ?>>Visszavont / feloldott</option>
                         </select>
                     </div>
-                </div>
 
-                <div class="modlog-filters-right">
-                    <button type="submit" class="btn btn-primary">Szűrés</button>
-                    <a href="/admin/modlog.php" class="btn btn-ghost">Szűrés törlése</a>
-                </div>
-            </form>
-
-            <div class="modlog-table-wrapper">
-                <table class="modlog-table">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Időpont</th>
-                        <th>Felhasználó</th>
-                        <th>Moderátor</th>
-                        <th>Akció</th>
-                        <th>Időtartam</th>
-                        <th>Indok</th>
-                        <th>Státusz</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php if (!$rows): ?>
-                        <tr>
-                            <td colspan="8" class="modlog-empty">
-                                Jelenleg nincs a szűrésnek megfelelő bejegyzés.
-                            </td>
-                        </tr>
-                    <?php else: ?>
-                        <?php foreach ($rows as $row): ?>
-                            <?php
-                            $idLabel = '#' . (int)$row['id'];
-
-                            $dt = $row['created_at'];
-                            $dateDisplay = '';
-                            if ($dt !== null) {
-                                $ts = strtotime($dt);
-                                if ($ts !== false) {
-                                    $dateDisplay = date('Y.m.d H:i', $ts);
-                                }
-                            }
-
-                            $userTag = $row['user_tag'] ?: 'Ismeretlen';
-                            $userId  = $row['user_id'] ?: 'N/A';
-
-                            $modTag = $row['moderator_tag'] ?: 'Ismeretlen';
-                            $modId  = $row['moderator_id'] ?: 'N/A';
-
-                            $actionLabel   = formatActionLabel((string)$row['action_type']);
-                            $durationLabel = formatDuration($row['duration_seconds'] !== null ? (int)$row['duration_seconds'] : null);
-
-                            $reason = $row['reason'] ?: 'Nincs megadva indok';
-
-                            $revoked = (bool)$row['revoked'];
-                            [$statusLabel, $statusClass] = formatStatus($revoked);
-                            ?>
-                            <tr>
-                                <td class="col-id">
-                                    <span class="mono"><?= h($idLabel); ?></span>
-                                </td>
-                                <td class="col-date">
-                                    <?= h($dateDisplay); ?>
-                                </td>
-                                <td class="col-user">
-                                    <div class="modlog-user-main">
-                                        <?= h($userTag); ?>
-                                    </div>
-                                    <div class="modlog-user-sub">
-                                        ID: <?= h($userId); ?>
-                                    </div>
-                                </td>
-                                <td class="col-mod">
-                                    <div class="modlog-user-main">
-                                        <?= h($modTag); ?>
-                                    </div>
-                                    <div class="modlog-user-sub">
-                                        ID: <?= h($modId); ?>
-                                    </div>
-                                </td>
-                                <td class="col-action">
-                                    <span class="action-pill action-<?= strtolower($actionLabel); ?>">
-                                        <?= h($actionLabel); ?>
-                                    </span>
-                                </td>
-                                <td class="col-duration">
-                                    <?= h($durationLabel); ?>
-                                </td>
-                                <td class="col-reason">
-                                    <?= h($reason); ?>
-                                </td>
-                                <td class="col-status">
-                                    <span class="<?= h($statusClass); ?>">
-                                        <?= h($statusLabel); ?>
-                                    </span>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                    </tbody>
-                </table>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary">Szűrés</button>
+                        <a href="/admin/modlog.php" class="btn btn-ghost">Szűrés törlése</a>
+                    </div>
+                </form>
             </div>
         </section>
 
-    </div>
-</main>
-
+        <section class="card">
+            <div class="card-body">
+                <div class="table-wrapper">
+                    <table class="table modlog-table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Időpont</th>
+                            <th>Felhasználó</th>
+                            <th>Moderátor</th>
+                            <th>Akció</th>
+                            <th>Időtartam</th>
+                            <th>Indok</th>
+                            <th>Státusz</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (empty($rows)): ?>
+                            <tr>
+                                <td colspan="8" class="table-empty">
+                                    Nincs a szűrésnek megfelelő bejegyzés.
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($rows as $row): ?>
+                                <?php
+                                $label = formatActionLabel($row['action_type'] ?? '');
+                                $durationText = formatDuration(
+                                    $row['duration_seconds'] !== null ? (int)$row['duration_seconds'] : null
+                                );
+                                $isRevoked = !empty($row['revoked']);
+                                ?>
+                                <tr>
+                                    <td class="cell-id">#<?= (int)$row['id']; ?></td>
+                                    <td class="cell-datetime"><?= h(formatDateTime($row['created_at'])); ?></td>
+                                    <td>
+                                        <div class="cell-main"><?= h($row['user_tag'] ?: 'Ismeretlen'); ?></div>
+                                        <div class="cell-sub">ID: <?= h($row['user_id'] ?: '‑'); ?></div>
+                                    </td>
+                                    <td>
+                                        <div class="cell-main"><?= h($row['moderator_tag'] ?: 'Ismeretlen'); ?></div>
+                                        <div class="cell-sub">ID: <?= h($row['moderator_id'] ?: '‑'); ?></div>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        $badgeClass = 'badge-log-other';
+                                        switch (strtoupper($row['action_type'] ?? '')) {
+                                            case 'BAN':    $badgeClass = 'badge-log-ban'; break;
+                                            case 'UNBAN':  $badgeClass = 'badge-log-revoke'; break;
+                                            case 'MUTE':   $badgeClass = 'badge-log-mute'; break;
+                                            case 'UNMUTE': $badgeClass = 'badge-log-revoke'; break;
+                                            case 'KICK':   $badgeClass = 'badge-log-kick'; break;
+                                            case 'WARN':   $badgeClass = 'badge-log-warn'; break;
+                                            case 'UNWARN': $badgeClass = 'badge-log-revoke'; break;
+                                        }
+                                        ?>
+                                        <span class="badge-log <?= $badgeClass; ?>">
+                                            <?= h($label); ?>
+                                        </span>
+                                    </td>
+                                    <td><?= h($durationText); ?></td>
+                                    <td class="cell-reason">
+                                        <?= h($row['reason'] ?: '—'); ?>
+                                    </td>
+                                    <td>
+                                        <?php if ($isRevoked): ?>
+                                            <span class="badge-status badge-status-revoked">Feloldva / visszavonva</span>
+                                        <?php else: ?>
+                                            <span class="badge-status badge-status-active">Aktív / lezárt</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
 </body>
 </html>
