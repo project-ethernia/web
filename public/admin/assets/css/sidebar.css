@@ -1,0 +1,236 @@
+.admin-body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #312e81 0, transparent 55%),
+              radial-gradient(circle at bottom, #1f2937 0, transparent 55%),
+              #020013;
+  color: #f9fafb;
+  padding-left: 260px;
+}
+
+.admin-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  padding: 20px 16px;
+  background: #050712;
+  border-right: 1px solid rgba(15, 23, 42, 0.9);
+  box-sizing: border-box;
+}
+
+.admin-sidebar * {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.sidebar-inner {
+  height: 100%;
+  border-radius: 18px;
+  background: #060818;
+  padding: 16px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* user card */
+
+.sidebar-user-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.sidebar-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: #0b1020;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.sidebar-avatar span {
+  display: block;
+}
+
+.sidebar-user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-user-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.sidebar-user-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.sidebar-user-role {
+  font-size: 0.75rem;
+  color: rgba(129, 140, 248, 0.95);
+}
+
+/* nav */
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.sidebar-section + .sidebar-section {
+  margin-top: 16px;
+}
+
+.sidebar-section-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.9);
+  margin-bottom: 6px;
+  padding-inline: 8px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 0.86rem;
+  color: rgba(229, 231, 235, 0.9);
+  margin-bottom: 3px;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.sidebar-link:hover {
+  background: #101427;
+  color: #ffffff;
+}
+
+.sidebar-link.is-active {
+  background: #111827;
+  color: #ffffff;
+}
+
+.sidebar-link-disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.sidebar-link-disabled:hover {
+  background: transparent;
+  color: rgba(229, 231, 235, 0.6);
+}
+
+.sidebar-icon {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.material-symbols-rounded.sidebar-icon,
+.material-symbols-rounded.sidebar-footer-icon {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+.sidebar-link-text {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sidebar-pill {
+  font-size: 0.7rem;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(139, 92, 246, 0.18);
+  color: #c4b5fd;
+}
+
+.sidebar-pill-muted {
+  background: rgba(75, 85, 99, 0.4);
+  color: rgba(209, 213, 219, 0.85);
+}
+
+/* footer */
+
+.sidebar-footer {
+  border-top: 1px solid rgba(31, 41, 55, 0.9);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+.sidebar-footer-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: rgba(209, 213, 219, 0.9);
+  text-decoration: none;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.sidebar-footer-link + .sidebar-footer-link {
+  margin-top: 2px;
+}
+
+.sidebar-footer-link:hover {
+  background: #101427;
+  color: #ffffff;
+}
+
+.sidebar-footer-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.sidebar-footer-link-danger {
+  color: #fca5a5;
+}
+
+.sidebar-footer-link-danger:hover {
+  background: #111827;
+  color: #fecaca;
+}
+
+/* scrollbars csak a navra */
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(31, 41, 55, 0.8);
+  border-radius: 999px;
+}
