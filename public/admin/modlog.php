@@ -158,7 +158,7 @@ $actionTypes = ['ban', 'tempban', 'softban', 'mute', 'tempmute', 'kick', 'warn',
     <meta charset="UTF-8">
     <title>ETHERNIA – Moderációs napló</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/admin/assets/css/admin.css?v=<?= time(); ?>">
+    <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
 </head>
 <body class="admin-body">
 
