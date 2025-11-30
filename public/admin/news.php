@@ -210,16 +210,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmt = $pdo->query("SELECT * FROM news ORDER BY order_index ASC, created_at DESC");
 $news = $stmt->fetchAll();
 
+$currentNav = 'news';
 ?>
 <!DOCTYPE html>
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>ETHERNIA Admin - Adminok kezelése</title>
+  <title>ETHERNIA Admin – Hírek kezelése</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/admin/assets/css/news.css?v=<?= time(); ?>">
   <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
   <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
+  <link rel="stylesheet" href="/admin/assets/css/news.css?v=<?= time(); ?>">
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;500&display=swap">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
@@ -228,12 +229,9 @@ $news = $stmt->fetchAll();
 <body class="admin-body">
   <div class="admin-layout">
 
-    <?php
-      $currentNav = 'news';
-      require __DIR__ . '/_sidebar.php';
-    ?>
+    <?php require __DIR__ . '/_sidebar.php'; ?>
 
-    <div class="admin-main">
+    <main class="admin-main">
       <header class="admin-header">
         <div>
           <h1 class="admin-title">Hírek kezelése</h1>
@@ -269,71 +267,71 @@ $news = $stmt->fetchAll();
                 </tr>
               </thead>
               <tbody>
-                <?php foreach ($news as $row): ?>
-                  <tr
-                    data-id="<?php echo h($row['id']); ?>"
-                    data-title="<?php echo h($row['title']); ?>"
-                    data-tag="<?php echo h($row['tag']); ?>"
-                    data-date_display="<?php echo h($row['date_display']); ?>"
-                    data-short_text="<?php echo h($row['short_text']); ?>"
-                    data-full_text="<?php echo h($row['full_text']); ?>"
-                    data-order_index="<?php echo (int)$row['order_index']; ?>"
-                    data-is_visible="<?php echo (int)$row['is_visible']; ?>"
-                    data-author="<?php echo h($row['author']); ?>"
-                  >
-                    <td class="cell-order">
-                      <span class="order-value"><?php echo (int)$row['order_index']; ?></span>
-                    </td>
-                    <td class="cell-title">
-                      <div class="title-main"><?php echo h($row['title']); ?></div>
-                      <div class="title-sub"><?php echo h($row['short_text']); ?></div>
-                    </td>
-                    <td class="cell-tag">
-                      <?php
-                        $tag = $row['tag'] ? $row['tag'] : 'Info';
-                        $tagLower = mb_strtolower($tag, 'UTF-8');
-                        $tagClass = 'tag-pill';
-                        if (strpos($tagLower, 'event') !== false) {
-                            $tagClass .= ' tag-pill-event';
-                        } elseif (strpos($tagLower, 'info') !== false) {
-                            $tagClass .= ' tag-pill-info';
-                        }
-                      ?>
-                      <span class="<?php echo $tagClass; ?>">
-                        <?php echo h($tag); ?>
-                      </span>
-                    </td>
-                    <td class="cell-date">
-                      <?php echo h($row['date_display']); ?>
-                    </td>
-                    <td class="cell-author">
-                      <?php echo h($row['author']); ?>
-                    </td>
-                    <td class="cell-visible">
-                      <?php $visible = (int)$row['is_visible'] === 1; ?>
-                      <button
-                        type="button"
-                        class="visibility-toggle <?php echo $visible ? 'is-on' : 'is-off'; ?>"
-                        data-id="<?php echo (int)$row['id']; ?>"
-                        data-visible="<?php echo $visible ? '1' : '0'; ?>"
-                        aria-pressed="<?php echo $visible ? 'true' : 'false'; ?>"
-                        title="<?php echo $visible ? 'Látható – kattints az elrejtéshez' : 'Rejtett – kattints a megjelenítéshez'; ?>"
-                      >
-                        <span class="toggle-knob"></span>
-                      </button>
-                    </td>
-                    <td class="cell-actions">
-                      <button type="button" class="btn btn-sm btn-secondary btn-edit">Szerkesztés</button>
-                      <button type="button" class="btn btn-sm btn-danger btn-delete">Törlés</button>
-                    </td>
-                  </tr>
-                <?php endforeach; ?>
+              <?php foreach ($news as $row): ?>
+                <tr
+                  data-id="<?= h($row['id']); ?>"
+                  data-title="<?= h($row['title']); ?>"
+                  data-tag="<?= h($row['tag']); ?>"
+                  data-date_display="<?= h($row['date_display']); ?>"
+                  data-short_text="<?= h($row['short_text']); ?>"
+                  data-full_text="<?= h($row['full_text']); ?>"
+                  data-order_index="<?= (int)$row['order_index']; ?>"
+                  data-is_visible="<?= (int)$row['is_visible']; ?>"
+                  data-author="<?= h($row['author']); ?>"
+                >
+                  <td class="cell-order">
+                    <span class="order-value"><?= (int)$row['order_index']; ?></span>
+                  </td>
+                  <td class="cell-title">
+                    <div class="title-main"><?= h($row['title']); ?></div>
+                    <div class="title-sub"><?= h($row['short_text']); ?></div>
+                  </td>
+                  <td class="cell-tag">
+                    <?php
+                      $tag = $row['tag'] ? $row['tag'] : 'Info';
+                      $tagLower = mb_strtolower($tag, 'UTF-8');
+                      $tagClass = 'tag-pill';
+                      if (strpos($tagLower, 'event') !== false) {
+                          $tagClass .= ' tag-pill-event';
+                      } elseif (strpos($tagLower, 'info') !== false) {
+                          $tagClass .= ' tag-pill-info';
+                      }
+                    ?>
+                    <span class="<?= $tagClass; ?>">
+                      <?= h($tag); ?>
+                    </span>
+                  </td>
+                  <td class="cell-date">
+                    <?= h($row['date_display']); ?>
+                  </td>
+                  <td class="cell-author">
+                    <?= h($row['author']); ?>
+                  </td>
+                  <td class="cell-visible">
+                    <?php $visible = (int)$row['is_visible'] === 1; ?>
+                    <button
+                      type="button"
+                      class="visibility-toggle <?= $visible ? 'is-on' : 'is-off'; ?>"
+                      data-id="<?= (int)$row['id']; ?>"
+                      data-visible="<?= $visible ? '1' : '0'; ?>"
+                      aria-pressed="<?= $visible ? 'true' : 'false'; ?>"
+                      title="<?= $visible ? 'Látható – kattints az elrejtéshez' : 'Rejtett – kattints a megjelenítéshez'; ?>"
+                    >
+                      <span class="toggle-knob"></span>
+                    </button>
+                  </td>
+                  <td class="cell-actions">
+                    <button type="button" class="btn btn-sm btn-secondary btn-edit">Szerkesztés</button>
+                    <button type="button" class="btn btn-sm btn-danger btn-delete">Törlés</button>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
               </tbody>
             </table>
           </div>
         <?php endif; ?>
       </section>
-    </div>
+    </main>
   </div>
 
   <div class="modal" id="news-modal" aria-hidden="true">
