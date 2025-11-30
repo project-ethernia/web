@@ -1,0 +1,2 @@
+@import url('/admin/assets/css/base.css?v=<?= time(); ?>');
+
