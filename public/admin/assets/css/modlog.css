@@ -1,186 +1,222 @@
 @import url('/admin/assets/css/base.css?v=<?= time(); ?>');
 
-.admin-layout {
-  display: flex;
-  width: 100%;
-  min-height: 100vh;
+.modlog-page {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.admin-sidebar {
-  width: 240px;
-  background: rgba(10, 15, 30, 0.95);
-  backdrop-filter: blur(10px);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 22px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.admin-sidebar .sb-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  margin-bottom: 10px;
-  color: #f9fafb;
-  text-transform: uppercase;
-}
-
-.admin-sidebar nav {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.admin-sidebar a {
-  display: block;
-  padding: 10px 14px;
-  border-radius: 8px;
-  color: rgba(229, 231, 235, 0.85);
-  font-size: 0.9rem;
-  letter-spacing: 0.03em;
-  transition: 0.15s ease;
-}
-
-.admin-sidebar a:hover {
-  background: rgba(139, 92, 246, 0.12);
-  color: #fff;
-}
-
-.admin-sidebar a.active {
-  background: rgba(139, 92, 246, 0.25);
-  color: #fff;
-  border: 1px solid rgba(168, 85, 247, 0.6);
-}
-
-.admin-content {
-  flex: 1;
-  padding: 32px 36px;
-}
-
-.modlog-header {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 18px;
+.modlog-card {
+  margin-top: 18px;
 }
 
 .modlog-filters {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 18px;
-  margin-bottom: 20px;
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 18px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  margin-bottom: 16px;
+}
+
+.modlog-filters-left {
+  display: flex;
+  flex-wrap: wrap;
   gap: 14px;
 }
 
-.filter-group {
+.modlog-filters-right {
+  display: flex;
+  gap: 10px;
+}
+
+.form-group-inline {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 200px;
 }
 
-.filter-group label {
+.form-group-inline label {
   font-size: 0.8rem;
-  color: rgba(209, 213, 219, 0.8);
+  color: rgba(209, 213, 219, 0.85);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.filter-group input,
-.filter-group select {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(15, 23, 42, 0.7);
-  color: #fff;
-}
-
-.filter-btn {
-  padding: 10px 18px;
+.form-group-inline input,
+.form-group-inline select {
+  padding: 7px 10px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #8b5cf6, #a855f7);
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.15s ease;
-  border: none;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+  font-size: 0.86rem;
 }
 
-.filter-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(139, 92, 246, 0.35);
-}
-
-.clear-btn {
-  padding: 10px 18px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+.modlog-table-wrapper {
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.96);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(30, 64, 175, 0.6);
 }
 
 .modlog-table {
   width: 100%;
   border-collapse: collapse;
-  border-radius: 14px;
-  overflow: hidden;
-  background: rgba(10, 15, 30, 0.75);
 }
 
 .modlog-table thead tr {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(15, 23, 42, 0.98);
 }
 
 .modlog-table th,
 .modlog-table td {
-  padding: 14px 16px;
-  font-size: 0.88rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 12px 16px;
+  font-size: 0.86rem;
+  border-bottom: 1px solid rgba(31, 41, 55, 0.85);
+}
+
+.modlog-table th {
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: rgba(156, 163, 175, 0.95);
 }
 
 .modlog-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(30, 64, 175, 0.25);
 }
 
-.badge {
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.74rem;
+.modlog-empty {
+  text-align: center;
+  padding: 20px;
+  color: rgba(156, 163, 175, 0.95);
+}
+
+.modlog-user-main {
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.modlog-user-sub {
+  font-size: 0.78rem;
+  color: rgba(156, 163, 175, 0.9);
+}
+
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  display: inline-block;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
 }
 
-.badge-warn {
-  background: rgba(234, 179, 8, 0.15);
+.action-warn {
+  background: rgba(234, 179, 8, 0.16);
   color: #fde047;
-  border: 1px solid rgba(234, 179, 8, 0.4);
+  border: 1px solid rgba(234, 179, 8, 0.55);
 }
 
-.badge-ban {
-  background: rgba(220, 38, 38, 0.18);
-  color: #fca5a5;
-  border: 1px solid rgba(220, 38, 38, 0.4);
+.action-unwarn {
+  background: rgba(96, 165, 250, 0.16);
+  color: #bfdbfe;
+  border: 1px solid rgba(96, 165, 250, 0.6);
 }
 
-.badge-mute {
-  background: rgba(59, 130, 246, 0.18);
+.action-mute {
+  background: rgba(59, 130, 246, 0.16);
   color: #93c5fd;
-  border: 1px solid rgba(59, 130, 246, 0.4);
+  border: 1px solid rgba(59, 130, 246, 0.6);
 }
 
-.status-active {
-  background: rgba(16, 185, 129, 0.2);
+.action-unmute {
+  background: rgba(45, 212, 191, 0.16);
   color: #6ee7b7;
-  padding: 5px 10px;
-  border-radius: 8px;
+  border: 1px solid rgba(45, 212, 191, 0.6);
 }
 
-.status-revoked {
+.action-kick {
+  background: rgba(251, 146, 60, 0.18);
+  color: #fed7aa;
+  border: 1px solid rgba(251, 146, 60, 0.65);
+}
+
+.action-ban {
+  background: rgba(220, 38, 38, 0.2);
+  color: #fecaca;
+  border: 1px solid rgba(220, 38, 38, 0.65);
+}
+
+.action-unban {
+  background: rgba(34, 197, 94, 0.22);
+  color: #bbf7d0;
+  border: 1px solid rgba(34, 197, 94, 0.7);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.status-pill-on {
+  background: rgba(16, 185, 129, 0.22);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.7);
+}
+
+.status-pill-off {
   background: rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
-  padding: 5px 10px;
-  border-radius: 8px;
+  color: #fecaca;
+  border: 1px solid rgba(239, 68, 68, 0.7);
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  color: rgba(229, 231, 235, 0.9);
+}
+
+@media (max-width: 960px) {
+  .modlog-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modlog-filters-left {
+    width: 100%;
+  }
+
+  .modlog-filters-right {
+    justify-content: flex-end;
+  }
+
+  .form-group-inline {
+    flex: 1;
+    min-width: 0;
+  }
 }

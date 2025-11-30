@@ -137,10 +137,12 @@ function formatStatus(bool $revoked): array
     <link rel="stylesheet" href="/admin/assets/css/modlog.css?v=<?= time(); ?>">
 </head>
 <body class="admin-body">
-<div class="admin-shell">
-    <?php include __DIR__ . '/_sidebar.php'; ?>
 
-    <main class="admin-main">
+<?php include __DIR__ . '/_sidebar.php'; ?>
+
+<main class="admin-main">
+    <div class="admin-main-inner modlog-page">
+
         <header class="admin-page-header">
             <div class="admin-page-header-main">
                 <h1 class="admin-page-title">Moderációs napló</h1>
@@ -294,7 +296,9 @@ function formatStatus(bool $revoked): array
                 </table>
             </div>
         </section>
-    </main>
-</div>
+
+    </div>
+</main>
+
 </body>
 </html>
