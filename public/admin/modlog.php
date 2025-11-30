@@ -18,9 +18,9 @@ try {
     die('Adatbázis hiba: ' . $e->getMessage());
 }
 
-$search   = isset($_GET['q']) ? trim($_GET['q']) : '';
-$type     = isset($_GET['type']) ? trim($_GET['type']) : 'all';
-$status   = isset($_GET['status']) ? trim($_GET['status']) : 'all';
+$search = isset($_GET['q']) ? trim($_GET['q']) : '';
+$type   = isset($_GET['type']) ? trim($_GET['type']) : 'all';
+$status = isset($_GET['status']) ? trim($_GET['status']) : 'all';
 
 $where  = [];
 $params = [];
@@ -240,7 +240,7 @@ function formatStatus(bool $revoked): array
                             $modTag = $row['moderator_tag'] ?: 'Ismeretlen';
                             $modId  = $row['moderator_id'] ?: 'N/A';
 
-                            $actionLabel = formatActionLabel((string)$row['action_type']);
+                            $actionLabel   = formatActionLabel((string)$row['action_type']);
                             $durationLabel = formatDuration($row['duration_seconds'] !== null ? (int)$row['duration_seconds'] : null);
 
                             $reason = $row['reason'] ?: 'Nincs megadva indok';
