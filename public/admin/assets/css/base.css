@@ -1,3 +1,5 @@
+@import url('https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css');
+
 *,
 *::before,
 *::after {
@@ -12,67 +14,107 @@ body {
 
 body.admin-body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background:
-    radial-gradient(circle at top, #312e81 0, transparent 55%),
-    radial-gradient(circle at bottom, #1f2937 0, transparent 55%),
-    #020013;
+  background: radial-gradient(circle at top, #312e81 0, transparent 55%), radial-gradient(circle at bottom, #1f2937 0, transparent 55%), #020013;
   color: #f9fafb;
 }
-
-/* Layout */
 
 .admin-layout {
   min-height: 100vh;
   display: flex;
 }
 
-/* Sidebar */
+/* SIDEBAR ÚJ DIZÁJN */
 
 .admin-sidebar {
-  width: 240px;
-  background: linear-gradient(180deg, #050013 0%, #040010 50%, #020008 100%);
-  border-right: 1px solid rgba(148, 163, 184, 0.25);
-  padding: 1.25rem 1rem 1rem;
+  width: 260px;
+  background: linear-gradient(180deg, #05030f 0%, #050010 45%, #020008 100%);
+  border-right: 1px solid rgba(15, 23, 42, 0.95);
+  padding: 1.1rem 1rem 1.1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  box-shadow: 18px 0 40px rgba(0, 0, 0, 0.85);
 }
 
-.sidebar-logo {
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.75rem;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(168, 85, 247, 0.35);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+.sidebar-top {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 1.2rem;
 }
 
-.logo-main {
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  background: linear-gradient(120deg, #c4b5fd, #a855f7);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.sidebar-profile {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 0.85rem;
+  border-radius: 1rem;
+  background: radial-gradient(circle at top left, rgba(168, 85, 247, 0.28), transparent 60%), rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(129, 140, 248, 0.55);
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.9);
 }
 
-.logo-sub {
-  font-size: 0.75rem;
-  opacity: 0.8;
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: radial-gradient(circle at top left, rgba(168, 85, 247, 0.4), rgba(15, 23, 42, 0.95));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1rem;
   color: #e5e7eb;
+  margin-right: 0.75rem;
 }
 
-/* Sidebar nav */
+.profile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.profile-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.profile-name {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.profile-role {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(129, 140, 248, 0.9);
+}
 
 .sidebar-nav {
-  margin-top: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.9rem;
+}
+
+.nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nav-section + .nav-section {
+  border-top: 1px solid rgba(31, 41, 55, 0.9);
+  padding-top: 0.75rem;
+}
+
+.nav-section-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(148, 163, 184, 0.85);
+  margin-left: 0.4rem;
+  margin-bottom: 0.2rem;
 }
 
 .nav-item {
@@ -80,28 +122,26 @@ body.admin-body {
   background: transparent;
   color: #e5e7eb;
   text-decoration: none;
-  padding: 0.55rem 0.65rem;
-  border-radius: 0.75rem;
+  padding: 0.48rem 0.65rem;
+  border-radius: 0.85rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
+  gap: 0.6rem;
+  font-size: 0.84rem;
   cursor: pointer;
-  opacity: 0.9;
-  text-transform: uppercase;
+  opacity: 0.88;
 }
 
 .nav-item:hover:not(.nav-item-disabled) {
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(15, 23, 42, 0.96);
   opacity: 1;
 }
 
-.nav-item.active {
-  background:
-    radial-gradient(circle at top left, rgba(168, 85, 247, 0.35), transparent 60%),
-    rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(168, 85, 247, 0.7);
-  box-shadow: 0 12px 30px rgba(88, 28, 135, 0.8);
+.nav-item-active,
+.nav-item.nav-item-active {
+  background: radial-gradient(circle at top left, rgba(168, 85, 247, 0.52), transparent 60%), rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(168, 85, 247, 0.95);
+  box-shadow: 0 18px 40px rgba(88, 28, 135, 0.9);
   opacity: 1;
 }
 
@@ -110,84 +150,87 @@ body.admin-body {
   cursor: default;
 }
 
-.nav-icon {
-  width: 1.25rem;
+.nav-item-icon {
+  width: 1.3rem;
   display: inline-flex;
   justify-content: center;
+  font-size: 1.05rem;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.nav-item-active .nav-item-icon {
+  color: #f9fafb;
+}
+
+.nav-item-text {
+  flex: 1;
 }
 
 .nav-pill {
   margin-left: auto;
-  font-size: 0.65rem;
-  padding: 0.1rem 0.4rem;
+  font-size: 0.67rem;
+  padding: 0.1rem 0.5rem;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.25);
+  background: rgba(148, 163, 184, 0.3);
   color: #e5e7eb;
 }
 
-.nav-separator {
-  height: 1px;
-  background: rgba(148, 163, 184, 0.3);
-  margin: 0.35rem 0;
+.nav-pill-soft {
+  background: rgba(148, 163, 184, 0.16);
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  color: rgba(209, 213, 219, 0.92);
 }
 
-/* Sidebar footer (összefésült verzió) */
-
-.sidebar-footer {
+.sidebar-bottom {
   margin-top: auto;
-  padding: 1rem 1.25rem 1.25rem;
-  border-top: 1px solid rgba(15, 23, 42, 0.9);
-}
-
-.sidebar-user {
-  font-size: 0.8rem;
-  margin-bottom: 0.5rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.95);
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.4rem;
 }
 
-.sidebar-user .user-label {
-  display: block;
-  opacity: 0.7;
+.sidebar-support {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
-.sidebar-user .user-name {
-  font-weight: 600;
+.nav-item-ghost {
+  border: 1px solid transparent;
+  opacity: 0.85;
 }
 
-.sidebar-logout {
-  margin-top: 0.25rem;
+.nav-item-ghost:hover {
+  border-color: rgba(55, 65, 81, 0.9);
 }
 
-.btn-logout {
-  width: 100%;
-  border: none;
-  border-radius: 999px;
-  padding: 0.4rem 0.8rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-  background: rgba(15, 23, 42, 0.95);
-  color: #e5e7eb;
-  transition: background 0.15s ease, color 0.15s ease;
+.sidebar-logout-form {
+  margin-top: 0.35rem;
 }
 
-.btn-logout:hover {
-  background: rgba(55, 65, 81, 1);
-  color: #fefefe;
+.nav-item-danger {
+  border: 1px solid rgba(248, 113, 113, 0.85);
+  color: #fecaca;
 }
 
-/* Main */
+.nav-item-danger .nav-item-icon {
+  color: #fecaca;
+}
+
+.nav-item-danger:hover {
+  background: rgba(127, 29, 29, 0.9);
+}
+
+/* MAIN LAYOUT, TARTALOM */
 
 .admin-main {
   flex: 1;
-  padding: 1.25rem 1.75rem;
+  padding: 1.3rem 1.8rem 1.8rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
 }
-
-/* Header */
 
 .admin-header {
   display: flex;
@@ -207,8 +250,6 @@ body.admin-body {
   opacity: 0.8;
 }
 
-/* Section wrapper */
-
 .admin-section {
   background: rgba(15, 23, 42, 0.9);
   border-radius: 1rem;
@@ -216,8 +257,6 @@ body.admin-body {
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.8);
   padding: 1rem;
 }
-
-/* Empty state */
 
 .admin-empty {
   padding: 2rem 1.5rem;
@@ -230,31 +269,30 @@ body.admin-body {
   align-items: center;
 }
 
-/* Buttons – egységes verzió */
+/* BUTTONOK */
 
 .btn {
+  border: none;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border: 1px solid transparent;
-  cursor: pointer;
+  gap: 0.35rem;
+  font-weight: 500;
   text-decoration: none;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  background: linear-gradient(120deg, #a855f7, #c4b5fd);
   color: #020617;
-  box-shadow: 0 10px 26px rgba(88, 28, 135, 0.8);
+  box-shadow: 0 10px 25px rgba(168, 85, 247, 0.6);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #a855f7, #c4b5fd);
+  background: linear-gradient(120deg, #9333ea, #a855f7);
 }
 
 .btn-secondary {
@@ -275,57 +313,15 @@ body.admin-body {
   background: #dc2626;
 }
 
-.btn-ghost {
-  background: transparent;
-  color: rgba(209, 213, 219, 0.9);
-  border-color: rgba(55, 65, 81, 0.9);
-}
-
-.btn-ghost:hover {
-  background: rgba(15, 23, 42, 0.9);
-}
-
 .btn-sm {
   padding: 0.25rem 0.6rem;
   font-size: 0.8rem;
 }
 
-/* Admin table (általános) */
+/* TÁBLÁK, CELLÁK */
 
 .admin-table-wrapper {
   overflow-x: auto;
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-}
-
-.admin-table thead {
-  background: rgba(15, 23, 42, 0.95);
-}
-
-.admin-table th,
-.admin-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgb(155, 155, 155);
-  text-align: left;
-}
-
-.admin-table th {
-  font-weight: 600;
-  font-size: 0.8rem;
-  opacity: 0.85;
-}
-
-.admin-table tbody tr:last-child th,
-.admin-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.admin-table tbody tr:hover {
-  background: rgba(31, 41, 55, 0.75);
 }
 
 .cell-order .order-value {
@@ -344,7 +340,7 @@ body.admin-body {
   margin-top: 0.15rem;
 }
 
-/* Tag pill */
+/* TAG PILL */
 
 .tag-pill {
   display: inline-flex;
@@ -366,7 +362,7 @@ body.admin-body {
   color: #bfdbfe;
 }
 
-/* Visible toggle */
+/* VISIBLE TOGGLE */
 
 .cell-visible {
   text-align: center;
@@ -406,13 +402,11 @@ body.admin-body {
   transform: translateX(15px);
 }
 
-/* Actions */
-
 .cell-actions {
   gap: 0.3rem;
 }
 
-/* Modal */
+/* MODAL */
 
 .modal {
   position: fixed;
@@ -469,7 +463,7 @@ body.admin-body {
   font-size: 1.1rem;
 }
 
-/* Form */
+/* FORM */
 
 .form-group {
   margin-bottom: 0.7rem;
@@ -517,8 +511,6 @@ body.admin-body {
   box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.5);
 }
 
-/* Checkbox */
-
 .form-group-checkbox {
   justify-content: center;
 }
@@ -536,8 +528,6 @@ body.admin-body {
   height: 14px;
 }
 
-/* Meta */
-
 .form-meta {
   margin: 0.25rem 0 0.6rem;
   font-size: 0.8rem;
@@ -547,8 +537,6 @@ body.admin-body {
 .meta-separator {
   margin: 0 0.3rem;
 }
-
-/* Modal actions */
 
 .modal-actions {
   display: flex;
@@ -563,15 +551,45 @@ body.admin-body {
   gap: 0.35rem;
 }
 
-/* Error */
-
 .form-error {
   margin: 0;
   font-size: 0.8rem;
   color: #fecaca;
 }
 
-/* Oldal header + kártyák */
+/* ADMIN TÁBLÁK, MODLOG */
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.admin-table thead {
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgb(155, 155, 155);
+  text-align: left;
+}
+
+.admin-table th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.admin-table tbody tr:last-child th,
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(31, 41, 55, 0.75);
+}
 
 .admin-page-header {
   display: flex;
@@ -631,8 +649,6 @@ body.admin-body {
   padding: 0.9rem 1rem 1rem;
 }
 
-/* Modlog specifikus */
-
 .modlog-filters {
   display: flex;
   flex-wrap: wrap;
@@ -671,6 +687,16 @@ body.admin-body {
 .filter-actions {
   display: flex;
   gap: 0.5rem;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: rgba(209, 213, 219, 0.9);
+  border-color: rgba(55, 65, 81, 0.9);
+}
+
+.btn-ghost:hover {
+  background: rgba(15, 23, 42, 0.9);
 }
 
 .table-wrapper {
@@ -819,7 +845,7 @@ body.admin-body {
   color: rgba(148, 163, 184, 0.95);
 }
 
-/* Reszponzív */
+/* RESPONSIVE */
 
 @media (max-width: 900px) {
   .admin-sidebar {
