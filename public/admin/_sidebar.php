@@ -1,103 +1,105 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
+if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-$currentAdminName = !empty($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
-$currentAdminRole = !empty($_SESSION['admin_role']) ? strtoupper((string)$_SESSION['admin_role']) : 'ADMIN';
+$adminName = $_SESSION['admin_username'] ?? 'Ismeretlen';
+$adminRole = $_SESSION['admin_role'] ?? 'ADMIN';
 
-function sidebar_link(string $href, string $label, string $icon, string $currentPath, bool $disabled = false): void {
-    $isActive = !$disabled && (stripos($currentPath, $href) !== false);
-    $classes = 'sidebar-nav-link';
-    if ($isActive) {
-        $classes .= ' is-active';
-    }
-    if ($disabled) {
-        $classes .= ' is-disabled';
-    }
-    ?>
-    <a href="<?php echo $disabled ? '#' : htmlspecialchars($href, ENT_QUOTES, 'UTF-8'); ?>"
-       class="<?php echo $classes; ?>">
-        <span class="sidebar-nav-icon"><?php echo htmlspecialchars($icon, ENT_QUOTES, 'UTF-8'); ?></span>
-        <span class="sidebar-nav-label"><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></span>
-        <?php if ($disabled): ?>
-            <span class="sidebar-nav-pill">HAMAROSAN</span>
-        <?php endif; ?>
-    </a>
-    <?php
-}
-
-$currentPath = $_SERVER['REQUEST_URI'] ?? '';
+$currentNav = $currentNav ?? '';
 ?>
-<aside class="sidebar-shell">
-    <div class="sidebar-panel">
-        <header class="sidebar-header">
-            <div class="sidebar-user-avatar">
-                <span class="sidebar-user-avatar-initial">
-                    <?php echo strtoupper(substr($currentAdminName, 0, 1)); ?>
+<aside class="admin-sidebar">
+    <div class="sidebar-inner">
+        <div class="sidebar-user-card">
+            <div class="sidebar-avatar">
+                <span>
+                    <?= strtoupper(substr($adminName, 0, 1)); ?>
                 </span>
             </div>
-            <div class="sidebar-user-info">
-                <div class="sidebar-user-name"><?php echo htmlspecialchars($currentAdminName, ENT_QUOTES, 'UTF-8'); ?></div>
-                <div class="sidebar-user-role"><?php echo htmlspecialchars($currentAdminRole, ENT_QUOTES, 'UTF-8'); ?></div>
+            <div class="sidebar-user-meta">
+                <div class="sidebar-user-label">ETHERNIA ADMIN</div>
+                <div class="sidebar-user-name"><?= htmlspecialchars($adminName, ENT_QUOTES, 'UTF-8'); ?></div>
+                <div class="sidebar-user-role"><?= htmlspecialchars(strtoupper($adminRole), ENT_QUOTES, 'UTF-8'); ?></div>
             </div>
-        </header>
+        </div>
 
         <nav class="sidebar-nav">
             <div class="sidebar-section">
-                <div class="sidebar-section-title">Áttekintés</div>
-                <div class="sidebar-section-items">
-                    <?php sidebar_link('/admin/index.php', 'Főoldal', '🏠', $currentPath); ?>
-                </div>
+                <div class="sidebar-section-label">Áttekintés</div>
+                <a href="/admin/index.php"
+                   class="sidebar-link<?= $currentNav === 'dashboard' ? ' is-active' : ''; ?>">
+                    <span class="material-symbols-rounded sidebar-icon">dashboard</span>
+                    <span class="sidebar-link-text">Főoldal</span>
+                </a>
             </div>
 
             <div class="sidebar-section">
-                <div class="sidebar-section-title">Tartalom</div>
-                <div class="sidebar-section-items">
-                    <?php
-                    sidebar_link('/admin/news.php', 'Hírek kezelése', '📰', $currentPath);
-                    sidebar_link('/admin/admins.php', 'Hozzáférés', '🔑', $currentPath);
-                    sidebar_link('/admin/activity.php', 'Tevékenység napló', '📊', $currentPath);
-                    ?>
-                </div>
+                <div class="sidebar-section-label">Tartalom</div>
+                <a href="/admin/news.php"
+                   class="sidebar-link<?= $currentNav === 'news' ? ' is-active' : ''; ?>">
+                    <span class="material-symbols-rounded sidebar-icon">newspaper</span>
+                    <span class="sidebar-link-text">Hírek kezelése</span>
+                </a>
+                <a href="/admin/admins.php"
+                   class="sidebar-link<?= $currentNav === 'admins' ? ' is-active' : ''; ?>">
+                    <span class="material-symbols-rounded sidebar-icon">admin_panel_settings</span>
+                    <span class="sidebar-link-text">Hozzáférés</span>
+                </a>
+                <a href="/admin/log.php"
+                   class="sidebar-link<?= $currentNav === 'log' ? ' is-active' : ''; ?>">
+                    <span class="material-symbols-rounded sidebar-icon">history</span>
+                    <span class="sidebar-link-text">Tevékenység napló</span>
+                </a>
             </div>
 
             <div class="sidebar-section">
-                <div class="sidebar-section-title">Játékosok</div>
-                <div class="sidebar-section-items">
-                    <?php
-                    sidebar_link('/admin/players.php', 'Játékosok kezelése', '👥', $currentPath);
-                    sidebar_link('/admin/users.php', 'Játékos fiókok', '👤', $currentPath);
-                    sidebar_link('/admin/modlog.php', 'Discord büntetések', '🛡️', $currentPath);
-                    ?>
-                </div>
+                <div class="sidebar-section-label">Játékosok</div>
+                <a href="/admin/players.php"
+                   class="sidebar-link<?= $currentNav === 'players' ? ' is-active' : ''; ?>">
+                    <span class="material-symbols-rounded sidebar-icon">groups</span>
+                    <span class="sidebar-link-text">
+                        Játékosok kezelése
+                        <span class="sidebar-pill">BETA</span>
+                    </span>
+                </a>
+                <a href="/admin/users.php"
+                   class="sidebar-link<?= $currentNav === 'users' ? ' is-active' : ''; ?>">
+                    <span class="material-symbols-rounded sidebar-icon">person</span>
+                    <span class="sidebar-link-text">Játékos fiókok</span>
+                </a>
+                <a href="/admin/modlog.php"
+                   class="sidebar-link<?= $currentNav === 'modlog' ? ' is-active' : ''; ?>">
+                    <span class="material-symbols-rounded sidebar-icon">gavel</span>
+                    <span class="sidebar-link-text">Discord büntetések</span>
+                </a>
             </div>
 
             <div class="sidebar-section">
-                <div class="sidebar-section-title">Bolt</div>
-                <div class="sidebar-section-items">
-                    <?php sidebar_link('/admin/shop.php', 'Bolt', '🛒', $currentPath, true); ?>
-                </div>
+                <div class="sidebar-section-label">Bolt</div>
+                <a href="#"
+                   class="sidebar-link sidebar-link-disabled">
+                    <span class="material-symbols-rounded sidebar-icon">shopping_bag</span>
+                    <span class="sidebar-link-text">
+                        Bolt
+                        <span class="sidebar-pill sidebar-pill-muted">Hamarosan</span>
+                    </span>
+                </a>
             </div>
         </nav>
 
-        <footer class="sidebar-footer">
-            <div class="sidebar-footer-group">
-                <button type="button" class="sidebar-footer-link" disabled>
-                    <span class="sidebar-footer-icon">⚙️</span>
-                    <span class="sidebar-footer-label">Beállítások</span>
-                </button>
-                <button type="button" class="sidebar-footer-link" disabled>
-                    <span class="sidebar-footer-icon">❓</span>
-                    <span class="sidebar-footer-label">Segítség</span>
-                </button>
-            </div>
-            <div class="sidebar-footer-group sidebar-footer-logout">
-                <a href="/admin/logout.php" class="sidebar-footer-link sidebar-footer-link-logout">
-                    <span class="sidebar-footer-icon">⏻</span>
-                    <span class="sidebar-footer-label">Kijelentkezés</span>
-                </a>
-            </div>
-        </footer>
+        <div class="sidebar-footer">
+            <a href="#" class="sidebar-footer-link">
+                <span class="material-symbols-rounded sidebar-footer-icon">settings</span>
+                <span>Beállítások</span>
+            </a>
+            <a href="#" class="sidebar-footer-link">
+                <span class="material-symbols-rounded sidebar-footer-icon">help</span>
+                <span>Segítség</span>
+            </a>
+            <a href="/auth/logout.php" class="sidebar-footer-link sidebar-footer-link-danger">
+                <span class="material-symbols-rounded sidebar-footer-icon">logout</span>
+                <span>Kijelentkezés</span>
+            </a>
+        </div>
     </div>
 </aside>

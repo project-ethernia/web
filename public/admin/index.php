@@ -1,12 +1,10 @@
 <?php
 session_start();
 
-/* --- HIBÁK (fejlesztéshez), élesben kikapcsolhatod --- */
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-/* --- jogosultság ellenőrzés --- */
 if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
     header('Location: /admin/login.php');
     exit;
@@ -16,11 +14,7 @@ $currentUserId   = isset($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0
 $currentUsername = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
 $currentRole     = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'admin';
 
-/* --- KÖZPONTI DB KAPCSOLAT BEHÚZÁSA --- */
-/* database.php a public rootban van, ezért egy szinttel feljebb lépünk */
-require_once __DIR__ . '/../database.php'; // itt jön létre a $pdo
-
-/* --- kis statok a dashboardra --- */
+require_once __DIR__ . '/../database.php';
 
 $newsStats  = ['total' => 0, 'visible' => 0];
 $adminStats = ['total' => 0, 'active' => 0];
@@ -28,9 +22,6 @@ $selfInfo   = ['created_at' => null, 'last_login' => null, 'role' => $currentRol
 $recentLogs = [];
 
 try {
-    // $pdo a database.php-ből jön
-
-    // Hírek stat
     $stmt = $pdo->query("
         SELECT COUNT(*) AS total,
                SUM(CASE WHEN is_visible = 1 THEN 1 ELSE 0 END) AS visible
@@ -41,7 +32,6 @@ try {
         $newsStats = $row;
     }
 
-    // Admin stat
     $stmt = $pdo->query("
         SELECT COUNT(*) AS total,
                SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) AS active
@@ -52,7 +42,6 @@ try {
         $adminStats = $row;
     }
 
-    // Saját fiók info
     if ($currentUserId > 0) {
         $stmt = $pdo->prepare("
             SELECT created_at, last_login, role
@@ -67,7 +56,6 @@ try {
         }
     }
 
-    // Legutóbbi napló bejegyzések
     $stmt = $pdo->query("
         SELECT
             created_at,
@@ -79,95 +67,89 @@ try {
         LIMIT 8
     ");
     $recentLogs = $stmt->fetchAll();
-
 } catch (Exception $e) {
-    // Ha valami elhasal, a dashboard akkor is betölt, csak statok nélkül
 }
 
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
+
+$currentNav  = 'dashboard';
+$activePage  = 'dashboard';
 ?>
 <!DOCTYPE html>
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>ETHERNIA Admin - Adminok kezelése</title>
+  <title>ETHERNIA Admin – Főoldal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/admin/assets/css/dashboard.css?v=<?= time(); ?>">
 </head>
 <body class="admin-body">
   <div class="admin-layout">
 
-    <?php
-      $activePage = 'dashboard';
-      require __DIR__ . '/_sidebar.php';
-    ?>
+    <?php require __DIR__ . '/_sidebar.php'; ?>
 
     <div class="admin-main">
       <header class="admin-header">
         <div>
           <h1 class="admin-title">Admin áttekintés</h1>
           <p class="admin-subtitle">
-            Üdv, <?php echo h($currentUsername); ?>! Itt látod gyorsan, mi történik az ETHERNIA admin felületén.
+            Üdv, <?= h($currentUsername); ?>! Itt látod gyorsan, mi történik az ETHERNIA admin felületén.
           </p>
         </div>
       </header>
 
-      <!-- FELSŐ KÁRTYÁK -->
       <section class="admin-section">
         <div class="dashboard-grid">
-          <!-- Hírek kártya -->
           <article class="dash-card">
             <div class="dash-card-header">
               <h2>Hírek</h2>
               <span class="dash-pill">Főoldal slider</span>
             </div>
             <p class="dash-number">
-              <?php echo (int)$newsStats['total']; ?>
+              <?= (int)$newsStats['total']; ?>
               <span class="dash-number-sub">összes hír</span>
             </p>
             <p class="dash-muted">
               Látható a nyitó oldalon:
-              <strong><?php echo (int)$newsStats['visible']; ?></strong>
+              <strong><?= (int)$newsStats['visible']; ?></strong>
             </p>
             <a href="/admin/news.php" class="dash-link">Ugrás a hírek kezeléséhez →</a>
           </article>
 
-          <!-- Adminok kártya -->
           <article class="dash-card">
             <div class="dash-card-header">
               <h2>Adminok</h2>
               <span class="dash-pill dash-pill-gold">Jogosultság</span>
             </div>
             <p class="dash-number">
-              <?php echo (int)$adminStats['active']; ?>
+              <?= (int)$adminStats['active']; ?>
               <span class="dash-number-sub">aktív admin</span>
             </p>
             <p class="dash-muted">
-              Összes admin fiók: <strong><?php echo (int)$adminStats['total']; ?></strong>
+              Összes admin fiók: <strong><?= (int)$adminStats['total']; ?></strong>
             </p>
             <a href="/admin/admins.php" class="dash-link">Adminok kezelése →</a>
           </article>
 
-          <!-- Saját fiókod -->
           <article class="dash-card">
             <div class="dash-card-header">
               <h2>Te fiókod</h2>
               <span class="dash-pill dash-pill-role">
-                <?php echo strtoupper(h($selfInfo['role'] ?? $currentRole)); ?>
+                <?= strtoupper(h($selfInfo['role'] ?? $currentRole)); ?>
               </span>
             </div>
             <p class="dash-muted">
               Létrehozva:<br>
               <strong>
-                <?php echo !empty($selfInfo['created_at']) ? h($selfInfo['created_at']) : 'ismeretlen'; ?>
+                <?= !empty($selfInfo['created_at']) ? h($selfInfo['created_at']) : 'ismeretlen'; ?>
               </strong>
             </p>
             <p class="dash-muted">
               Utolsó belépés:<br>
               <strong>
-                <?php echo !empty($selfInfo['last_login']) ? h($selfInfo['last_login']) : 'még nincs adat'; ?>
+                <?= !empty($selfInfo['last_login']) ? h($selfInfo['last_login']) : 'még nincs adat'; ?>
               </strong>
             </p>
             <p class="dash-tip">
@@ -177,7 +159,6 @@ function h($str) {
         </div>
       </section>
 
-      <!-- LEGUTÓBBI NAPLÓ BEJEGYZÉSEK -->
       <section class="admin-section">
         <div class="section-header-row">
           <h2 class="section-title">Legutóbbi műveletek</h2>
@@ -202,10 +183,10 @@ function h($str) {
               <tbody>
                 <?php foreach ($recentLogs as $log): ?>
                   <tr>
-                    <td class="cell-date"><?php echo h($log['created_at']); ?></td>
-                    <td class="cell-username"><?php echo h($log['username']); ?></td>
-                    <td class="cell-action-text"><?php echo h($log['action']); ?></td>
-                    <td class="cell-ip"><?php echo h($log['ip_address']); ?></td>
+                    <td class="cell-date"><?= h($log['created_at']); ?></td>
+                    <td class="cell-username"><?= h($log['username']); ?></td>
+                    <td class="cell-action-text"><?= h($log['action']); ?></td>
+                    <td class="cell-ip"><?= h($log['ip_address']); ?></td>
                   </tr>
                 <?php endforeach; ?>
               </tbody>
