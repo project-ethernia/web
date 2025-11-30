@@ -16,10 +16,11 @@ $currentRole     = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'a
 
 require_once __DIR__ . '/../database.php';
 
-$newsStats  = ['total' => 0, 'visible' => 0];
-$adminStats = ['total' => 0, 'active' => 0];
-$selfInfo   = ['created_at' => null, 'last_login' => null, 'role' => $currentRole];
-$recentLogs = [];
+$newsStats   = ['total' => 0, 'visible' => 0];
+$adminStats  = ['total' => 0, 'active' => 0];
+$selfInfo    = ['created_at' => null, 'last_login' => null, 'role' => $currentRole];
+$logSummary  = ['total' => 0, 'last_action' => null, 'last_by' => null, 'last_at' => null];
+$failedLogin = ['last_at' => null, 'ip' => null];
 
 try {
     $stmt = $pdo->query("
@@ -29,7 +30,10 @@ try {
     ");
     $row = $stmt->fetch();
     if ($row) {
-        $newsStats = $row;
+        $newsStats = [
+            'total'   => (int)$row['total'],
+            'visible' => (int)$row['visible']
+        ];
     }
 
     $stmt = $pdo->query("
@@ -39,7 +43,10 @@ try {
     ");
     $row = $stmt->fetch();
     if ($row) {
-        $adminStats = $row;
+        $adminStats = [
+            'total'  => (int)$row['total'],
+            'active' => (int)$row['active']
+        ];
     }
 
     if ($currentUserId > 0) {
@@ -56,17 +63,40 @@ try {
         }
     }
 
+    $stmt = $pdo->query("SELECT COUNT(*) AS total FROM admin_logs");
+    $row = $stmt->fetch();
+    if ($row) {
+        $logSummary['total'] = (int)$row['total'];
+    }
+
     $stmt = $pdo->query("
-        SELECT
-            created_at,
-            COALESCE(username, 'Ismeretlen') AS username,
-            action,
-            ip_address
+        SELECT created_at,
+               COALESCE(username, 'Ismeretlen') AS username,
+               action
         FROM admin_logs
         ORDER BY created_at DESC
-        LIMIT 8
+        LIMIT 1
     ");
-    $recentLogs = $stmt->fetchAll();
+    $row = $stmt->fetch();
+    if ($row) {
+        $logSummary['last_at']     = $row['created_at'];
+        $logSummary['last_by']     = $row['username'];
+        $logSummary['last_action'] = $row['action'];
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT created_at, ip_address
+        FROM admin_logs
+        WHERE action LIKE :fail
+        ORDER BY created_at DESC
+        LIMIT 1
+    ");
+    $stmt->execute([':fail' => 'Sikertelen admin bejelentkezés%']);
+    $row = $stmt->fetch();
+    if ($row) {
+        $failedLogin['last_at'] = $row['created_at'];
+        $failedLogin['ip']      = $row['ip_address'];
+    }
 } catch (Exception $e) {
 }
 
@@ -74,8 +104,7 @@ function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
-$currentNav  = 'dashboard';
-$activePage  = 'dashboard';
+$currentNav = 'dashboard';
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -96,7 +125,7 @@ $activePage  = 'dashboard';
 
     <?php require __DIR__ . '/_sidebar.php'; ?>
 
-    <div class="admin-main">
+    <div class="admin-main admin-main-dashboard">
       <header class="admin-header">
         <div>
           <h1 class="admin-title">Admin áttekintés</h1>
@@ -165,40 +194,89 @@ $activePage  = 'dashboard';
         </div>
       </section>
 
-      <section class="admin-section">
-        <div class="section-header-row">
-          <h2 class="section-title">Legutóbbi műveletek</h2>
-          <a href="/admin/logs.php" class="dash-link secondary">Teljes napló megnyitása →</a>
-        </div>
+      <section class="admin-section dashboard-bottom">
+        <div class="dashboard-bottom-grid">
+          <article class="dash-card dash-card-small">
+            <div class="dash-card-header">
+              <h2>Rendszer összefoglaló</h2>
+              <span class="dash-pill dash-pill-soft">Napló</span>
+            </div>
 
-        <?php if (empty($recentLogs)): ?>
-          <p class="dash-muted">
-            Még nincs naplózott admin esemény, vagy az admin_logs tábla üres.
-          </p>
-        <?php else: ?>
-          <div class="admin-table-wrapper">
-            <table class="admin-table admin-log-table">
-              <thead>
-                <tr>
-                  <th>Időpont</th>
-                  <th>Admin</th>
-                  <th>Esemény</th>
-                  <th>IP</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php foreach ($recentLogs as $log): ?>
-                  <tr>
-                    <td class="cell-date"><?= h($log['created_at']); ?></td>
-                    <td class="cell-username"><?= h($log['username']); ?></td>
-                    <td class="cell-action-text"><?= h($log['action']); ?></td>
-                    <td class="cell-ip"><?= h($log['ip_address']); ?></td>
-                  </tr>
-                <?php endforeach; ?>
-              </tbody>
-            </table>
-          </div>
-        <?php endif; ?>
+            <div class="dash-stats">
+              <div class="dash-stat">
+                <div class="dash-stat-label">Összes naplózott esemény</div>
+                <div class="dash-stat-value">
+                  <?= (int)$logSummary['total']; ?>
+                </div>
+              </div>
+
+              <div class="dash-stat">
+                <div class="dash-stat-label">Utolsó esemény</div>
+                <?php if ($logSummary['last_at']): ?>
+                  <div class="dash-stat-desc">
+                    <strong><?= h($logSummary['last_by']); ?></strong> –
+                    <?= h($logSummary['last_action']); ?>
+                  </div>
+                  <div class="dash-stat-meta">
+                    <?= h($logSummary['last_at']); ?>
+                  </div>
+                <?php else: ?>
+                  <div class="dash-stat-desc dash-muted">
+                    Még nincs naplózott esemény.
+                  </div>
+                <?php endif; ?>
+              </div>
+
+              <div class="dash-stat">
+                <div class="dash-stat-label">Utolsó sikertelen belépés</div>
+                <?php if ($failedLogin['last_at']): ?>
+                  <div class="dash-stat-desc">
+                    IP: <strong><?= h($failedLogin['ip']); ?></strong>
+                  </div>
+                  <div class="dash-stat-meta">
+                    <?= h($failedLogin['last_at']); ?>
+                  </div>
+                <?php else: ?>
+                  <div class="dash-stat-desc dash-muted">
+                    Nincs rögzített sikertelen belépés.
+                  </div>
+                <?php endif; ?>
+              </div>
+            </div>
+
+            <a href="/admin/logs.php" class="dash-link secondary">Teljes napló megnyitása →</a>
+          </article>
+
+          <article class="dash-card dash-card-small">
+            <div class="dash-card-header">
+              <h2>Gyors műveletek</h2>
+              <span class="dash-pill dash-pill-soft">Rövidítések</span>
+            </div>
+
+            <div class="quick-actions">
+              <a href="/admin/news.php" class="quick-action-link">
+                <span class="material-symbols-rounded quick-action-icon">post_add</span>
+                <span>Új hír létrehozása</span>
+              </a>
+              <a href="/admin/admins.php" class="quick-action-link">
+                <span class="material-symbols-rounded quick-action-icon">person_add</span>
+                <span>Új admin hozzáadása</span>
+              </a>
+              <a href="/admin/modlog.php" class="quick-action-link">
+                <span class="material-symbols-rounded quick-action-icon">gavel</span>
+                <span>Discord büntetések megnyitása</span>
+              </a>
+              <a href="/admin/players.php" class="quick-action-link">
+                <span class="material-symbols-rounded quick-action-icon">groups</span>
+                <span>Játékosok kezelése</span>
+              </a>
+            </div>
+
+            <p class="dash-muted dash-note">
+              Ezek a linkek segítenek a leggyakoribb admin feladatok gyors elérésében.
+            </p>
+          </article>
+        </div>
       </section>
     </div>
   </div>
