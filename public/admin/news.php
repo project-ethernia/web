@@ -18,17 +18,15 @@ if (!empty($_SESSION['admin_username'])) {
 }
 
 require_once __DIR__ . '/../database.php';
+require_once __DIR__ . '/log.php';
 
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
-require_once __DIR__ . '/log.php';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
 
-    $pdo    = $pdo ?? null;
     $action = isset($_POST['action']) ? $_POST['action'] : '';
 
     $adminId   = !empty($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0;
@@ -208,7 +206,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $stmt = $pdo->query("SELECT * FROM news ORDER BY order_index ASC, created_at DESC");
-$news = $stmt->fetchAll() ?: [];
+$news = $stmt->fetchAll();
+
+$totalNews   = count($news);
+$visibleNews = 0;
+foreach ($news as $n) {
+    if (!empty($n['is_visible'])) {
+        $visibleNews++;
+    }
+}
 
 $currentNav = 'news';
 ?>
@@ -231,8 +237,7 @@ $currentNav = 'news';
 
     <?php require __DIR__ . '/_sidebar.php'; ?>
 
-    <main class="admin-main">
-
+    <main class="admin-main news-main">
         <header class="admin-page-header news-page-header">
             <div>
                 <h1 class="admin-page-title">Hírek kezelése</h1>
@@ -240,104 +245,121 @@ $currentNav = 'news';
                     A nyitó oldalon megjelenő híreket tudod itt létrehozni, szerkeszteni és elrejteni.
                 </p>
             </div>
-            <div class="news-header-actions">
+            <div class="news-header-right">
                 <span class="pill-counter">
-                    Összes hír: <strong><?= count($news); ?></strong>
+                    Összes: <?= (int)$totalNews; ?> · Látható: <?= (int)$visibleNews; ?>
                 </span>
-                <button type="button" class="btn btn-primary news-add-btn" id="btn-add-news">
+                <button type="button" class="btn btn-primary" id="btn-add-news">
                     + Új hír
                 </button>
             </div>
         </header>
 
-        <section class="admin-section news-section">
-            <?php if (empty($news)): ?>
-                <div class="admin-empty">
-                    <p>Még nincs egyetlen hír sem.</p>
-                    <button type="button" class="btn btn-primary" id="btn-add-news-empty">
-                        + Hozd létre az első hírt
-                    </button>
+        <section class="news-section">
+            <div class="card card-news-list">
+                <div class="card-header card-header-flex">
+                    <div>
+                        <h2 class="card-title">Hírek listája</h2>
+                        <p class="card-subtitle">
+                            Itt látod az összes hírt, sorrenddel és láthatósággal együtt.
+                        </p>
+                    </div>
                 </div>
-            <?php else: ?>
-                <div class="admin-table-wrapper news-table-wrapper">
-                    <table class="admin-table news-table">
-                        <thead>
-                        <tr>
-                            <th class="col-order">Sorrend</th>
-                            <th class="col-title">Cím</th>
-                            <th class="col-tag">Tag</th>
-                            <th class="col-date">Dátum</th>
-                            <th class="col-author">Szerző</th>
-                            <th class="col-visible">Látható</th>
-                            <th class="col-actions">Műveletek</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($news as $row): ?>
-                            <tr
-                                data-id="<?= h($row['id']); ?>"
-                                data-title="<?= h($row['title']); ?>"
-                                data-tag="<?= h($row['tag']); ?>"
-                                data-date_display="<?= h($row['date_display']); ?>"
-                                data-short_text="<?= h($row['short_text']); ?>"
-                                data-full_text="<?= h($row['full_text']); ?>"
-                                data-order_index="<?= (int)$row['order_index']; ?>"
-                                data-is_visible="<?= (int)$row['is_visible']; ?>"
-                                data-author="<?= h($row['author']); ?>"
-                            >
-                                <td class="cell-order">
-                                    <span class="order-value"><?= (int)$row['order_index']; ?></span>
-                                </td>
-                                <td class="cell-title">
-                                    <div class="title-main"><?= h($row['title']); ?></div>
-                                    <div class="title-sub"><?= h($row['short_text']); ?></div>
-                                </td>
-                                <td class="cell-tag">
-                                    <?php
-                                    $tag = $row['tag'] ? $row['tag'] : 'Info';
-                                    $tagLower = mb_strtolower($tag, 'UTF-8');
-                                    $tagClass = 'tag-pill';
-                                    if (strpos($tagLower, 'event') !== false) {
-                                        $tagClass .= ' tag-pill-event';
-                                    } elseif (strpos($tagLower, 'info') !== false) {
-                                        $tagClass .= ' tag-pill-info';
-                                    } elseif (strpos($tagLower, 'teszt') !== false || strpos($tagLower, 'test') !== false) {
-                                        $tagClass .= ' tag-pill-test';
-                                    }
-                                    ?>
-                                    <span class="<?= $tagClass; ?>">
-                                        <?= h($tag); ?>
-                                    </span>
-                                </td>
-                                <td class="cell-date">
-                                    <?= h($row['date_display']); ?>
-                                </td>
-                                <td class="cell-author">
-                                    <?= h($row['author']); ?>
-                                </td>
-                                <td class="cell-visible">
-                                    <?php $visible = (int)$row['is_visible'] === 1; ?>
-                                    <button
-                                        type="button"
-                                        class="visibility-toggle <?= $visible ? 'is-on' : 'is-off'; ?>"
-                                        data-id="<?= (int)$row['id']; ?>"
-                                        data-visible="<?= $visible ? '1' : '0'; ?>"
-                                        aria-pressed="<?= $visible ? 'true' : 'false'; ?>"
-                                        title="<?= $visible ? 'Látható – kattints az elrejtéshez' : 'Rejtett – kattints a megjelenítéshez'; ?>"
+
+                <div class="card-body">
+                    <?php if (empty($news)): ?>
+                        <div class="admin-empty">
+                            <p>Még nincs egyetlen hír sem.</p>
+                            <button type="button" class="btn btn-primary" id="btn-add-news-empty">
+                                + Hozd létre az első hírt
+                            </button>
+                        </div>
+                    <?php else: ?>
+                        <div class="admin-table-wrapper">
+                            <table class="admin-table news-table">
+                                <thead>
+                                <tr>
+                                    <th>Sorrend</th>
+                                    <th>Cím</th>
+                                    <th>Tag</th>
+                                    <th>Dátum</th>
+                                    <th>Szerző</th>
+                                    <th>Látható</th>
+                                    <th>Műveletek</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php foreach ($news as $row): ?>
+                                    <tr
+                                        data-id="<?= h($row['id']); ?>"
+                                        data-title="<?= h($row['title']); ?>"
+                                        data-tag="<?= h($row['tag']); ?>"
+                                        data-date_display="<?= h($row['date_display']); ?>"
+                                        data-short_text="<?= h($row['short_text']); ?>"
+                                        data-full_text="<?= h($row['full_text']); ?>"
+                                        data-order_index="<?= (int)$row['order_index']; ?>"
+                                        data-is_visible="<?= (int)$row['is_visible']; ?>"
+                                        data-author="<?= h($row['author']); ?>"
                                     >
-                                        <span class="toggle-knob"></span>
-                                    </button>
-                                </td>
-                                <td class="cell-actions">
-                                    <button type="button" class="btn btn-sm btn-secondary btn-edit">Szerkesztés</button>
-                                    <button type="button" class="btn btn-sm btn-danger btn-delete">Törlés</button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                                        <td class="cell-order">
+                                            <span class="order-value"><?= (int)$row['order_index']; ?></span>
+                                        </td>
+                                        <td class="cell-title">
+                                            <div class="title-main"><?= h($row['title']); ?></div>
+                                            <div class="title-sub"><?= h($row['short_text']); ?></div>
+                                        </td>
+                                        <td class="cell-tag">
+                                            <?php
+                                            $tag = $row['tag'] ? $row['tag'] : 'Info';
+                                            $tagLower = mb_strtolower($tag, 'UTF-8');
+                                            $tagClass = 'tag-pill';
+                                            if (strpos($tagLower, 'event') !== false) {
+                                                $tagClass .= ' tag-pill-event';
+                                            } elseif (strpos($tagLower, 'info') !== false) {
+                                                $tagClass .= ' tag-pill-info';
+                                            }
+                                            ?>
+                                            <span class="<?= $tagClass; ?>">
+                                                <?= h($tag); ?>
+                                            </span>
+                                        </td>
+                                        <td class="cell-date">
+                                            <?= h($row['date_display']); ?>
+                                        </td>
+                                        <td class="cell-author">
+                                            <?= h($row['author']); ?>
+                                        </td>
+                                        <td class="cell-visible">
+                                            <?php $visible = (int)$row['is_visible'] === 1; ?>
+                                            <button
+                                                type="button"
+                                                class="visibility-toggle <?= $visible ? 'is-on' : 'is-off'; ?>"
+                                                data-id="<?= (int)$row['id']; ?>"
+                                                data-visible="<?= $visible ? '1' : '0'; ?>"
+                                                aria-pressed="<?= $visible ? 'true' : 'false'; ?>"
+                                                title="<?= $visible
+                                                    ? 'Látható – kattints az elrejtéshez'
+                                                    : 'Rejtett – kattints a megjelenítéshez'; ?>"
+                                            >
+                                                <span class="toggle-knob"></span>
+                                            </button>
+                                        </td>
+                                        <td class="cell-actions">
+                                            <button type="button" class="btn btn-sm btn-secondary btn-edit">
+                                                Szerkesztés
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger btn-delete">
+                                                Törlés
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
                 </div>
-            <?php endif; ?>
+            </div>
         </section>
     </main>
 </div>
