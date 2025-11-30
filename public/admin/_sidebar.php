@@ -11,13 +11,11 @@ $currentNav = $currentNav ?? '';
 <aside class="admin-sidebar">
     <div class="sidebar-inner">
         <div class="sidebar-user-card">
-            <div class="sidebar-avatar">
                 <span>
                     <?= strtoupper(substr($adminName, 0, 1)); ?>
                 </span>
-            </div>
             <div class="sidebar-user-meta">
-                <div class="sidebar-user-label">ETHERNIA ADMIN</div>
+                <div class="sidebar-user-label">ADMINPANEL</div>
                 <div class="sidebar-user-name"><?= htmlspecialchars($adminName, ENT_QUOTES, 'UTF-8'); ?></div>
                 <div class="sidebar-user-role"><?= htmlspecialchars(strtoupper($adminRole), ENT_QUOTES, 'UTF-8'); ?></div>
             </div>
