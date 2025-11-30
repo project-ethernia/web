@@ -1,22 +1,256 @@
-/* /admin/news.css */
-/* Hírek oldal – a közös admin stílust a base.css-ből vesszük */
-@import url('/admin/assets/css/base.css?v=<?= time(); ?>');
+/* Hírek oldal – layout finomhangolás */
 
-/* Jelenleg minden közös stílus a base.css-ben van.
-   Ha később kellnek kizárólag a hírek oldalra érvényes extra stílusok,
-   ide tudod hozzáírni őket. */
+.news-page-header {
+  margin-bottom: 1.4rem;
+}
 
-.admin-table {
+.news-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.news-add-btn {
+  white-space: nowrap;
+}
+
+/* Táblázat blokk */
+
+.news-section {
+  padding: 0.9rem 0.9rem 0.9rem;
+}
+
+.news-table-wrapper {
+  border-radius: 18px;
+  background: radial-gradient(circle at top left, rgba(76, 81, 191, 0.28), transparent 60%),
+              rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85);
+  padding: 0.2rem 0.2rem 0.4rem;
+}
+
+.news-table {
+  width: 100%;
   border-collapse: collapse;
+  font-size: 0.85rem;
 }
 
-.admin-table th,
-.admin-table td {
-  padding: 0.75rem 1rem;          
-  border-bottom: 1px solid rgb(155, 155, 155);
+/* Oszlopok */
+
+.news-table thead {
+  background: rgba(15, 23, 42, 0.98);
 }
 
-.admin-table tbody tr:last-child th,
-.admin-table tbody tr:last-child td {
+.news-table thead th {
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid rgba(31, 41, 55, 0.95);
+  font-weight: 500;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.95);
+  white-space: nowrap;
+}
+
+.news-table tbody td {
+  padding: 0.55rem 0.8rem;
+  border-bottom: 1px solid rgba(31, 41, 55, 0.7);
+  vertical-align: top;
+}
+
+.news-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+.news-table tbody tr:hover {
+  background: rgba(15, 23, 42, 0.9);
+}
+
+/* Oszlopszélességek */
+
+.col-order {
+  width: 70px;
+}
+
+.col-tag {
+  width: 120px;
+}
+
+.col-date,
+.col-author,
+.col-visible,
+.col-actions {
+  width: 120px;
+  text-align: left;
+}
+
+/* Cellák */
+
+.cell-order .order-value {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.cell-title .title-main {
+  font-weight: 500;
+}
+
+.cell-title .title-sub {
+  font-size: 0.78rem;
+  color: rgba(148, 163, 184, 0.95);
+  margin-top: 0.18rem;
+}
+
+.cell-tag {
+  white-space: nowrap;
+}
+
+.cell-author,
+.cell-date {
+  font-size: 0.8rem;
+  color: rgba(209, 213, 219, 0.95);
+}
+
+/* Tag pill */
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(55, 65, 81, 0.95);
+  color: #e5e7eb;
+}
+
+.tag-pill-event {
+  background: rgba(251, 146, 60, 0.18);
+  color: #ffedd5;
+}
+
+.tag-pill-info {
+  background: rgba(59, 130, 246, 0.18);
+  color: #bfdbfe;
+}
+
+.tag-pill-test {
+  background: rgba(244, 114, 182, 0.18);
+  color: #f9a8d4;
+}
+
+/* Láthatóság kapcsoló – base.css-ből továbbfinomítva */
+
+.cell-visible {
+  text-align: center;
+}
+
+.visibility-toggle {
+  position: relative;
+  width: 36px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: radial-gradient(circle at top left, rgba(148, 163, 184, 0.35), rgba(15, 23, 42, 0.98));
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.visibility-toggle .toggle-knob {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+  transition: transform 0.16s ease;
+}
+
+.visibility-toggle.is-on {
+  border-color: rgba(168, 85, 247, 0.9);
+  background: radial-gradient(circle at top left, rgba(168, 85, 247, 0.4), rgba(15, 23, 42, 0.98));
+}
+
+.visibility-toggle.is-on .toggle-knob {
+  transform: translateX(16px);
+}
+
+/* Művelet gombok */
+
+.cell-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+/* Modal pici igazítások, hogy egységes legyen a dashboarddal */
+
+#news-modal .modal-dialog {
+  max-width: 640px;
+}
+
+#news-modal .modal-content {
+  padding-top: 1.2rem;
+}
+
+#news-modal h2 {
+  font-size: 1.05rem;
+  margin-bottom: 0.85rem;
+}
+
+/* Reszponzív finomhangolás */
+
+@media (max-width: 900px) {
+  .news-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .news-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .news-table-wrapper {
+    padding-inline: 0.1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .news-table thead {
+    display: none;
+  }
+
+  .news-table tbody tr {
+    display: block;
+    border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+    padding: 0.6rem 0.4rem;
+  }
+
+  .news-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    border: none;
+    padding: 0.25rem 0.3rem;
+    font-size: 0.8rem;
+  }
+
+  .cell-title {
+    display: block;
+  }
+
+  .cell-title .title-sub {
+    margin-top: 0.15rem;
+  }
+
+  .cell-actions {
+    justify-content: flex-end;
+  }
 }
