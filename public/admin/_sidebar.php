@@ -70,6 +70,11 @@ function admin_nav_item_class($page, $activePage) {
       <span class="nav-label">JÁTÉKOS FIÓKOK KEZELÉSE</span>
     </a>
 
+    <a href="/admin/modlog.php" class="<?php echo admin_nav_item_class('modlog', $activePage); ?>">
+      <span class="nav-icon"></span>
+      <span class="nav-label">JDICORD BÜNTETÉSEK</span>
+    </a>
+
     <div class="nav-separator"></div>
 
     <!-- Későbbi menük -->
