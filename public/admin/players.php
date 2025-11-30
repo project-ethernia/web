@@ -53,10 +53,13 @@ $players = $stmt->fetchAll();
   <meta charset="UTF-8">
   <title>ETHERNIA Admin - Játékosok</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Közös stílusok -->
-  <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="/admin/assets/css/players.css?v=<?php echo time(); ?>">
+  <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
+  <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;500&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 </head>
 
 <body class="admin-body">
