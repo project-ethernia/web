@@ -9,15 +9,36 @@ if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
 require_once __DIR__ . '/../database.php';
 require_once __DIR__ . '/log.php';
 
+function admin_2fa_enabled(): bool
+{
+    $val = getenv('ADMIN_DISCORD_2FA');
+    if ($val === false) {
+        return true;
+    }
+    $val = strtolower(trim($val));
+    return in_array($val, ['1', 'true', 'yes', 'on'], true);
+}
+
+$use2FA = admin_2fa_enabled();
+
 $error = '';
-$mode = 'form';
+$mode  = 'form';
 
 $pendingRequestId = isset($_SESSION['admin_pending_login_request_id']) ? (int)$_SESSION['admin_pending_login_request_id'] : 0;
 $pendingAdminId   = isset($_SESSION['admin_pending_admin_id']) ? (int)$_SESSION['admin_pending_admin_id'] : 0;
 $pendingUsername  = isset($_SESSION['admin_pending_username']) ? (string)$_SESSION['admin_pending_username'] : '';
 
-if ($pendingRequestId > 0 && $pendingAdminId > 0) {
+if ($use2FA && $pendingRequestId > 0 && $pendingAdminId > 0) {
     $mode = 'wait';
+} else {
+    unset(
+        $_SESSION['admin_pending_login_request_id'],
+        $_SESSION['admin_pending_admin_id'],
+        $_SESSION['admin_pending_username']
+    );
+    $pendingRequestId = 0;
+    $pendingAdminId   = 0;
+    $pendingUsername  = '';
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $mode === 'form') {
@@ -46,32 +67,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $mode === 'form') {
                 } catch (Throwable $e2) {
                 }
             } else {
-                $ip = $_SERVER['REMOTE_ADDR'] ?? null;
-                $ua = $_SERVER['HTTP_USER_AGENT'] ?? null;
+                if ($use2FA) {
+                    $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+                    $ua = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
-                $stmtIns = $pdo->prepare('
-                    INSERT INTO admin_login_requests (admin_id, status, notified, ip, user_agent)
-                    VALUES (:aid, :status, 0, :ip, :ua)
-                ');
-                $stmtIns->execute([
-                    ':aid'    => (int)$user['id'],
-                    ':status' => 'pending',
-                    ':ip'     => $ip,
-                    ':ua'     => $ua
-                ]);
+                    $stmtIns = $pdo->prepare('
+                        INSERT INTO admin_login_requests (admin_id, status, notified, ip, user_agent)
+                        VALUES (:aid, :status, 0, :ip, :ua)
+                    ');
+                    $stmtIns->execute([
+                        ':aid'    => (int)$user['id'],
+                        ':status' => 'pending',
+                        ':ip'     => $ip,
+                        ':ua'     => $ua
+                    ]);
 
-                $requestId = (int)$pdo->lastInsertId();
+                    $requestId = (int)$pdo->lastInsertId();
 
-                $_SESSION['admin_pending_login_request_id'] = $requestId;
-                $_SESSION['admin_pending_admin_id']         = (int)$user['id'];
-                $_SESSION['admin_pending_username']         = (string)$user['username'];
+                    $_SESSION['admin_pending_login_request_id'] = $requestId;
+                    $_SESSION['admin_pending_admin_id']         = (int)$user['id'];
+                    $_SESSION['admin_pending_username']         = (string)$user['username'];
 
-                unset($_SESSION['admin_id'], $_SESSION['admin_username'], $_SESSION['admin_role'], $_SESSION['is_admin']);
+                    unset($_SESSION['admin_id'], $_SESSION['admin_username'], $_SESSION['admin_role'], $_SESSION['is_admin']);
 
-                $mode = 'wait';
-                $pendingRequestId = $requestId;
-                $pendingAdminId   = (int)$user['id'];
-                $pendingUsername  = (string)$user['username'];
+                    $mode = 'wait';
+                    $pendingRequestId = $requestId;
+                    $pendingAdminId   = (int)$user['id'];
+                    $pendingUsername  = (string)$user['username'];
+                } else {
+                    $_SESSION['is_admin']      = true;
+                    $_SESSION['admin_id']      = (int)$user['id'];
+                    $_SESSION['admin_username'] = (string)$user['username'];
+
+                    try {
+                        log_admin_action(
+                            $pdo,
+                            (int)$user['id'],
+                            (string)$user['username'],
+                            'Sikeres admin bejelentkezés (Discord 2FA kikapcsolva)'
+                        );
+                    } catch (Throwable $e2) {
+                    }
+
+                    header('Location: /admin/index.php');
+                    exit;
+                }
             }
         } catch (Exception $e) {
             $error = 'Adatbázis hiba: ' . $e->getMessage();
@@ -97,7 +137,11 @@ function h($str) {
       <?php if ($mode === 'form'): ?>
         <h1 class="auth-title auth-title-center">Admin bejelentkezés</h1>
         <p class="auth-footnote" style="margin-top:4px;margin-bottom:10px;font-size:0.8rem;">
-          Add meg az admin felhasználóneved és jelszavad. Ezután a Discord boton keresztül kell jóváhagynod a belépést.
+          <?php if ($use2FA): ?>
+            Add meg az admin felhasználóneved és jelszavad. Ezután a Discord boton keresztül kell jóváhagynod a belépést.
+          <?php else: ?>
+            Add meg az admin felhasználóneved és jelszavad a bejelentkezéshez.
+          <?php endif; ?>
         </p>
 
         <?php if ($error): ?>
