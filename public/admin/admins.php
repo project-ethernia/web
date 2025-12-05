@@ -1,12 +1,9 @@
 <?php
 session_start();
-
-/* --- HIBAKIÍRÁS FEJLESZTÉSHEZ --- */
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-/* --- jogosultság ellenőrzés --- */
 if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
     header('Location: /admin/login.php');
     exit;
@@ -21,27 +18,19 @@ if (empty($_SESSION['admin_role']) || $_SESSION['admin_role'] !== 'owner') {
 $currentUserId   = isset($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0;
 $currentUsername = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
 
-/* --- KÖZPONTI DB KAPCSOLAT BEHÚZÁSA --- */
-/* database.php a public rootban van, ezért egy szinttel feljebb lépünk */
-require_once __DIR__ . '/../database.php'; // itt jön létre a $pdo
+require_once __DIR__ . '/../database.php';
+require_once __DIR__ . '/log.php';
 
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
-/* --- LOG FUNKCIÓ BEHÚZÁSA --- */
-require_once __DIR__ . '/log.php';
-
-/* ---------------- AJAX: add / toggle_active / reset_password ---------------- */
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
 
     try {
-        // $pdo már elérhető a database.php-ből
         $action = isset($_POST['action']) ? $_POST['action'] : '';
 
-        // jelenlegi admin adatok logoláshoz
         $currentAdminId   = isset($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0;
         $currentAdminName = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
 
@@ -58,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $role = 'admin';
             }
 
-            // van-e már ilyen felhasználónév?
             $stmt = $pdo->prepare("SELECT id FROM admin_users WHERE username = :u LIMIT 1");
             $stmt->execute(array(':u' => $username));
             if ($stmt->fetch()) {
@@ -79,20 +67,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $id = (int)$pdo->lastInsertId();
 
-            // LOG: új admin létrehozása
             try {
                 log_admin_action(
                     $pdo,
                     $currentAdminId,
                     $currentAdminName,
                     "Új admin felhasználó létrehozása: '{$username}' ({$role})",
-                    [
+                    array(
                         'new_admin_id' => $id,
                         'new_role'     => $role,
-                    ]
+                    )
                 );
             } catch (Throwable $e) {
-                // ha a logolás hibázik, ne álljon le az app
             }
 
             echo json_encode(array(
@@ -118,12 +104,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Hiányzó admin ID.');
             }
 
-            // ne engedd magad inaktiválni
             if ($id === $currentAdminId && $isActive === 0) {
                 throw new Exception('Nem inaktiválhatod saját magad.');
             }
 
-            // owner-t csak akkor piszkáljuk, ha ő maga a current user
             $stmt = $pdo->prepare("SELECT username, role FROM admin_users WHERE id = :id");
             $stmt->execute(array(':id' => $id));
             $row = $stmt->fetch();
@@ -144,28 +128,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $stateText = $isActive ? 'aktiválva' : 'inaktiválva';
 
-            // LOG: admin aktív / inaktív
             try {
                 log_admin_action(
                     $pdo,
                     $currentAdminId,
                     $currentAdminName,
                     "Admin fiók {$stateText}: '{$targetName}'",
-                    [
+                    array(
                         'target_admin_id' => $id,
                         'target_username' => $targetName,
                         'is_active'       => $isActive,
                         'state'           => $stateText,
-                    ]
+                    )
                 );
             } catch (Throwable $e) {
-                // logolás hibája ne ölje meg a választ
             }
 
             echo json_encode(array(
-                'ok'       => true,
-                'id'       => $id,
-                'is_active'=> $isActive,
+                'ok'        => true,
+                'id'        => $id,
+                'is_active' => $isActive,
             ));
             exit;
         }
@@ -178,7 +160,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Hiányzó ID vagy jelszó.');
             }
 
-            // Cél admin neve a loghoz
             $stmt = $pdo->prepare("SELECT username FROM admin_users WHERE id = :id");
             $stmt->execute([':id' => $id]);
             $row = $stmt->fetch();
@@ -195,20 +176,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':id' => $id,
             ));
 
-            // LOG: jelszócsere
             try {
                 log_admin_action(
                     $pdo,
                     $currentAdminId,
                     $currentAdminName,
                     "Admin jelszó módosítása: '{$targetName}'",
-                    [
+                    array(
                         'target_admin_id' => $id,
                         'target_username' => $targetName,
-                    ]
+                    )
                 );
             } catch (Throwable $e) {
-                // log hiba ignorálva
             }
 
             echo json_encode(array('ok' => true, 'id' => $id));
@@ -223,11 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-/* ---------------- GET: admin lista ---------------- */
-
 try {
-    // $pdo már elérhető a database.php-ből
-
     $stmt = $pdo->query("
         SELECT id, username, role, is_active, created_at, last_login
         FROM admin_users
@@ -247,10 +222,8 @@ try {
   <link rel="stylesheet" href="/admin/assets/css/admins.css?v=<?= time(); ?>">
   <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
   <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
-  <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;500&display=swap">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
 </head>
 <body class="admin-body">
   <div class="admin-layout">
@@ -260,7 +233,6 @@ try {
       require __DIR__ . '/_sidebar.php';
     ?>
 
-    <!-- FŐ TARTALOM -->
     <div class="admin-main">
       <header class="admin-header">
         <div>
@@ -363,7 +335,6 @@ try {
     </div>
   </div>
 
-  <!-- MODAL: ÚJ ADMIN LÉTREHOZÁSA -->
   <div class="modal" id="admin-modal" aria-hidden="true">
     <div class="modal-backdrop"></div>
     <div class="modal-dialog" role="dialog" aria-modal="true">
