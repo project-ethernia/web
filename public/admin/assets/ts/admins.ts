@@ -9,10 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const addBtnEmpty = document.getElementById("btn-add-admin-empty") as HTMLElement | null;
 
   const usernameInput = document.getElementById("admin-username") as HTMLInputElement | null;
-  const passwordInput = document.getElementById("admin-password") as HTMLInputElement | null;
-  const roleSelect = document.getElementById("admin-role") as HTMLSelectElement | null;
-  void passwordInput;
-  void roleSelect;
 
   function openModal(): void {
     if (!modal) return;
@@ -33,8 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (addBtn) addBtn.addEventListener("click", openModal);
   if (addBtnEmpty) addBtnEmpty.addEventListener("click", openModal);
 
-  const closeElements: (HTMLElement | null)[] = [closeBtn, backdrop, cancelBtn];
-  closeElements.forEach((el) => {
+  [closeBtn, backdrop, cancelBtn].forEach((el) => {
     if (!el) return;
     el.addEventListener("click", (e) => {
       e.preventDefault();
@@ -46,6 +41,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") closeModal();
   });
 
+  function showError(message: string): void {
+    if (errorEl) {
+      errorEl.hidden = false;
+      errorEl.textContent = message;
+    } else {
+      alert(message);
+    }
+  }
+
   if (form) {
     form.addEventListener("submit", (e: SubmitEvent) => {
       e.preventDefault();
@@ -54,35 +58,33 @@ document.addEventListener("DOMContentLoaded", () => {
         errorEl.textContent = "";
       }
 
+      const submitBtn = form.querySelector("button[type=submit]") as HTMLButtonElement | null;
+      if (submitBtn) submitBtn.disabled = true;
+
       const formData = new FormData(form);
 
-      fetch("admins.php", {
+      fetch("/admin/admins.php", {
         method: "POST",
         body: formData
       })
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.ok) {
-            if (errorEl) {
-              errorEl.hidden = false;
-              errorEl.textContent =
-                data.error || "Ismeretlen hiba történt az admin létrehozásakor.";
-            } else {
-              alert(data.error || "Ismeretlen hiba.");
-            }
-            return;
+        .then(async (res) => {
+          let data: any;
+          try {
+            data = await res.json();
+          } catch {
+            throw new Error("Hibás válasz érkezett a szervertől.");
           }
-
+          if (!data.ok) {
+            throw new Error(data.error || "Ismeretlen hiba történt az admin létrehozásakor.");
+          }
           window.location.reload();
         })
-        .catch((err) => {
+        .catch((err: any) => {
           console.error(err);
-          if (errorEl) {
-            errorEl.hidden = false;
-            errorEl.textContent = "Hálózati hiba történt a mentés során.";
-          } else {
-            alert("Hálózati hiba történt.");
-          }
+          showError(err?.message || "Hálózati hiba történt a mentés során.");
+        })
+        .finally(() => {
+          if (submitBtn) submitBtn.disabled = false;
         });
     });
   }
@@ -92,23 +94,29 @@ document.addEventListener("DOMContentLoaded", () => {
       const id = btn.dataset.id;
       if (!id) return;
 
-      const current = btn.dataset.visible === "1";
-      const next = current ? 0 : 1;
+      const currentVisible = btn.dataset.visible === "1";
+      const next = currentVisible ? 0 : 1;
+
+      btn.disabled = true;
 
       const formData = new FormData();
       formData.append("action", "toggle_active");
       formData.append("id", id);
       formData.append("is_active", String(next));
 
-      fetch("admins.php", {
+      fetch("/admin/admins.php", {
         method: "POST",
         body: formData
       })
-        .then((res) => res.json())
-        .then((data) => {
+        .then(async (res) => {
+          let data: any;
+          try {
+            data = await res.json();
+          } catch {
+            throw new Error("Hibás válasz érkezett a szervertől.");
+          }
           if (!data.ok) {
-            alert(data.error || "Hiba az aktiválás/inaktiválás során.");
-            return;
+            throw new Error(data.error || "Hiba az aktiválás/inaktiválás során.");
           }
 
           btn.dataset.visible = String(next);
@@ -124,9 +132,12 @@ document.addEventListener("DOMContentLoaded", () => {
             tr.dataset.is_active = String(next);
           }
         })
-        .catch((err) => {
+        .catch((err: any) => {
           console.error(err);
-          alert("Hálózati hiba történt az állapot módosítása közben.");
+          alert(err?.message || "Hálózati hiba történt az állapot módosítása közben.");
+        })
+        .finally(() => {
+          btn.disabled = false;
         });
     });
   });
@@ -147,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!newPw) return;
 
       if (newPw.length < 4) {
-        alert("A jelszó legyen legalább 4 karakter (nyilván élesben lehet több).");
+        alert("A jelszó legyen legalább 4 karakter.");
         return;
       }
 
@@ -156,21 +167,30 @@ document.addEventListener("DOMContentLoaded", () => {
       formData.append("id", id);
       formData.append("password", newPw);
 
-      fetch("admins.php", {
+      btn.disabled = true;
+
+      fetch("/admin/admins.php", {
         method: "POST",
         body: formData
       })
-        .then((res) => res.json())
-        .then((data) => {
+        .then(async (res) => {
+          let data: any;
+          try {
+            data = await res.json();
+          } catch {
+            throw new Error("Hibás válasz érkezett a szervertől.");
+          }
           if (!data.ok) {
-            alert(data.error || "Hiba a jelszó csere során.");
-            return;
+            throw new Error(data.error || "Hiba a jelszó csere során.");
           }
           alert("Jelszó sikeresen módosítva ehhez az adminhoz: " + username);
         })
-        .catch((err) => {
+        .catch((err: any) => {
           console.error(err);
-          alert("Hálózati hiba történt a jelszó módosítása közben.");
+          alert(err?.message || "Hálózati hiba történt a jelszó módosítása közben.");
+        })
+        .finally(() => {
+          btn.disabled = false;
         });
     });
   });
