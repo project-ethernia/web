@@ -1,12 +1,10 @@
 <?php
 session_start();
 
-/* --- HIBÁK --- */
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-/* --- jogosultság ellenőrzés --- */
 if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
     header('Location: /admin/login.php');
     exit;
@@ -21,15 +19,12 @@ if (!in_array($role, ['owner', 'admin'], true)) {
 
 $currentUsername = !empty($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
 
-/* --- KÖZPONTI DB KAPCSOLAT BEHÚZÁSA --- */
-/* database.php a public rootban van, ezért egy szinttel feljebb lépünk */
-require_once __DIR__ . '/../database.php'; // itt jön létre a $pdo
+require_once __DIR__ . '/../database.php';
 
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
-/* --- Szűrés: q = kereső (admin név / akció) --- */
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 
 $sql = "SELECT id, admin_id, username, action, context, ip_address, user_agent, created_at
@@ -47,6 +42,7 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $logs = $stmt->fetchAll();
 
+$currentNav = 'logs';
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -54,9 +50,9 @@ $logs = $stmt->fetchAll();
   <meta charset="UTF-8">
   <title>ETHERNIA Admin - Műveletnapló</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/admin/assets/css/logs.css?v=<?= time(); ?>">
   <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
   <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
+  <link rel="stylesheet" href="/admin/assets/css/logs.css?v=<?= time(); ?>">
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;500&display=swap">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
@@ -65,50 +61,57 @@ $logs = $stmt->fetchAll();
 <body class="admin-body">
   <div class="admin-layout">
 
-    <?php
-      $currentNav = 'logs';
-      require __DIR__ . '/_sidebar.php';
-    ?>
+    <?php require __DIR__ . '/_sidebar.php'; ?>
 
-    <div class="admin-main">
-      <header class="admin-header">
-        <div>
+    <main class="admin-main logs-page">
+      <header class="admin-header logs-header">
+        <div class="logs-header-main">
           <h1 class="admin-title">Admin műveletnapló</h1>
           <p class="admin-subtitle">
             Bejelentkezések, kijelentkezések, hír- és admin módosítások, IP címekkel és böngészőinfóval.
           </p>
+        </div>
 
-          <form class="search-bar" method="get" action="/admin/logs.php">
+        <form class="logs-search" method="get" action="/admin/logs.php">
+          <div class="logs-search-input-wrap">
+            <span class="material-symbols-rounded logs-search-icon">search</span>
             <input
               type="text"
               name="q"
               placeholder="Keresés admin név vagy esemény alapján..."
               value="<?php echo h($q); ?>"
             >
-            <button type="submit">Keresés</button>
-          </form>
-        </div>
+          </div>
+          <button type="submit" class="logs-search-btn">Keresés</button>
+        </form>
       </header>
 
-      <section class="admin-section">
+      <section class="admin-section logs-section">
         <?php if (empty($logs)): ?>
           <div class="admin-empty">
             <p>Még nincs naplózott esemény.</p>
           </div>
         <?php else: ?>
-          <div class="admin-table-wrapper">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Admin</th>
-                  <th>Esemény</th>
-                  <th>IP</th>
-                  <th>Böngésző</th>
-                  <th>Időpont</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div class="logs-table-card">
+            <div class="logs-table-header-row">
+              <span class="logs-table-caption">
+                Összesen <?php echo count($logs); ?> bejegyzés
+              </span>
+            </div>
+
+            <div class="admin-table-wrapper logs-table-wrapper">
+              <table class="admin-table logs-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Admin</th>
+                    <th>Esemény</th>
+                    <th>IP</th>
+                    <th>Böngésző</th>
+                    <th>Időpont</th>
+                  </tr>
+                </thead>
+                <tbody>
                 <?php foreach ($logs as $log): ?>
                   <?php
                     $action = $log['action'];
@@ -116,9 +119,12 @@ $logs = $stmt->fetchAll();
                     $pillText  = 'EGYÉB';
 
                     $lower = mb_strtolower($action, 'UTF-8');
-                    if (strpos($lower, 'bejelentkezés') !== false) {
+                    if (strpos($lower, 'sikeres admin bejelentkezés') !== false) {
                         $pillClass = 'log-pill-login';
                         $pillText  = 'LOGIN';
+                    } elseif (strpos($lower, 'sikertelen admin bejelentkezés') !== false) {
+                        $pillClass = 'log-pill-login-fail';
+                        $pillText  = 'LOGIN FAIL';
                     } elseif (strpos($lower, 'kijelentkezés') !== false) {
                         $pillClass = 'log-pill-logout';
                         $pillText  = 'LOGOUT';
@@ -133,27 +139,30 @@ $logs = $stmt->fetchAll();
                     $uaShort = $log['user_agent'];
                   ?>
                   <tr>
-                    <td><?php echo (int)$log['id']; ?></td>
-                    <td><?php echo h($log['username'] ?: 'Ismeretlen'); ?></td>
-                    <td class="log-action">
+                    <td class="cell-id"><?php echo (int)$log['id']; ?></td>
+                    <td class="cell-username"><?php echo h($log['username'] ?: 'Ismeretlen'); ?></td>
+                    <td class="cell-action">
                       <span class="log-pill <?php echo $pillClass; ?>">
                         <?php echo $pillText; ?>
                       </span>
-                      <?php echo h($action); ?>
+                      <span class="cell-action-text">
+                        <?php echo h($action); ?>
+                      </span>
                     </td>
-                    <td><?php echo h($log['ip_address']); ?></td>
+                    <td class="cell-ip"><?php echo h($log['ip_address']); ?></td>
                     <td class="cell-ua" title="<?php echo h($log['user_agent']); ?>">
                       <?php echo h($uaShort); ?>
                     </td>
-                    <td><?php echo h($log['created_at']); ?></td>
+                    <td class="cell-date"><?php echo h($log['created_at']); ?></td>
                   </tr>
                 <?php endforeach; ?>
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </div>
         <?php endif; ?>
       </section>
-    </div>
+    </main>
   </div>
 </body>
 </html>

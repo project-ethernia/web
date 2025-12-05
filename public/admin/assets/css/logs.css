@@ -1,136 +1,171 @@
-.search-bar {
-  margin-top: 1rem;
+.logs-page {
   display: flex;
-  gap: 0.6rem;
-  max-width: 460px;
+  flex-direction: column;
+  gap: 1.75rem;
 }
 
-.search-bar input[type="text"] {
+.logs-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding-right: 0;
+}
+
+.logs-header-main {
+  max-width: 640px;
+}
+
+.logs-header .admin-title {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.logs-header .admin-subtitle {
+  margin-top: 0.4rem;
+  font-size: 0.86rem;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.logs-search {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 540px;
+}
+
+.logs-search-input-wrap {
   flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.logs-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  font-size: 1.1rem;
+  pointer-events: none;
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.logs-search-input-wrap input {
+  width: 100%;
   border-radius: 999px;
-  border: 1px solid rgba(55, 65, 81, 0.9);
-  background: rgba(15, 23, 42, 0.95);
-  padding: 0.55rem 0.9rem;
-  font-size: 0.85rem;
+  border: 1px solid rgba(31, 41, 55, 1);
+  padding: 0.55rem 0.9rem 0.55rem 2.3rem;
+  background: rgba(2, 6, 23, 0.95);
   color: #e5e7eb;
+  font-size: 0.85rem;
   outline: none;
 }
 
-.search-bar input[type="text"]::placeholder {
+.logs-search-input-wrap input::placeholder {
   color: rgba(148, 163, 184, 0.85);
 }
 
-.search-bar button {
-  border-radius: 999px;
+.logs-search-input-wrap input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.7);
+}
+
+.logs-search-btn {
   border: none;
-  padding: 0.55rem 1.2rem;
-  font-size: 0.78rem;
+  border-radius: 999px;
+  padding: 0.55rem 1.5rem;
+  font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
-  background: linear-gradient(135deg, #6d28d9, #a855f7);
-  color: #020617;
-  box-shadow: 0 10px 24px rgba(88, 28, 135, 0.8);
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #f9fafb;
+}
+
+/* Alsó szekció, táblával */
+
+.logs-section {
+  padding-top: 0.25rem;
+}
+
+.logs-table-card {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid rgba(31, 41, 55, 0.9);
+  background: radial-gradient(circle at top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.98));
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+
+.logs-table-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.3rem 0.35rem 0.25rem;
+}
+
+.logs-table-caption {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.logs-table-wrapper {
+  margin-top: 0.25rem;
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.logs-table thead {
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.logs-table th,
+.logs-table td {
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid rgba(31, 41, 55, 0.95);
+  text-align: left;
+}
+
+.logs-table th {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(148, 163, 184, 0.95);
   white-space: nowrap;
 }
 
-.search-bar button:hover {
-  background: linear-gradient(135deg, #7c3aed, #c4b5fd);
-}
-
-.admin-section {
-  margin-top: 1.25rem;
-}
-
-.admin-empty {
-  padding: 2.25rem 1.75rem;
-  text-align: center;
-  font-size: 0.9rem;
-  color: rgba(148, 163, 184, 0.95);
-}
-
-.admin-table-wrapper {
-  overflow-x: auto;
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-}
-
-.admin-table thead {
-  background: rgba(15, 23, 42, 0.98);
-}
-
-.admin-table th,
-.admin-table td {
-  padding: 0.7rem 0.9rem;
-  border-bottom: 1px solid rgba(31, 41, 55, 0.85);
-}
-
-.admin-table th {
-  font-weight: 500;
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(148, 163, 184, 0.95);
-}
-
-.admin-table tbody tr:last-child td {
+.logs-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.admin-table tbody tr:hover {
-  background: rgba(15, 23, 42, 0.9);
+.logs-table tbody tr:hover {
+  background: rgba(15, 23, 42, 0.88);
 }
 
-.log-action {
-  max-width: 540px;
+.cell-id {
+  white-space: nowrap;
+  color: rgba(148, 163, 184, 0.9);
 }
 
-.log-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  margin-right: 0.45rem;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border: 1px solid transparent;
+.cell-username {
+  white-space: nowrap;
 }
 
-.log-pill-login {
-  background: rgba(34, 197, 94, 0.15);
-  border-color: rgba(22, 163, 74, 0.95);
-  color: #bbf7d0;
+.cell-action {
+  max-width: 420px;
 }
 
-.log-pill-logout {
-  background: rgba(239, 68, 68, 0.14);
-  border-color: rgba(220, 38, 38, 0.95);
-  color: #fecaca;
+.cell-action-text {
+  margin-left: 0.45rem;
 }
 
-.log-pill-news {
-  background: rgba(59, 130, 246, 0.16);
-  border-color: rgba(37, 99, 235, 0.95);
-  color: #dbeafe;
-}
-
-.log-pill-admin {
-  background: rgba(129, 140, 248, 0.16);
-  border-color: rgba(99, 102, 241, 0.95);
-  color: #e0e7ff;
-}
-
-.log-pill-other {
-  background: rgba(148, 163, 184, 0.16);
-  border-color: rgba(148, 163, 184, 0.95);
-  color: #e5e7eb;
+.cell-ip {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .cell-ua {
@@ -138,34 +173,90 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.8rem;
-  color: rgba(148, 163, 184, 0.95);
 }
 
-@media (max-width: 900px) {
-  .search-bar {
+.cell-date {
+  white-space: nowrap;
+}
+
+/* Pill-ek */
+
+.log-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.12rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  background: rgba(15, 23, 42, 0.95);
+  color: rgba(209, 213, 219, 0.95);
+}
+
+.log-pill-login {
+  border-color: rgba(34, 197, 94, 0.9);
+  color: #bbf7d0;
+}
+
+.log-pill-login-fail {
+  border-color: rgba(239, 68, 68, 0.9);
+  color: #fecaca;
+}
+
+.log-pill-logout {
+  border-color: rgba(249, 115, 22, 0.9);
+  color: #fed7aa;
+}
+
+.log-pill-news {
+  border-color: rgba(129, 140, 248, 0.9);
+  color: #e0e7ff;
+}
+
+.log-pill-admin {
+  border-color: rgba(168, 85, 247, 0.9);
+  color: #f5d0fe;
+}
+
+.log-pill-other {
+  border-color: rgba(75, 85, 99, 0.9);
+  color: rgba(209, 213, 219, 0.95);
+}
+
+/* Reszponzív */
+
+@media (max-width: 1024px) {
+  .logs-header {
+    gap: 1rem;
+  }
+
+  .logs-search {
     max-width: 100%;
   }
 
-  .search-bar button {
-    padding-inline: 0.9rem;
+  .logs-table-card {
+    padding: 0.5rem;
+  }
+
+  .logs-table th,
+  .logs-table td {
+    padding: 0.5rem 0.65rem;
   }
 }
 
-@media (max-width: 600px) {
-  .search-bar {
-    flex-direction: column;
-    align-items: stretch;
+@media (max-width: 760px) {
+  .logs-header {
+    gap: 0.9rem;
   }
 
-  .search-bar button {
-    width: 100%;
-    text-align: center;
-    justify-content: center;
+  .logs-table-card {
+    border-radius: 0.75rem;
   }
 
-  .admin-table th:nth-child(5),
-  .admin-table td:nth-child(5) {
+  .logs-table th:nth-child(5),
+  .logs-table td:nth-child(5) {
     display: none;
   }
 }
