@@ -2,8 +2,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("admin-modal") as HTMLElement | null;
   const form = document.getElementById("admin-form") as HTMLFormElement | null;
   const errorEl = document.getElementById("admin-error") as HTMLElement | null;
-  const closeBtn = modal?.querySelector<HTMLElement>(".modal-close") ?? null;
-  const backdrop = modal?.querySelector<HTMLElement>(".modal-backdrop") ?? null;
+  const closeBtn = modal ? (modal.querySelector(".modal-close") as HTMLElement | null) : null;
+  const backdrop = modal ? (modal.querySelector(".modal-backdrop") as HTMLElement | null) : null;
   const cancelBtn = document.getElementById("admin-cancel") as HTMLElement | null;
   const addBtn = document.getElementById("btn-add-admin") as HTMLElement | null;
   const addBtnEmpty = document.getElementById("btn-add-admin-empty") as HTMLElement | null;
@@ -29,62 +29,58 @@ document.addEventListener("DOMContentLoaded", () => {
   if (addBtn) addBtn.addEventListener("click", openModal);
   if (addBtnEmpty) addBtnEmpty.addEventListener("click", openModal);
 
-  [closeBtn, backdrop, cancelBtn].forEach((el) => {
+  const closeElements: (HTMLElement | null)[] = [closeBtn, backdrop, cancelBtn];
+  closeElements.forEach((el) => {
     if (!el) return;
-    el.addEventListener("click", (e) => {
+    el.addEventListener("click", (e: Event) => {
       e.preventDefault();
       closeModal();
     });
   });
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeModal();
+  document.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      closeModal();
+    }
   });
 
-  function showError(message: string): void {
-    if (errorEl) {
-      errorEl.hidden = false;
-      errorEl.textContent = message;
-    } else {
-      alert(message);
-    }
-  }
-
   if (form) {
-    form.addEventListener("submit", (e: SubmitEvent) => {
+    form.addEventListener("submit", (e: Event) => {
       e.preventDefault();
+      if (!form) return;
+
       if (errorEl) {
         errorEl.hidden = true;
         errorEl.textContent = "";
       }
 
-      const submitBtn = form.querySelector("button[type=submit]") as HTMLButtonElement | null;
-      if (submitBtn) submitBtn.disabled = true;
-
       const formData = new FormData(form);
 
-      fetch("/admin/admins.php", {
+      fetch("admins.php", {
         method: "POST",
         body: formData
       })
-        .then(async (res) => {
-          let data: any;
-          try {
-            data = await res.json();
-          } catch {
-            throw new Error("Hibás válasz érkezett a szervertől.");
-          }
+        .then((res) => res.json())
+        .then((data) => {
           if (!data.ok) {
-            throw new Error(data.error || "Ismeretlen hiba történt az admin létrehozásakor.");
+            if (errorEl) {
+              errorEl.hidden = false;
+              errorEl.textContent = data.error || "Ismeretlen hiba történt az admin létrehozásakor.";
+            } else {
+              alert(data.error || "Ismeretlen hiba.");
+            }
+            return;
           }
           window.location.reload();
         })
-        .catch((err: any) => {
+        .catch((err) => {
           console.error(err);
-          showError(err?.message || "Hálózati hiba történt a mentés során.");
-        })
-        .finally(() => {
-          if (submitBtn) submitBtn.disabled = false;
+          if (errorEl) {
+            errorEl.hidden = false;
+            errorEl.textContent = "Hálózati hiba történt a mentés során.";
+          } else {
+            alert("Hálózati hiba történt.");
+          }
         });
     });
   }
@@ -94,29 +90,23 @@ document.addEventListener("DOMContentLoaded", () => {
       const id = btn.dataset.id;
       if (!id) return;
 
-      const currentVisible = btn.dataset.visible === "1";
-      const next = currentVisible ? 0 : 1;
-
-      btn.disabled = true;
+      const current = btn.dataset.visible === "1";
+      const next = current ? 0 : 1;
 
       const formData = new FormData();
       formData.append("action", "toggle_active");
       formData.append("id", id);
       formData.append("is_active", String(next));
 
-      fetch("/admin/admins.php", {
+      fetch("admins.php", {
         method: "POST",
         body: formData
       })
-        .then(async (res) => {
-          let data: any;
-          try {
-            data = await res.json();
-          } catch {
-            throw new Error("Hibás válasz érkezett a szervertől.");
-          }
+        .then((res) => res.json())
+        .then((data) => {
           if (!data.ok) {
-            throw new Error(data.error || "Hiba az aktiválás/inaktiválás során.");
+            alert(data.error || "Hiba az aktiválás/inaktiválás során.");
+            return;
           }
 
           btn.dataset.visible = String(next);
@@ -132,12 +122,9 @@ document.addEventListener("DOMContentLoaded", () => {
             tr.dataset.is_active = String(next);
           }
         })
-        .catch((err: any) => {
+        .catch((err) => {
           console.error(err);
-          alert(err?.message || "Hálózati hiba történt az állapot módosítása közben.");
-        })
-        .finally(() => {
-          btn.disabled = false;
+          alert("Hálózati hiba történt az állapot módosítása közben.");
         });
     });
   });
@@ -153,7 +140,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const username = tr.dataset.username || id;
 
       const newPw = window.prompt(
-        `Új jelszó beállítása ehhez az adminhoz: ${username}\n\nÍrd be az új jelszót:`
+        "Új jelszó beállítása ehhez az adminhoz: " +
+          username +
+          "\n\nÍrd be az új jelszót:"
       );
       if (!newPw) return;
 
@@ -167,30 +156,21 @@ document.addEventListener("DOMContentLoaded", () => {
       formData.append("id", id);
       formData.append("password", newPw);
 
-      btn.disabled = true;
-
-      fetch("/admin/admins.php", {
+      fetch("admins.php", {
         method: "POST",
         body: formData
       })
-        .then(async (res) => {
-          let data: any;
-          try {
-            data = await res.json();
-          } catch {
-            throw new Error("Hibás válasz érkezett a szervertől.");
-          }
+        .then((res) => res.json())
+        .then((data) => {
           if (!data.ok) {
-            throw new Error(data.error || "Hiba a jelszó csere során.");
+            alert(data.error || "Hiba a jelszó csere során.");
+            return;
           }
           alert("Jelszó sikeresen módosítva ehhez az adminhoz: " + username);
         })
-        .catch((err: any) => {
+        .catch((err) => {
           console.error(err);
-          alert(err?.message || "Hálózati hiba történt a jelszó módosítása közben.");
-        })
-        .finally(() => {
-          btn.disabled = false;
+          alert("Hálózati hiba történt a jelszó módosítása közben.");
         });
     });
   });
