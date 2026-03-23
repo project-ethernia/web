@@ -193,7 +193,7 @@ $currentNav = 'news';
 
             <div class="form-group">
                 <label for="news-category">Kategória</label>
-                <select id="news-category" name="category">
+                <select id="news-category" name="category" class="custom-select">
                     <?php foreach (NEWS_CATEGORIES as $key => $catData): ?>
                         <option value="<?= h($key); ?>"><?= h($catData['name']); ?> (<?= h($key); ?>)</option>
                     <?php endforeach; ?>
@@ -210,9 +210,12 @@ $currentNav = 'news';
                 <textarea id="news-content" name="content" rows="6" required placeholder="A hír teljes kifejtett tartalma..."></textarea>
             </div>
             
-            <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px;">
-                <label for="news-visible" style="margin:0;">Azonnal publikus legyen?</label>
-                <input type="checkbox" id="news-visible" name="is_visible" value="1" checked style="width: auto;">
+            <div class="form-group" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                <label for="news-visible" style="margin:0; cursor: pointer;">Azonnal publikus legyen?</label>
+                <label class="form-switch">
+                    <input type="checkbox" id="news-visible" name="is_visible" value="1" checked>
+                    <div class="switch-slider"></div>
+                </label>
             </div>
 
             <div class="modal-footer">
