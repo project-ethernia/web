@@ -227,161 +227,113 @@ $currentNav = 'news';
     <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/news.css?v=<?= time(); ?>">
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;500&display=swap">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 </head>
 <body class="admin-body">
-<div class="admin-layout">
 
+<div class="admin-layout">
     <?php require __DIR__ . '/_sidebar.php'; ?>
 
-    <main class="admin-main news-main">
-        <header class="admin-page-header news-page-header">
-            <div>
-                <h1 class="admin-page-title">Hírek kezelése</h1>
-                <p class="admin-page-subtitle">
-                    A nyitó oldalon megjelenő híreket tudod itt létrehozni, szerkeszteni és elrejteni.
-                </p>
+    <main class="admin-main">
+        <header class="admin-header glass-panel">
+            <div class="header-text">
+                <h1 class="admin-title">Hírek kezelése</h1>
+                <p class="admin-subtitle">A nyitó oldalon megjelenő híreket tudod itt létrehozni és szerkeszteni.</p>
             </div>
-            <div class="news-header-right">
-                <span class="pill-counter">
-                    Összes: <?= (int)$totalNews; ?> · Látható: <?= (int)$visibleNews; ?>
-                </span>
-                <button type="button" class="btn btn-primary" id="btn-add-news">
-                    + Új hír
-                </button>
+            <div class="header-actions">
+                <div class="stat-pill glass-panel">
+                    <span>Összes: <strong><?= (int)$totalNews; ?></strong></span>
+                    <span class="divider">|</span>
+                    <span>Látható: <strong class="text-success"><?= (int)$visibleNews; ?></strong></span>
+                </div>
+                <button type="button" class="btn btn-glow" id="btn-add-news">+ Új hír</button>
             </div>
         </header>
 
-        <section class="news-section">
-            <div class="card card-news-list">
-                <div class="card-header card-header-flex">
-                    <div>
-                        <h2 class="card-title">Hírek listája</h2>
-                        <p class="card-subtitle">
-                            Itt látod az összes hírt, sorrenddel és láthatósággal együtt.
-                        </p>
-                    </div>
+        <section class="admin-content glass-panel">
+            <?php if (empty($news)): ?>
+                <div class="empty-state">
+                    <div class="empty-icon">📰</div>
+                    <h3>Nincs még egyetlen hír sem.</h3>
+                    <p>Kattints a gombra, és oszd meg az első frissítést a játékosokkal!</p>
+                    <button type="button" class="btn btn-glow" id="btn-add-news-empty">+ Első hír létrehozása</button>
                 </div>
-
-                <div class="card-body">
-                    <?php if (empty($news)): ?>
-                        <div class="admin-empty">
-                            <p>Még nincs egyetlen hír sem.</p>
-                            <button type="button" class="btn btn-primary" id="btn-add-news-empty">
-                                + Hozd létre az első hírt
-                            </button>
-                        </div>
-                    <?php else: ?>
-                        <div class="admin-table-wrapper">
-                            <table class="admin-table news-table">
-                                <thead>
-                                <tr>
-                                    <th>Sorrend</th>
-                                    <th>Cím</th>
-                                    <th>Tag</th>
-                                    <th>Dátum</th>
-                                    <th>Szerző</th>
-                                    <th>Látható</th>
-                                    <th>Műveletek</th>
+            <?php else: ?>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Cím és tartalom</th>
+                                <th>Kategória</th>
+                                <th>Dátum</th>
+                                <th>Láthatóság</th>
+                                <th class="text-right">Műveletek</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($news as $row): ?>
+                                <?php
+                                $tag = $row['tag'] ? $row['tag'] : 'Info';
+                                $tagLower = mb_strtolower($tag, 'UTF-8');
+                                $tagClass = 'badge-default';
+                                if (strpos($tagLower, 'event') !== false) $tagClass = 'badge-event';
+                                elseif (strpos($tagLower, 'info') !== false) $tagClass = 'badge-info';
+                                elseif (strpos($tagLower, 'teszt') !== false || strpos($tagLower, 'test') !== false) $tagClass = 'badge-test';
+                                $visible = (int)$row['is_visible'] === 1;
+                                ?>
+                                <tr data-id="<?= h($row['id']); ?>"
+                                    data-title="<?= h($row['title']); ?>"
+                                    data-tag="<?= h($row['tag']); ?>"
+                                    data-date_display="<?= h($row['date_display']); ?>"
+                                    data-short_text="<?= h($row['short_text']); ?>"
+                                    data-full_text="<?= h($row['full_text']); ?>"
+                                    data-order_index="<?= (int)$row['order_index']; ?>"
+                                    data-is_visible="<?= (int)$row['is_visible']; ?>"
+                                    data-author="<?= h($row['author']); ?>">
+                                    
+                                    <td class="cell-order"><?= (int)$row['order_index']; ?></td>
+                                    <td class="cell-content">
+                                        <div class="cell-title"><?= h($row['title']); ?></div>
+                                        <div class="cell-desc"><?= h($row['short_text']); ?></div>
+                                    </td>
+                                    <td><span class="badge <?= $tagClass; ?>"><?= h($tag); ?></span></td>
+                                    <td class="cell-date"><?= h($row['date_display']); ?></td>
+                                    <td>
+                                        <button type="button" class="toggle-btn <?= $visible ? 'active' : ''; ?>" data-id="<?= (int)$row['id']; ?>" data-visible="<?= $visible ? '1' : '0'; ?>">
+                                            <div class="toggle-circle"></div>
+                                        </button>
+                                    </td>
+                                    <td class="text-right cell-actions">
+                                        <button type="button" class="btn btn-outline btn-sm btn-edit">Szerkeszt</button>
+                                        <button type="button" class="btn btn-danger btn-sm btn-delete">Töröl</button>
+                                    </td>
                                 </tr>
-                                </thead>
-                                <tbody>
-                                <?php foreach ($news as $row): ?>
-                                    <tr
-                                        data-id="<?= h($row['id']); ?>"
-                                        data-title="<?= h($row['title']); ?>"
-                                        data-tag="<?= h($row['tag']); ?>"
-                                        data-date_display="<?= h($row['date_display']); ?>"
-                                        data-short_text="<?= h($row['short_text']); ?>"
-                                        data-full_text="<?= h($row['full_text']); ?>"
-                                        data-order_index="<?= (int)$row['order_index']; ?>"
-                                        data-is_visible="<?= (int)$row['is_visible']; ?>"
-                                        data-author="<?= h($row['author']); ?>"
-                                    >
-                                        <td class="cell-order">
-                                            <span class="order-value"><?= (int)$row['order_index']; ?></span>
-                                        </td>
-                                        <td class="cell-title">
-                                            <div class="title-main"><?= h($row['title']); ?></div>
-                                            <div class="title-sub"><?= h($row['short_text']); ?></div>
-                                        </td>
-                                        <td class="cell-tag">
-                                            <?php
-                                            $tag = $row['tag'] ? $row['tag'] : 'Info';
-                                            $tagLower = mb_strtolower($tag, 'UTF-8');
-                                            $tagClass = 'tag-pill';
-                                            if (strpos($tagLower, 'event') !== false) {
-                                                $tagClass .= ' tag-pill-event';
-                                            } elseif (strpos($tagLower, 'info') !== false) {
-                                                $tagClass .= ' tag-pill-info';
-                                            }
-                                            ?>
-                                            <span class="<?= $tagClass; ?>">
-                                                <?= h($tag); ?>
-                                            </span>
-                                        </td>
-                                        <td class="cell-date">
-                                            <?= h($row['date_display']); ?>
-                                        </td>
-                                        <td class="cell-author">
-                                            <?= h($row['author']); ?>
-                                        </td>
-                                        <td class="cell-visible">
-                                            <?php $visible = (int)$row['is_visible'] === 1; ?>
-                                            <button
-                                                type="button"
-                                                class="visibility-toggle <?= $visible ? 'is-on' : 'is-off'; ?>"
-                                                data-id="<?= (int)$row['id']; ?>"
-                                                data-visible="<?= $visible ? '1' : '0'; ?>"
-                                                aria-pressed="<?= $visible ? 'true' : 'false'; ?>"
-                                                title="<?= $visible
-                                                    ? 'Látható – kattints az elrejtéshez'
-                                                    : 'Rejtett – kattints a megjelenítéshez'; ?>"
-                                            >
-                                                <span class="toggle-knob"></span>
-                                            </button>
-                                        </td>
-                                        <td class="cell-actions">
-                                            <button type="button" class="btn btn-sm btn-secondary btn-edit">
-                                                Szerkesztés
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-danger btn-delete">
-                                                Törlés
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endif; ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
+            <?php endif; ?>
         </section>
     </main>
 </div>
 
-<div class="modal" id="news-modal" aria-hidden="true">
-    <div class="modal-backdrop"></div>
-    <div class="modal-dialog" role="dialog" aria-modal="true">
-        <button type="button" class="modal-close" aria-label="Bezárás">×</button>
-
-        <form class="modal-content" id="news-form">
-            <h2 id="news-modal-title">Új hír</h2>
-
+<div class="modal-overlay" id="news-modal">
+    <div class="modal-container glass-panel">
+        <button type="button" class="modal-close" aria-label="Bezárás">&times;</button>
+        <form id="news-form" class="modal-form">
+            <h2 id="news-modal-title" class="modal-title">Új hír létrehozása</h2>
+            
             <input type="hidden" name="id" id="news-id">
             <input type="hidden" name="action" value="save">
 
-            <div class="form-row">
+            <div class="form-grid">
                 <div class="form-group">
                     <label for="news-title">Cím</label>
                     <input type="text" id="news-title" name="title" required>
                 </div>
                 <div class="form-group">
-                    <label for="news-tag">Tag</label>
+                    <label for="news-tag">Kategória (Tag)</label>
                     <select id="news-tag" name="tag">
                         <option value="Újdonság">Újdonság</option>
                         <option value="Event">Event</option>
@@ -392,39 +344,37 @@ $currentNav = 'news';
             </div>
 
             <div class="form-group">
-                <label for="news-short">Rövid szöveg (max. 100 karakter)</label>
-                <textarea id="news-short" name="short_text" rows="3" maxlength="100"></textarea>
+                <label for="news-short">Rövid leírás (Kártyán jelenik meg, max 100 karakter)</label>
+                <textarea id="news-short" name="short_text" rows="2" maxlength="100"></textarea>
             </div>
 
             <div class="form-group">
-                <label for="news-full">Hosszú szöveg (Részletek ablakba)</label>
+                <label for="news-full">Teljes cikk (A felugró ablakban jelenik meg)</label>
                 <textarea id="news-full" name="full_text" rows="5"></textarea>
             </div>
 
-            <div class="form-row">
+            <div class="form-grid align-end">
                 <div class="form-group">
-                    <label for="news-order">Sorrend</label>
+                    <label for="news-order">Sorrend (0 a legelső)</label>
                     <input type="number" id="news-order" name="order_index" value="0">
                 </div>
-                <div class="form-group form-group-checkbox">
-                    <label class="checkbox-inline">
+                <div class="form-group checkbox-group">
+                    <label class="custom-checkbox">
                         <input type="checkbox" id="news-visible" name="is_visible" checked>
-                        <span>Látható a nyitó oldalon</span>
+                        <span class="checkmark"></span>
+                        Publikus (Látható a főoldalon)
                     </label>
                 </div>
             </div>
 
-            <p class="form-meta">
-                <span>Közzétette: <strong id="news-meta-author">Mentés után</strong></span>
-                <span class="meta-separator">·</span>
-                <span>Dátum: <strong id="news-meta-date">Mentés után</strong></span>
-            </p>
-
-            <div class="modal-actions">
-                <p class="form-error" id="news-error" hidden></p>
-                <div class="actions-right">
-                    <button type="button" class="btn btn-secondary" id="news-cancel">Mégse</button>
-                    <button type="submit" class="btn btn-primary">Mentés</button>
+            <div class="modal-footer">
+                <div class="meta-info">
+                    Szerző: <strong id="news-meta-author">-</strong> | Dátum: <strong id="news-meta-date">-</strong>
+                </div>
+                <div class="action-buttons">
+                    <span class="error-text" id="news-error" hidden></span>
+                    <button type="button" class="btn btn-outline" id="news-cancel">Mégse</button>
+                    <button type="submit" class="btn btn-glow">Mentés</button>
                 </div>
             </div>
         </form>

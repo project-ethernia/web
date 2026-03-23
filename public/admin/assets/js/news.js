@@ -1,11 +1,11 @@
 "use strict";
+/// <reference lib="dom" />
 document.addEventListener("DOMContentLoaded", function () {
-    var _a, _b;
+    var _a;
     var modal = document.getElementById("news-modal");
     var form = document.getElementById("news-form");
     var errorEl = document.getElementById("news-error");
     var closeBtn = (_a = modal === null || modal === void 0 ? void 0 : modal.querySelector(".modal-close")) !== null && _a !== void 0 ? _a : null;
-    var backdrop = (_b = modal === null || modal === void 0 ? void 0 : modal.querySelector(".modal-backdrop")) !== null && _b !== void 0 ? _b : null;
     var cancelBtn = document.getElementById("news-cancel");
     var addBtn = document.getElementById("btn-add-news");
     var addBtnEmpty = document.getElementById("btn-add-news-empty");
@@ -44,9 +44,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (visibleInput)
             visibleInput.checked = true;
         if (metaAuthor)
-            metaAuthor.textContent = "Mentés után";
+            metaAuthor.textContent = "-";
         if (metaDate)
-            metaDate.textContent = "Mentés után";
+            metaDate.textContent = "-";
     };
     var fillFormFromRow = function (tr) {
         if (idInput)
@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var handleNewClick = function () {
         resetForm();
         if (modalTitle)
-            modalTitle.textContent = "Új hír";
+            modalTitle.textContent = "Új hír létrehozása";
         openModal();
     };
     if (addBtn)
@@ -96,12 +96,10 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!tr)
                 return;
             var id = tr.dataset.id;
-            var title = tr.dataset.title || id || "";
             if (!id)
                 return;
-            if (!window.confirm("Biztosan törlöd ezt a hírt?\n\n" + title)) {
+            if (!window.confirm("Biztosan törlöd ezt a hírt?"))
                 return;
-            }
             var formData = new FormData();
             formData.append("action", "delete");
             formData.append("id", id);
@@ -112,18 +110,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(function (res) { return res.json(); })
                 .then(function (data) {
                 if (!data.ok) {
-                    window.alert(data.error || "Ismeretlen hiba történt törlés közben.");
+                    window.alert(data.error || "Hiba törlés közben.");
                     return;
                 }
                 tr.remove();
+                window.location.reload();
             })
-                .catch(function (err) {
-                console.error(err);
-                window.alert("Hálózati hiba történt a törlés során.");
-            });
+                .catch(function () { return window.alert("Hálózati hiba a törlés során."); });
         });
     });
-    document.querySelectorAll(".visibility-toggle").forEach(function (btn) {
+    document.querySelectorAll(".toggle-btn").forEach(function (btn) {
         btn.addEventListener("click", function () {
             var id = btn.dataset.id;
             if (!id)
@@ -145,24 +141,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
                 btn.dataset.visible = String(next);
-                btn.setAttribute("aria-pressed", next ? "true" : "false");
-                btn.classList.toggle("is-on", !!next);
-                btn.classList.toggle("is-off", !next);
-                btn.title = next
-                    ? "Látható – kattints az elrejtéshez"
-                    : "Rejtett – kattints a megjelenítéshez";
+                btn.classList.toggle("active", !!next);
                 var tr = btn.closest("tr");
-                if (tr) {
+                if (tr)
                     tr.dataset.is_visible = String(next);
-                }
             })
-                .catch(function (err) {
-                console.error(err);
-                window.alert("Hálózati hiba történt a láthatóság állításakor.");
-            });
+                .catch(function () { return window.alert("Hálózati hiba a láthatóság állításakor."); });
         });
     });
-    var closers = [closeBtn, backdrop, cancelBtn];
+    var closers = [closeBtn, cancelBtn];
     closers.forEach(function (el) {
         if (!el)
             return;
@@ -171,10 +158,15 @@ document.addEventListener("DOMContentLoaded", function () {
             closeModal();
         });
     });
+    if (modal) {
+        modal.addEventListener("click", function (e) {
+            if (e.target === modal)
+                closeModal();
+        });
+    }
     document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") {
+        if (e.key === "Escape")
             closeModal();
-        }
     });
     if (form) {
         form.addEventListener("submit", function (e) {
@@ -182,6 +174,11 @@ document.addEventListener("DOMContentLoaded", function () {
             if (errorEl) {
                 errorEl.hidden = true;
                 errorEl.textContent = "";
+            }
+            var submitBtn = form.querySelector("button[type='submit']");
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Mentés...";
             }
             var formData = new FormData(form);
             fetch("news.php", {
@@ -192,25 +189,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(function (data) {
                 if (!data.ok) {
                     if (errorEl) {
-                        errorEl.textContent =
-                            data.error || "Ismeretlen hiba történt mentés közben.";
+                        errorEl.textContent = data.error || "Hiba mentés közben.";
                         errorEl.hidden = false;
                     }
-                    else {
-                        window.alert(data.error || "Ismeretlen hiba történt mentés közben.");
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = "Mentés";
                     }
                     return;
                 }
                 window.location.reload();
             })
-                .catch(function (err) {
-                console.error(err);
+                .catch(function () {
                 if (errorEl) {
-                    errorEl.textContent = "Hálózati hiba történt a mentés során.";
+                    errorEl.textContent = "Hálózati hiba a mentés során.";
                     errorEl.hidden = false;
                 }
-                else {
-                    window.alert("Hálózati hiba történt a mentés során.");
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Mentés";
                 }
             });
         });

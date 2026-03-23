@@ -1,10 +1,11 @@
+/// <reference lib="dom" />
+
 document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("news-modal") as HTMLElement | null;
   const form = document.getElementById("news-form") as HTMLFormElement | null;
   const errorEl = document.getElementById("news-error") as HTMLElement | null;
 
   const closeBtn = modal?.querySelector<HTMLElement>(".modal-close") ?? null;
-  const backdrop = modal?.querySelector<HTMLElement>(".modal-backdrop") ?? null;
   const cancelBtn = document.getElementById("news-cancel") as HTMLElement | null;
 
   const addBtn = document.getElementById("btn-add-news") as HTMLElement | null;
@@ -41,8 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (idInput) idInput.value = "";
     if (orderInput) orderInput.value = "0";
     if (visibleInput) visibleInput.checked = true;
-    if (metaAuthor) metaAuthor.textContent = "Mentés után";
-    if (metaDate) metaDate.textContent = "Mentés után";
+    if (metaAuthor) metaAuthor.textContent = "-";
+    if (metaDate) metaDate.textContent = "-";
   };
 
   const fillFormFromRow = (tr: HTMLTableRowElement): void => {
@@ -59,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const handleNewClick = (): void => {
     resetForm();
-    if (modalTitle) modalTitle.textContent = "Új hír";
+    if (modalTitle) modalTitle.textContent = "Új hír létrehozása";
     openModal();
   };
 
@@ -83,13 +84,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!tr) return;
 
       const id = tr.dataset.id;
-      const title = tr.dataset.title || id || "";
-
       if (!id) return;
 
-      if (!window.confirm("Biztosan törlöd ezt a hírt?\n\n" + title)) {
-        return;
-      }
+      if (!window.confirm("Biztosan törlöd ezt a hírt?")) return;
 
       const formData = new FormData();
       formData.append("action", "delete");
@@ -102,19 +99,17 @@ document.addEventListener("DOMContentLoaded", () => {
         .then((res) => res.json())
         .then((data) => {
           if (!data.ok) {
-            window.alert(data.error || "Ismeretlen hiba történt törlés közben.");
+            window.alert(data.error || "Hiba törlés közben.");
             return;
           }
           tr.remove();
+          window.location.reload();
         })
-        .catch((err) => {
-          console.error(err);
-          window.alert("Hálózati hiba történt a törlés során.");
-        });
+        .catch(() => window.alert("Hálózati hiba a törlés során."));
     });
   });
 
-  document.querySelectorAll<HTMLElement>(".visibility-toggle").forEach((btn) => {
+  document.querySelectorAll<HTMLElement>(".toggle-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.dataset.id;
       if (!id) return;
@@ -139,26 +134,16 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
           btn.dataset.visible = String(next);
-          btn.setAttribute("aria-pressed", next ? "true" : "false");
-          btn.classList.toggle("is-on", !!next);
-          btn.classList.toggle("is-off", !next);
-          btn.title = next
-            ? "Látható – kattints az elrejtéshez"
-            : "Rejtett – kattints a megjelenítéshez";
+          btn.classList.toggle("active", !!next);
 
           const tr = btn.closest("tr") as HTMLTableRowElement | null;
-          if (tr) {
-            tr.dataset.is_visible = String(next);
-          }
+          if (tr) tr.dataset.is_visible = String(next);
         })
-        .catch((err) => {
-          console.error(err);
-          window.alert("Hálózati hiba történt a láthatóság állításakor.");
-        });
+        .catch(() => window.alert("Hálózati hiba a láthatóság állításakor."));
     });
   });
 
-  const closers: (HTMLElement | null)[] = [closeBtn, backdrop, cancelBtn];
+  const closers: (HTMLElement | null)[] = [closeBtn, cancelBtn];
   closers.forEach((el) => {
     if (!el) return;
     el.addEventListener("click", (e) => {
@@ -167,10 +152,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+  }
+
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeModal();
-    }
+    if (e.key === "Escape") closeModal();
   });
 
   if (form) {
@@ -179,6 +168,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (errorEl) {
         errorEl.hidden = true;
         errorEl.textContent = "";
+      }
+
+      const submitBtn = form.querySelector("button[type='submit']") as HTMLButtonElement | null;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Mentés...";
       }
 
       const formData = new FormData(form);
@@ -191,24 +186,25 @@ document.addEventListener("DOMContentLoaded", () => {
         .then((data) => {
           if (!data.ok) {
             if (errorEl) {
-              errorEl.textContent =
-                data.error || "Ismeretlen hiba történt mentés közben.";
+              errorEl.textContent = data.error || "Hiba mentés közben.";
               errorEl.hidden = false;
-            } else {
-              window.alert(data.error || "Ismeretlen hiba történt mentés közben.");
+            }
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = "Mentés";
             }
             return;
           }
-
           window.location.reload();
         })
-        .catch((err) => {
-          console.error(err);
+        .catch(() => {
           if (errorEl) {
-            errorEl.textContent = "Hálózati hiba történt a mentés során.";
+            errorEl.textContent = "Hálózati hiba a mentés során.";
             errorEl.hidden = false;
-          } else {
-            window.alert("Hálózati hiba történt a mentés során.");
+          }
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Mentés";
           }
         });
     });
