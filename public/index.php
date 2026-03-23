@@ -5,34 +5,27 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// require_once __DIR__ . '/database.php';
+// BEKAPCSOLVA: Behúzzuk az adatbázis kapcsolatot
+require_once __DIR__ . '/database.php';
 
 function h($str) {
-    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8');
 }
 
-/* // Adatbázis kapcsolat - a teszt kedvéért most kikommentelve, hogy lásd a dizájnt, 
-// de nálad ez az eredeti marad!
+// ÉLESÍTVE: Lekérdezzük a valódi híreket az adatbázisból!
 try {
-    $pdo = get_pdo();
+    // Csak azokat a híreket kérjük le, amik "Látható" státuszban vannak
+    $stmt = $pdo->query("
+        SELECT id, title, category, tag, date_display, short_text, full_text, author, created_at
+        FROM news
+        WHERE is_visible = 1
+        ORDER BY created_at DESC
+        LIMIT 5
+    ");
+    $news = $stmt->fetchAll();
 } catch (Exception $e) {
     die('Adatbázis hiba: ' . $e->getMessage());
 }
-
-$stmt = $pdo->query("
-    SELECT id, title, tag, date_display, short_text, full_text, order_index, author
-    FROM news
-    WHERE is_visible = 1
-    ORDER BY order_index ASC, created_at DESC
-");
-$news = $stmt->fetchAll();
-*/
-
-// Ideiglenes tesztadatok a dizájn teszteléséhez (ezt töröld ki, ha az adatbázisod be van kötve)
-$news = [
-    ['title' => 'Tavaszi Nagy Frissítés', 'tag' => 'Event', 'date_display' => '2026. Márc. 20.', 'short_text' => 'Hatalmas tavaszi frissítéssel bővült a szerver, új ládák és küldetések várnak!', 'full_text' => 'Részletesebb leírás a tavaszi frissítésről...', 'author' => 'Adminisztrátor'],
-    ['title' => 'Karbantartás a hétvégén', 'tag' => 'Info', 'date_display' => '2026. Márc. 18.', 'short_text' => 'Vasárnap hajnalban rövid hálózatfejlesztés lesz, a szerver 10 percig nem lesz elérhető.', 'full_text' => '', 'author' => 'Rendszergazda'],
-];
 
 $isLoggedIn = !empty($_SESSION['is_user']) && $_SESSION['is_user'] === true;
 $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['user_username'] : null;
@@ -112,21 +105,26 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
 
         <?php if (!empty($news)): ?>
             <div class="news-grid">
-                <?php foreach (array_slice($news, 0, 5) as $row): ?>
+                <?php foreach ($news as $row): ?>
                     <?php
-                    $tag = $row['tag'] ?: 'Info';
+                    // A 'tag' vagy a 'category' mezőt használjuk a badge kiírására
+                    $tag = !empty($row['tag']) ? $row['tag'] : (!empty($row['category']) ? ucfirst(strtolower($row['category'])) : 'Info');
                     $tagLower = mb_strtolower($tag, 'UTF-8');
                     $tagClass = 'tag-default';
                     
-                    if (strpos($tagLower, 'event') !== false) $tagClass = 'tag-event';
-                    elseif (strpos($tagLower, 'info') !== false) $tagClass = 'tag-info';
+                    if (strpos($tagLower, 'event') !== false || strpos($tagLower, 'esemény') !== false) $tagClass = 'tag-event';
+                    elseif (strpos($tagLower, 'info') !== false || strpos($tagLower, 'információ') !== false) $tagClass = 'tag-info';
+                    elseif (strpos($tagLower, 'update') !== false || strpos($tagLower, 'frissítés') !== false) $tagClass = 'tag-event'; // Vagy tag-update, ha van ilyen CSS-ed
                     elseif (strpos($tagLower, 'teszt') !== false || strpos($tagLower, 'test') !== false) $tagClass = 'tag-test';
 
-                    $dateDisplay = $row['date_display'] ?: '';
+                    // Ha a date_display üres, akkor használjuk a létrehozás dátumát (created_at) formázva
+                    $dateDisplay = !empty($row['date_display']) ? $row['date_display'] : date('Y. M. d.', strtotime($row['created_at']));
+                    
                     $shortText = $row['short_text'] ?: '';
                     $fullText = $row['full_text'] ?: '';
                     $author = $row['author'] ?: 'Ismeretlen';
                     ?>
+                    
                     <article class="news-card glass-panel" data-full="<?= h($fullText !== '' ? $fullText : $shortText); ?>">
                         <div class="news-card-header">
                             <span class="news-badge <?= $tagClass; ?>"><?= h($tag); ?></span>
@@ -138,7 +136,7 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
                         </div>
                         <div class="news-card-footer">
                             <div class="news-author">
-                                <div class="author-avatar-placeholder"></div>
+                                <img src="https://minotar.net/helm/<?= h($author); ?>/24.png" alt="Skin" style="border-radius: 4px; width: 24px; height: 24px; image-rendering: pixelated; margin-right: 8px;">
                                 <span><?= h($author); ?></span>
                             </div>
                             <button type="button" class="btn btn-text news-readmore">Tovább olvasom <span class="arrow">→</span></button>
