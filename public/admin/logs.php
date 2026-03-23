@@ -52,73 +52,77 @@ $currentNav = 'logs';
     <?php require __DIR__ . '/_sidebar.php'; ?>
 
     <main class="admin-main">
-        <header class="admin-header glass-panel">
-            <div class="header-text">
-                <h1 class="admin-title">Műveletnapló</h1>
-                <p class="admin-subtitle">Rendszeresemények, módosítások és biztonsági naplózás.</p>
+    <header class="admin-header glass-panel">
+        <div class="header-text">
+            <h1 class="admin-title">Műveletnapló</h1>
+            <p class="admin-subtitle">Rendszeresemények, módosítások és biztonsági naplózás.</p>
+        </div>
+        <div class="header-actions">
+            <div class="stat-pill glass-panel">
+                <span>Összesen: <strong><?= (int)$totalLogs; ?></strong> bejegyzés</span>
             </div>
-            <div class="header-actions">
-                <div class="stat-pill glass-panel">
-                    <span>Összesen: <strong><?= (int)$totalLogs; ?></strong> bejegyzés</span>
-                </div>
+        </div>
+    </header>
+
+    <section class="admin-content glass-panel" style="margin-bottom: 2rem; padding: 1.5rem;">
+        <form class="logs-filters" method="get">
+            <div class="search-box">
+                <span class="material-symbols-rounded search-icon">search</span>
+                <input type="text" name="q" placeholder="Keresés admin vagy esemény alapján..." value="<?= h($q); ?>">
+                <button type="submit" class="btn btn-glow-red">Szűrés</button>
             </div>
-        </header>
+        </form>
+    </section>
 
-        <section class="admin-content glass-panel">
-            <form class="logs-filters" method="get">
-                <div class="search-box">
-                    <span class="material-symbols-rounded search-icon">search</span>
-                    <input type="text" name="q" placeholder="Keresés admin vagy esemény alapján..." value="<?= h($q); ?>">
-                    <button type="submit" class="btn btn-glow-red">Szűrés</button>
-                </div>
-            </form>
+    <section class="admin-content glass-panel">
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Adminisztrátor</th>
+                        <th>Esemény</th>
+                        <th>IP Cím</th>
+                        <th>Időpont</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($logs)): ?>
+                        <tr><td colspan="5" class="text-center">Nincs találat a naplóban.</td></tr>
+                    <?php else: ?>
+                        <?php foreach ($logs as $log): ?>
+                            <?php
+                            $actionText = $log['action'];
+                            $lower = mb_strtolower($actionText, 'UTF-8');
+                            $pillClass = 'badge-default';
+                            $pillText = 'EGYÉB';
 
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Adminisztrátor</th>
-                            <th>Esemény</th>
-                            <th>IP Cím</th>
-                            <th>Időpont</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($logs)): ?>
-                            <tr><td colspan="5" class="text-center">Nincs találat a naplóban.</td></tr>
-                        <?php else: ?>
-                            <?php foreach ($logs as $log): ?>
-                                <?php
-                                $actionText = $log['action'];
-                                $lower = mb_strtolower($actionText, 'UTF-8');
-                                $pillClass = 'badge-default';
-                                $pillText = 'EGYÉB';
-
-                                if (strpos($lower, 'sikeres') !== false) { $pillClass = 'badge-mod'; $pillText = 'LOGIN'; }
-                                elseif (strpos($lower, 'sikertelen') !== false) { $pillClass = 'badge-danger'; $pillText = 'HIBA'; }
-                                elseif (strpos($lower, 'hír') !== false) { $pillClass = 'badge-info'; $pillText = 'HÍR'; }
-                                elseif (strpos($lower, 'admin') !== false) { $pillClass = 'badge-owner'; $pillText = 'ADMIN'; }
-                                ?>
-                                <tr class="log-row" data-context='<?= h($log['context'] ?: '{}'); ?>' data-ua="<?= h($log['user_agent'] ?: 'Nincs adat'); ?>">
-                                    <td class="cell-order">#<?= (int)$log['id']; ?></td>
-                                    <td class="cell-title"><?= h($log['username'] ?: 'Ismeretlen'); ?></td>
-                                    <td>
-                                        <div class="log-action-cell">
-                                            <span class="badge <?= $pillClass; ?>"><?= $pillText; ?></span>
-                                            <span class="action-desc"><?= h($actionText); ?></span>
-                                        </div>
-                                    </td>
-                                    <td class="cell-date"><?= h($log['ip_address']); ?></td>
-                                    <td class="cell-date"><?= h($log['created_at']); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </main>
+                            if (strpos($lower, 'sikeres') !== false) { $pillClass = 'badge-mod'; $pillText = 'LOGIN'; }
+                            elseif (strpos($lower, 'sikertelen') !== false) { $pillClass = 'badge-danger'; $pillText = 'HIBA'; }
+                            elseif (strpos($lower, 'hír') !== false) { $pillClass = 'badge-info'; $pillText = 'HÍR'; }
+                            elseif (strpos($lower, 'admin') !== false) { $pillClass = 'badge-owner'; $pillText = 'ADMIN'; }
+                            ?>
+                            <tr class="log-row" data-context='<?= h($log['context'] ?: '{}'); ?>' data-ua="<?= h($log['user_agent'] ?: 'Nincs adat'); ?>">
+                                <td class="cell-order">#<?= (int)$log['id']; ?></td>
+                                <td class="cell-title">
+                                    <div style="font-weight: 600; color: #fff;"><?= h($log['username'] ?: 'Ismeretlen'); ?></div>
+                                </td>
+                                <td>
+                                    <div class="log-action-cell">
+                                        <span class="badge <?= $pillClass; ?>"><?= $pillText; ?></span>
+                                        <span class="action-desc"><?= h($actionText); ?></span>
+                                    </div>
+                                </td>
+                                <td class="cell-date"><?= h($log['ip_address']); ?></td>
+                                <td class="cell-date"><?= h($log['created_at']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>>
 </div>
 
 <div class="modal-overlay" id="log-modal">
