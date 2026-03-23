@@ -211,11 +211,11 @@ $currentNav = 'admins';
     <meta charset="UTF-8">
     <title>ETHERNIA Admin – Hozzáférés kezelése</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@100..700&display=block">
     <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/news.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/admins.css?v=<?= time(); ?>">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 </head>
 <body class="admin-body">
 
