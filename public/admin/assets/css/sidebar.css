@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --sidebar-bg: rgba(20, 5, 5, 0.85);
+  --sidebar-bg: rgba(15, 5, 5, 0.95);
   --sidebar-border: rgba(255, 100, 100, 0.15);
   --sidebar-text-main: #f8fafc;
   --sidebar-text-muted: #9ca3af;
@@ -20,14 +20,12 @@
   padding: 1rem;
   z-index: 100;
   font-family: 'Inter', system-ui, sans-serif;
-}
-
-.glass-panel-sidebar {
   background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-right: 1px solid var(--sidebar-border);
   box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
 }
 
 .admin-sidebar * {
@@ -41,6 +39,7 @@
   justify-content: space-between;
 }
 
+/* User Card Design */
 .sidebar-user-card {
   display: flex;
   align-items: center;
@@ -58,19 +57,6 @@
   border-radius: 10px;
   image-rendering: pixelated;
   box-shadow: 0 4px 10px rgba(220, 38, 38, 0.2);
-}
-
-.sidebar-avatar span {
-  display: flex;
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--sidebar-accent-dark), var(--sidebar-accent));
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.2rem;
-  color: #fff;
 }
 
 .sidebar-user-meta {
@@ -97,6 +83,7 @@
   font-weight: 600;
 }
 
+/* Navigation Links */
 .sidebar-nav {
   flex: 1;
   overflow-y: auto;
@@ -139,34 +126,36 @@
   color: var(--sidebar-text-main);
 }
 
+/* Aktív állapot - Szigorúan csak piros */
 .sidebar-link.is-active {
-  background: var(--sidebar-active-bg);
-  color: var(--sidebar-text-main);
-  border-left: 3px solid var(--sidebar-accent);
+  background: var(--sidebar-active-bg) !important;
+  color: var(--sidebar-text-main) !important;
+  border-left: 3px solid var(--sidebar-accent) !important;
   font-weight: 600;
 }
 
-.sidebar-link.is-active .sidebar-icon {
-  color: var(--sidebar-accent);
-}
-
-.sidebar-link-disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.sidebar-link-disabled:hover {
-  background: transparent;
-  color: var(--sidebar-text-muted);
-}
-
-.sidebar-icon {
-  font-size: 22px;
-  transition: color 0.2s ease;
-}
-
+/* Ikonok kényszerített fixálása a szövegek helyett */
 .material-symbols-rounded {
-  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  font-family: 'Material Symbols Rounded' !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 22px !important;
+  line-height: 1;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  color: var(--sidebar-text-muted);
+  flex-shrink: 0;
+}
+
+.sidebar-link.is-active .material-symbols-rounded {
+  color: var(--sidebar-accent) !important;
 }
 
 .sidebar-link-text {
@@ -176,6 +165,7 @@
   justify-content: space-between;
 }
 
+/* Pills (Beta, Hamarosan) */
 .sidebar-pill {
   font-size: 0.65rem;
   padding: 2px 8px;
@@ -196,6 +186,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Sidebar Footer */
 .sidebar-footer {
   border-top: 1px solid var(--sidebar-border);
   padding-top: 15px;
@@ -221,10 +212,6 @@
   color: var(--sidebar-text-main);
 }
 
-.sidebar-footer-icon {
-  font-size: 20px;
-}
-
 .sidebar-footer-link-danger {
   color: #fca5a5;
 }
@@ -234,6 +221,7 @@
   color: var(--sidebar-accent);
 }
 
+/* Scrollbar Design */
 .sidebar-nav::-webkit-scrollbar {
   width: 4px;
 }
@@ -247,12 +235,14 @@
   border-radius: 999px;
 }
 
+/* Ripple effect */
 .ripple {
   position: absolute;
   border-radius: 50%;
   transform: scale(0);
   animation: ripple-animation 0.6s linear;
   background-color: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
 }
 
 @keyframes ripple-animation {
@@ -267,7 +257,6 @@
     transform: translateX(-100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-
   .admin-sidebar.mobile-open {
     transform: translateX(0);
   }

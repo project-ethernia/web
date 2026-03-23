@@ -33,7 +33,7 @@ $currentNav = $currentNav ?? '';
             <div class="sidebar-section">
                 <div class="sidebar-section-label">Tartalom</div>
                 <a href="/admin/news.php" class="sidebar-link ripple-btn<?= $currentNav === 'news' ? ' is-active' : ''; ?>">
-                    <span class="material-symbols-rounded sidebar-icon">newspaper</span>
+                    <span class="material-symbols-rounded">newspaper</span>
                     <span class="sidebar-link-text">Hírek kezelése</span>
                 </a>
                 <a href="/admin/admins.php" class="sidebar-link ripple-btn<?= $currentNav === 'admins' ? ' is-active' : ''; ?>">
