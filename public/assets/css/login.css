@@ -1,9 +1,0 @@
-@import url('/assets/css/register.css?v=<?= time(); ?>');
-
-.auth-title.auth-title-center {
-  margin-bottom: 16px;
-}
-
-#login-form {
-  margin-top: 8px;
-}
