@@ -1,16 +1,24 @@
+/// <reference lib="dom" />
+
 document.addEventListener("DOMContentLoaded", () => {
-  const pwdInput = document.getElementById("password") as HTMLInputElement | null;
-  const toggleBtn = document.getElementById("btn-toggle-password") as HTMLButtonElement | null;
+  const form = document.getElementById("admin-login-form") as HTMLFormElement | null;
+  
+  if (form) {
+    let isSubmitting = false;
 
-  if (toggleBtn && pwdInput) {
-    toggleBtn.addEventListener("click", () => {
-      const isPassword = pwdInput.type === "password";
-      pwdInput.type = isPassword ? "text" : "password";
+    form.addEventListener("submit", (e: SubmitEvent) => {
+      if (isSubmitting) {
+        e.preventDefault();
+        return;
+      }
+
+      isSubmitting = true;
+
+      const btn = form.querySelector("button[type='submit']") as HTMLButtonElement | null;
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Hitelesítés folyamatban...";
+      }
     });
-  }
-
-  const userInput = document.getElementById("username") as HTMLInputElement | null;
-  if (userInput) {
-    userInput.focus();
   }
 });

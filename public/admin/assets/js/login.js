@@ -1,15 +1,20 @@
 "use strict";
+/// <reference lib="dom" />
 document.addEventListener("DOMContentLoaded", function () {
-    var pwdInput = document.getElementById("password");
-    var toggleBtn = document.getElementById("btn-toggle-password");
-    if (toggleBtn && pwdInput) {
-        toggleBtn.addEventListener("click", function () {
-            var isPassword = pwdInput.type === "password";
-            pwdInput.type = isPassword ? "text" : "password";
+    var form = document.getElementById("admin-login-form");
+    if (form) {
+        var isSubmitting_1 = false;
+        form.addEventListener("submit", function (e) {
+            if (isSubmitting_1) {
+                e.preventDefault();
+                return;
+            }
+            isSubmitting_1 = true;
+            var btn = form.querySelector("button[type='submit']");
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "Hitelesítés folyamatban...";
+            }
         });
-    }
-    var userInput = document.getElementById("username");
-    if (userInput) {
-        userInput.focus();
     }
 });
