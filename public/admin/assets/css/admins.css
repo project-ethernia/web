@@ -1,209 +1,220 @@
-.cell-id {
-  font-variant-numeric: tabular-nums;
-  font-size: 0.8rem;
-  opacity: 0.8;
+/* --- Fejléc és panelek --- */
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
 }
 
-.cell-username {
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
+.admin-title {
+    margin: 0 0 0.5rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, #fff 0%, #fca5a5 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.self-pill {
-  font-size: 0.7rem;
-  padding: 0.05rem 0.5rem;
-  border-radius: 999px;
-  background: rgba(59, 130, 246, 0.18);
-  color: #bfdbfe;
+.admin-subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
 }
 
-.role-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background: rgba(30, 64, 175, 0.6);
-  border: 1px solid rgba(129, 140, 248, 0.7);
+.admin-content {
+    padding: 1.5rem;
 }
 
-.role-owner {
-  background: rgba(88, 28, 135, 0.8);
-  border-color: rgba(192, 132, 252, 0.9);
-  color: #f5f3ff;
+/* --- Táblázat dizájn --- */
+.table-container {
+    overflow-x: auto;
 }
 
-.role-admin {
-  background: rgba(185, 28, 28, 0.7);
-  border-color: rgba(248, 113, 113, 0.9);
-  color: #fee2e2;
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
 }
 
-.role-mod {
-  background: rgba(5, 150, 105, 0.7);
-  border-color: rgba(74, 222, 128, 0.9);
-  color: #dcfce7;
+.data-table th, .data-table td {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--glass-border);
+    vertical-align: middle;
 }
 
-.cell-active {
-  text-align: center;
+.data-table th {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
 }
 
-.cell-actions {
-  display: flex;
-  gap: 0.4rem;
+.data-table tbody tr {
+    transition: var(--transition);
 }
 
-.admin-header-actions {
-  display: flex;
-  align-items: center;
+.data-table tbody tr:hover {
+    background: rgba(220, 38, 38, 0.08);
 }
 
-#admin-modal .modal-content h2 {
-  margin-bottom: 0.9rem;
+.data-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
-.form-hint {
-  margin: 0.15rem 0 0;
-  font-size: 0.75rem;
-  opacity: 0.75;
+.cell-order { color: var(--text-muted); font-weight: 600; }
+.cell-title { color: #fff; font-weight: 600; display: flex; align-items: center; }
+.cell-date { color: var(--text-muted); font-size: 0.85rem; }
+.cell-actions { white-space: nowrap; }
+.text-right { text-align: right; }
+
+/* Jelvények fallback stílusa */
+.badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.05em;
 }
 
-.badge-success { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+/* --- Aktív/Inaktív Kapcsoló Gomb (Toggle) --- */
+.toggle-btn {
+    width: 44px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    outline: none;
+}
 
-#admin-modal .modal-container {
+.toggle-circle {
+    width: 18px;
+    height: 18px;
+    background: #9ca3af;
+    border-radius: 50%;
+    position: absolute;
+    left: 2px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toggle-btn.active {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 0.4);
+}
+
+.toggle-btn.active .toggle-circle {
+    background: #22c55e;
+    left: calc(100% - 20px);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+}
+
+/* --- Üres állapot (ha nincs admin) --- */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+}
+
+.empty-state h3 {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+/* --- Felugró Ablak (Modal) --- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: var(--transition);
+}
+
+.modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-container {
+    width: 90%;
     max-width: 500px;
+    padding: 2.5rem 2rem 2rem;
+    position: relative;
+    transform: translateY(30px);
+    transition: var(--transition);
 }
 
-.cell-id {
-  font-variant-numeric: tabular-nums;
-  font-size: 0.8rem;
-  opacity: 0.8;
+.modal-overlay.open .modal-container {
+    transform: translateY(0);
 }
 
-.cell-username {
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 2rem;
+    cursor: pointer;
+    transition: color 0.2s;
 }
 
-.self-pill {
-  font-size: 0.7rem;
-  padding: 0.05rem 0.5rem;
-  border-radius: 999px;
-  background: rgba(59, 130, 246, 0.18);
-  color: #bfdbfe;
+.modal-close:hover { color: #fff; }
+
+.modal-title {
+    margin: 0 0 1.5rem;
+    font-size: 1.4rem;
+    color: #fff;
+    font-weight: 700;
 }
 
-.role-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background: rgba(30, 64, 175, 0.6);
-  border: 1px solid rgba(129, 140, 248, 0.7);
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--glass-border);
 }
 
-.role-owner {
-  background: rgba(88, 28, 135, 0.8);
-  border-color: rgba(192, 132, 252, 0.9);
-  color: #f5f3ff;
+.meta-info {
+    font-size: 0.75rem;
+    color: var(--text-muted);
 }
 
-.role-admin {
-  background: rgba(185, 28, 28, 0.7);
-  border-color: rgba(248, 113, 113, 0.9);
-  color: #fee2e2;
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
 }
 
-.role-mod {
-  background: rgba(5, 150, 105, 0.7);
-  border-color: rgba(74, 222, 128, 0.9);
-  color: #dcfce7;
-}
-
-.cell-active {
-  text-align: center;
-}
-
-.cell-actions {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.admin-header-actions {
-  display: flex;
-  align-items: center;
-}
-
-#admin-modal .modal-content h2 {
-  margin-bottom: 0.9rem;
-}
-
-.form-hint {
-  margin: 0.15rem 0 0;
-  font-size: 0.75rem;
-  opacity: 0.75;
-}
-
-.badge-success { 
-  background: rgba(34, 197, 94, 0.2); 
-  color: #22c55e; 
-  border: 1px solid rgba(34, 197, 94, 0.3); 
-}
-
-#admin-modal .modal-container {
-    max-width: 500px;
-}
-
-/* =========================================================
-   HIÁNYZÓ MODAL FORM STÍLUSOK (Jelszómező javítása)
-   ========================================================= */
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  font-size: 0.8rem;
-  color: #fca5a5;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.form-group input[type="text"],
-.form-group input[type="password"],
-.form-group input[type="number"],
-.form-group select,
-.form-group textarea {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 100, 100, 0.15);
-  border-radius: 8px;
-  padding: 0.8rem 1rem;
-  color: #f8fafc;
-  font-family: inherit;
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
-  outline: none;
-  width: 100%;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  border-color: #dc2626;
-  box-shadow: 0 0 10px rgba(220, 38, 38, 0.25);
-  background: rgba(0, 0, 0, 0.6);
+.error-text {
+    color: var(--danger);
+    font-size: 0.85rem;
+    font-weight: 600;
 }
