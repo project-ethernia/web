@@ -1,25 +1,16 @@
 <?php
-session_start();
+require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/../database.php';
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
-    header('Location: /admin/login.php');
-    exit;
-}
-
-$role = !empty($_SESSION['admin_role']) ? $_SESSION['admin_role'] : '';
-if (!in_array($role, ['owner', 'admin'], true)) {
+if (!in_array($_SESSION['admin_role'], ['owner', 'admin'], true)) {
     http_response_code(403);
     echo 'Nincs jogosultságod a napló megtekintéséhez.';
     exit;
 }
-
-$currentUsername = !empty($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
-
-require_once __DIR__ . '/../database.php';
 
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
@@ -27,8 +18,7 @@ function h($str) {
 
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 
-$sql = "SELECT id, admin_id, username, action, context, ip_address, user_agent, created_at
-        FROM admin_logs";
+$sql = "SELECT id, admin_id, username, action, context, ip_address, user_agent, created_at FROM admin_logs";
 $params = [];
 
 if ($q !== '') {
@@ -41,7 +31,9 @@ $sql .= " ORDER BY created_at DESC LIMIT 300";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $logs = $stmt->fetchAll();
-$totalLogs = is_array($logs) ? count($logs) : 0;
+$totalLogs = count($logs);
+
+$currentNav = 'logs';
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -49,136 +41,108 @@ $totalLogs = is_array($logs) ? count($logs) : 0;
     <meta charset="UTF-8">
     <title>ETHERNIA Admin - Műveletnapló</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@100..700&display=block">
     <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/logs.css?v=<?= time(); ?>">
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;500&display=swap">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet">
 </head>
 <body class="admin-body">
-<div class="admin-layout">
 
-    <?php
-    $currentNav = 'logs';
-    require __DIR__ . '/_sidebar.php';
-    ?>
+<div class="admin-layout">
+    <?php require __DIR__ . '/_sidebar.php'; ?>
 
     <main class="admin-main">
-        <header class="admin-page-header">
-            <div>
-                <h1 class="admin-page-title">Admin műveletnapló</h1>
-                <p class="admin-page-subtitle">
-                    Bejelentkezések, kijelentkezések, hír- és admin módosítások, IP címekkel és böngészőinfóval.
-                </p>
+        <header class="admin-header glass-panel">
+            <div class="header-text">
+                <h1 class="admin-title">Műveletnapló</h1>
+                <p class="admin-subtitle">Rendszeresemények, módosítások és biztonsági naplózás.</p>
             </div>
-            <div class="pill-counter">
-                Összesen <?= (int)$totalLogs; ?> bejegyzés
+            <div class="header-actions">
+                <div class="stat-pill glass-panel">
+                    <span>Összesen: <strong><?= (int)$totalLogs; ?></strong> bejegyzés</span>
+                </div>
             </div>
         </header>
 
-        <section class="logs-section">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-header-flex">
-                        <h2 class="logs-card-title">Szűrés</h2>
-                    </div>
+        <section class="admin-content glass-panel">
+            <form class="logs-filters" method="get">
+                <div class="search-box">
+                    <span class="material-symbols-rounded search-icon">search</span>
+                    <input type="text" name="q" placeholder="Keresés admin vagy esemény alapján..." value="<?= h($q); ?>">
+                    <button type="submit" class="btn btn-glow-red">Szűrés</button>
                 </div>
-                <div class="card-body">
-                    <form class="modlog-filters logs-filters" method="get" action="/admin/logs.php">
-                        <div class="filter-group filter-group-logs">
-                            <label for="logs-search">Keresés admin név vagy esemény alapján</label>
-                            <div class="logs-search-row">
-                                <input
-                                    type="text"
-                                    id="logs-search"
-                                    name="q"
-                                    placeholder="Keresés admin név vagy esemény alapján..."
-                                    value="<?= h($q); ?>"
-                                >
-                                <button type="submit" class="btn btn-primary">Keresés</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+            </form>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-header-flex">
-                        <h2 class="logs-card-title">Napló bejegyzések</h2>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <?php if (empty($logs)): ?>
-                        <p class="table-empty">Még nincs naplózott esemény.</p>
-                    <?php else: ?>
-                        <div class="table-wrapper">
-                            <table class="table logs-table">
-                                <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Admin</th>
-                                    <th>Esemény</th>
-                                    <th>IP</th>
-                                    <th>Böngésző</th>
-                                    <th>Időpont</th>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Adminisztrátor</th>
+                            <th>Esemény</th>
+                            <th>IP Cím</th>
+                            <th>Időpont</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($logs)): ?>
+                            <tr><td colspan="5" class="text-center">Nincs találat a naplóban.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($logs as $log): ?>
+                                <?php
+                                $actionText = $log['action'];
+                                $lower = mb_strtolower($actionText, 'UTF-8');
+                                $pillClass = 'badge-default';
+                                $pillText = 'EGYÉB';
+
+                                if (strpos($lower, 'sikeres') !== false) { $pillClass = 'badge-mod'; $pillText = 'LOGIN'; }
+                                elseif (strpos($lower, 'sikertelen') !== false) { $pillClass = 'badge-danger'; $pillText = 'HIBA'; }
+                                elseif (strpos($lower, 'hír') !== false) { $pillClass = 'badge-info'; $pillText = 'HÍR'; }
+                                elseif (strpos($lower, 'admin') !== false) { $pillClass = 'badge-owner'; $pillText = 'ADMIN'; }
+                                ?>
+                                <tr class="log-row" data-context='<?= h($log['context'] ?: '{}'); ?>' data-ua="<?= h($log['user_agent'] ?: 'Nincs adat'); ?>">
+                                    <td class="cell-order">#<?= (int)$log['id']; ?></td>
+                                    <td class="cell-title"><?= h($log['username'] ?: 'Ismeretlen'); ?></td>
+                                    <td>
+                                        <div class="log-action-cell">
+                                            <span class="badge <?= $pillClass; ?>"><?= $pillText; ?></span>
+                                            <span class="action-desc"><?= h($actionText); ?></span>
+                                        </div>
+                                    </td>
+                                    <td class="cell-date"><?= h($log['ip_address']); ?></td>
+                                    <td class="cell-date"><?= h($log['created_at']); ?></td>
                                 </tr>
-                                </thead>
-                                <tbody>
-                                <?php foreach ($logs as $log): ?>
-                                    <?php
-                                    $actionText = $log['action'];
-                                    $pillClass = 'log-pill-other';
-                                    $pillText = 'EGYÉB';
-
-                                    $lower = mb_strtolower($actionText, 'UTF-8');
-                                    if (strpos($lower, 'sikeres admin bejelentkezés') !== false) {
-                                        $pillClass = 'log-pill-login';
-                                        $pillText = 'LOGIN';
-                                    } elseif (strpos($lower, 'sikertelen admin bejelentkezés') !== false) {
-                                        $pillClass = 'log-pill-fail';
-                                        $pillText = 'FAIL';
-                                    } elseif (strpos($lower, 'kijelentkezés') !== false) {
-                                        $pillClass = 'log-pill-logout';
-                                        $pillText = 'LOGOUT';
-                                    } elseif (strpos($lower, 'hír') !== false) {
-                                        $pillClass = 'log-pill-news';
-                                        $pillText = 'NEWS';
-                                    } elseif (strpos($lower, 'admin') !== false) {
-                                        $pillClass = 'log-pill-admin';
-                                        $pillText = 'ADMIN';
-                                    }
-
-                                    $uaFull = $log['user_agent'] ?? '';
-                                    $uaShort = mb_substr($uaFull, 0, 70, 'UTF-8');
-                                    if (mb_strlen($uaFull, 'UTF-8') > 70) {
-                                        $uaShort .= '…';
-                                    }
-                                    ?>
-                                    <tr>
-                                        <td class="cell-id">#<?= (int)$log['id']; ?></td>
-                                        <td class="cell-admin"><?= h($log['username'] ?: 'Ismeretlen'); ?></td>
-                                        <td class="cell-action">
-                                            <span class="log-pill <?= $pillClass; ?>"><?= $pillText; ?></span>
-                                            <span class="cell-action-text"><?= h($actionText); ?></span>
-                                        </td>
-                                        <td class="cell-ip"><?= h($log['ip_address']); ?></td>
-                                        <td class="cell-ua" title="<?= h($uaFull); ?>">
-                                            <?= h($uaShort); ?>
-                                        </td>
-                                        <td class="cell-date"><?= h($log['created_at']); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endif; ?>
-                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </section>
     </main>
 </div>
+
+<div class="modal-overlay" id="log-modal">
+    <div class="modal-container glass-panel">
+        <button type="button" class="modal-close">&times;</button>
+        <div class="modal-form">
+            <h2 class="modal-title">Bejegyzés részletei</h2>
+            <div class="log-details">
+                <div class="detail-item">
+                    <label>Böngésző (User Agent):</label>
+                    <div id="log-ua" class="detail-value glass-panel"></div>
+                </div>
+                <div class="detail-item">
+                    <label>Nyers Context (JSON):</label>
+                    <pre id="log-context" class="detail-value glass-panel"></pre>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" id="log-close-btn">Bezárás</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/admin/assets/js/logs.js?v=<?= time(); ?>"></script>
 </body>
 </html>
