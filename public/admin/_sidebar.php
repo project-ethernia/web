@@ -17,8 +17,8 @@ $currentNav = $currentNav ?? '';
             <div class="sidebar-user-meta">
                 <div class="sidebar-user-label">Vezérlőpult</div>
                 <div class="sidebar-user-name"><?= htmlspecialchars($adminName, ENT_QUOTES, 'UTF-8'); ?></div>
-                <div class="sidebar-user-role"><?= htmlspecialchars(strtoupper($adminRole), ENT_QUOTES, 'UTF-8'); ?></div>
-            </div>
+                <div class="sidebar-user-role" style="color: <?= ADMIN_ROLES[$adminRole]['color'] ?? '#ef4444'; ?>;">
+    <?= htmlspecialchars(mb_strtoupper(getRoleName($adminRole), 'UTF-8'), ENT_QUOTES, 'UTF-8'); ?>            </div>
         </div>
 
         <nav class="sidebar-nav">

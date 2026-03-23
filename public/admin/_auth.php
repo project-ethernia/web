@@ -8,6 +8,8 @@ if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
     exit;
 }
 
+require_once __DIR__ . '/config/roles.php';
+
 $currentUser = !empty($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
 $adminId = !empty($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0;
 ?>

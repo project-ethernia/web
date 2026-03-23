@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Felhasználónév és jelszó szükséges.');
             }
 
-            if (!in_array($role, ['owner', 'admin', 'mod'], true)) {
+            if (!array_key_exists($role, ADMIN_ROLES)) {
                 $role = 'admin';
             }
 
@@ -64,26 +64,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pdo,
                     $currentUserId,
                     $currentUsername,
-                    "Új admin felhasználó létrehozása: '{$username}' ({$role})",
-                    [
-                        'new_admin_id' => $id,
-                        'new_role'     => $role,
-                    ]
+                    "Új admin felhasználó létrehozása: '{$username}' (" . getRoleName($role) . ")",
+                    ['new_admin_id' => $id, 'new_role' => $role]
                 );
             } catch (Throwable $e) {}
 
-            echo json_encode([
-                'ok'   => true,
-                'id'   => $id,
-                'user' => [
-                    'id'         => $id,
-                    'username'   => $username,
-                    'role'       => $role,
-                    'is_active'  => 1,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'last_login' => null,
-                ],
-            ]);
+            echo json_encode(['ok' => true, 'id' => $id]);
             exit;
         }
 
@@ -91,20 +77,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id       = isset($_POST['id']) ? (int)$_POST['id'] : 0;
             $isActive = isset($_POST['is_active']) ? (int)$_POST['is_active'] : 0;
 
-            if ($id <= 0) {
-                throw new Exception('Hiányzó admin ID.');
-            }
-
-            if ($id === $currentUserId && $isActive === 0) {
-                throw new Exception('Nem inaktiválhatod saját magad.');
-            }
+            if ($id <= 0) throw new Exception('Hiányzó admin ID.');
+            if ($id === $currentUserId && $isActive === 0) throw new Exception('Nem inaktiválhatod saját magad.');
 
             $stmt = $pdo->prepare('SELECT username, role FROM admins WHERE id = :id');
             $stmt->execute([':id' => $id]);
             $row = $stmt->fetch();
-            if (!$row) {
-                throw new Exception('Admin nem található.');
-            }
+            
+            if (!$row) throw new Exception('Admin nem található.');
 
             $targetName = $row['username'];
 
@@ -113,10 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $stmt = $pdo->prepare('UPDATE admins SET is_active = :a WHERE id = :id');
-            $stmt->execute([
-                ':a'  => $isActive,
-                ':id' => $id,
-            ]);
+            $stmt->execute([':a' => $isActive, ':id' => $id]);
 
             $stateText = $isActive ? 'aktiválva' : 'inaktiválva';
 
@@ -126,20 +103,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $currentUserId,
                     $currentUsername,
                     "Admin fiók {$stateText}: '{$targetName}'",
-                    [
-                        'target_admin_id' => $id,
-                        'target_username' => $targetName,
-                        'is_active'       => $isActive,
-                        'state'           => $stateText,
-                    ]
+                    ['target_admin_id' => $id, 'target_username' => $targetName, 'is_active' => $isActive, 'state' => $stateText]
                 );
             } catch (Throwable $e) {}
 
-            echo json_encode([
-                'ok'        => true,
-                'id'        => $id,
-                'is_active' => $isActive,
-            ]);
+            echo json_encode(['ok' => true, 'id' => $id, 'is_active' => $isActive]);
             exit;
         }
 
@@ -147,37 +115,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id       = isset($_POST['id']) ? (int)$_POST['id'] : 0;
             $password = isset($_POST['password']) ? $_POST['password'] : '';
 
-            if ($id <= 0 || $password === '') {
-                throw new Exception('Hiányzó ID vagy jelszó.');
-            }
+            if ($id <= 0 || $password === '') throw new Exception('Hiányzó ID vagy jelszó.');
 
             $stmt = $pdo->prepare('SELECT username FROM admins WHERE id = :id');
             $stmt->execute([':id' => $id]);
             $row = $stmt->fetch();
-            if (!$row) {
-                throw new Exception('Admin nem található.');
-            }
+            if (!$row) throw new Exception('Admin nem található.');
             $targetName = $row['username'];
 
             $hash = password_hash($password, PASSWORD_BCRYPT);
 
             $stmt = $pdo->prepare('UPDATE admins SET password_hash = :h WHERE id = :id');
-            $stmt->execute([
-                ':h'  => $hash,
-                ':id' => $id,
-            ]);
+            $stmt->execute([':h' => $hash, ':id' => $id]);
 
             try {
-                log_admin_action(
-                    $pdo,
-                    $currentUserId,
-                    $currentUsername,
-                    "Admin jelszó módosítása: '{$targetName}'",
-                    [
-                        'target_admin_id' => $id,
-                        'target_username' => $targetName,
-                    ]
-                );
+                log_admin_action($pdo, $currentUserId, $currentUsername, "Admin jelszó módosítása: '{$targetName}'", ['target_admin_id' => $id, 'target_username' => $targetName]);
             } catch (Throwable $e) {}
 
             echo json_encode(['ok' => true, 'id' => $id]);
@@ -193,11 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 try {
-    $stmt = $pdo->query('
-        SELECT id, username, role, is_active, created_at, last_login
-        FROM admins
-        ORDER BY role = "owner" DESC, username ASC
-    ');
+    $stmt = $pdo->query('SELECT id, username, role, is_active, created_at, last_login FROM admins ORDER BY role = "owner" DESC, username ASC');
     $admins = $stmt->fetchAll();
 } catch (Exception $e) {
     die('Adatbázis hiba: ' . $e->getMessage());
@@ -214,7 +162,6 @@ $currentNav = 'admins';
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@100..700&display=block">
     <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
-    <link rel="stylesheet" href="/admin/assets/css/news.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/admins.css?v=<?= time(); ?>">
 </head>
 <body class="admin-body">
@@ -238,7 +185,6 @@ $currentNav = 'admins';
                 <div class="empty-state">
                     <div class="empty-icon">🛡️</div>
                     <h3>Nincs megjeleníthető admin.</h3>
-                    <p>Hozd létre az első további adminisztrátort!</p>
                     <button type="button" class="btn btn-glow-red" id="btn-add-admin-empty">+ Hozz létre egy fiókot</button>
                 </div>
             <?php else: ?>
@@ -257,27 +203,18 @@ $currentNav = 'admins';
                         </thead>
                         <tbody>
                             <?php foreach ($admins as $a): ?>
-                                <?php
-                                $role = $a['role'];
-                                $roleClass = 'badge-default';
-                                if ($role === 'owner') $roleClass = 'badge-event';
-                                elseif ($role === 'admin') $roleClass = 'badge-info';
-                                elseif ($role === 'mod') $roleClass = 'badge-test';
-                                $active = (int)$a['is_active'] === 1;
-                                ?>
-                                <tr data-id="<?= (int)$a['id']; ?>"
-                                    data-username="<?= h($a['username']); ?>"
-                                    data-role="<?= h($a['role']); ?>"
-                                    data-is_active="<?= (int)$a['is_active']; ?>">
-                                    
+                                <?php $active = (int)$a['is_active'] === 1; ?>
+                                <tr data-id="<?= (int)$a['id']; ?>" data-username="<?= h($a['username']); ?>" data-role="<?= h($a['role']); ?>" data-is_active="<?= (int)$a['is_active']; ?>">
                                     <td class="cell-order">#<?= (int)$a['id']; ?></td>
                                     <td class="cell-title">
                                         <?= h($a['username']); ?>
                                         <?php if ((int)$a['id'] === $currentUserId): ?>
-                                            <span class="badge badge-success" style="margin-left:5px;font-size:0.65rem;">TE</span>
+                                            <span class="badge" style="background:rgba(34,197,94,0.15); color:#86efac; border:1px solid rgba(34,197,94,0.3); margin-left:5px;">TE</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td><span class="badge <?= $roleClass; ?>"><?= strtoupper(h($role)); ?></span></td>
+                                    
+                                    <td><?= getRoleBadge($a['role']); ?></td>
+                                    
                                     <td>
                                         <button type="button" class="toggle-btn <?= $active ? 'active' : ''; ?>" data-id="<?= (int)$a['id']; ?>" data-visible="<?= $active ? '1' : '0'; ?>">
                                             <div class="toggle-circle"></div>
@@ -319,9 +256,9 @@ $currentNav = 'admins';
             <div class="form-group">
                 <label for="admin-role">Jogosultsági szint</label>
                 <select id="admin-role" name="role">
-                    <option value="admin">Admin (Általános)</option>
-                    <option value="mod">Moderátor (Korlátozott)</option>
-                    <option value="owner">Tulajdonos (Minden jog)</option>
+                    <?php foreach (ADMIN_ROLES as $key => $roleData): ?>
+                        <option value="<?= h($key); ?>"><?= h($roleData['name']); ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
