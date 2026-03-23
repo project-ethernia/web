@@ -9,13 +9,13 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 function h($str) {
-    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8');
 }
 
 $currentUserId   = isset($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0;
 $currentUsername = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
 
-// Egyszerű CRUD logika (hozzáadás, szerkesztés, törlés, láthatóság)
+// CRUD logika
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
     try {
@@ -24,20 +24,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'add' || $action === 'edit') {
             $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
             $title = trim($_POST['title'] ?? '');
-            $content = trim($_POST['content'] ?? '');
+            $content = trim($_POST['content'] ?? ''); // Ez megy a full_text-be
             $category = $_POST['category'] ?? 'INFO';
             $isVisible = isset($_POST['is_visible']) ? 1 : 0;
 
             if ($title === '' || $content === '') throw new Exception('Cím és tartalom kötelező!');
             if (!array_key_exists($category, NEWS_CATEGORIES)) $category = 'INFO';
 
+            // Automatikus mezők generálása a DB-hez
+            $tag = ucfirst(strtolower($category)); // Pl: INFO -> Info
+            $shortText = mb_strimwidth(strip_tags($content), 0, 100, '...'); // Automatikus előnézet
+            $dateDisplay = date('Y. m. d.');
+
             if ($action === 'add') {
-                $stmt = $pdo->prepare('INSERT INTO news (title, content, category, is_visible) VALUES (?, ?, ?, ?)');
-                $stmt->execute([$title, $content, $category, $isVisible]);
+                $stmt = $pdo->prepare('INSERT INTO news (title, category, tag, date_display, short_text, full_text, is_visible, author, order_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)');
+                $stmt->execute([$title, $category, $tag, $dateDisplay, $shortText, $content, $isVisible, $currentUsername]);
                 log_admin_action($pdo, $currentUserId, $currentUsername, "Új hír létrehozása: '{$title}'");
             } else {
-                $stmt = $pdo->prepare('UPDATE news SET title=?, content=?, category=?, is_visible=? WHERE id=?');
-                $stmt->execute([$title, $content, $category, $isVisible, $id]);
+                $stmt = $pdo->prepare('UPDATE news SET title=?, category=?, tag=?, short_text=?, full_text=?, is_visible=? WHERE id=?');
+                $stmt->execute([$title, $category, $tag, $shortText, $content, $isVisible, $id]);
                 log_admin_action($pdo, $currentUserId, $currentUsername, "Hír szerkesztése: '{$title}'");
             }
             echo json_encode(['ok' => true]);
@@ -141,31 +146,26 @@ $currentNav = 'news';
                         <tbody>
                             <?php foreach ($newsList as $news): ?>
                                 <?php 
-                                    // BIZTONSÁGI VIZSGÁLATOK (hogy ne kapjunk Undefined array key hibát)
-                                    $newsId = (int)($news['id'] ?? 0);
-                                    $newsTitle = $news['title'] ?? 'Névtelen hír';
-                                    $newsContent = $news['content'] ?? $news['text'] ?? ''; // Hátha text a neve
-                                    $newsCategory = $news['category'] ?? 'INFO';
                                     $visible = (int)($news['is_visible'] ?? 0) === 1; 
-                                    
-                                    $shortContent = mb_strimwidth(strip_tags($newsContent), 0, 50, '...');
+                                    $fullText = $news['full_text'] ?? '';
+                                    $shortText = $news['short_text'] ?? mb_strimwidth(strip_tags($fullText), 0, 50, '...');
                                 ?>
-                                <tr class="news-row" data-id="<?= $newsId; ?>" data-title="<?= h($newsTitle); ?>" data-content="<?= h($newsContent); ?>" data-category="<?= h($newsCategory); ?>" data-visible="<?= $visible ? '1' : '0'; ?>">
-                                    <td class="cell-order"><?= $newsId; ?></td>
+                                <tr class="news-row" data-id="<?= $news['id']; ?>" data-title="<?= h($news['title']); ?>" data-content="<?= h($fullText); ?>" data-category="<?= h($news['category'] ?? 'INFO'); ?>" data-visible="<?= $visible ? '1' : '0'; ?>">
+                                    <td class="cell-order"><?= (int)$news['id']; ?></td>
                                     <td>
-                                        <div class="news-title"><?= h($newsTitle); ?></div>
-                                        <div class="news-preview"><?= h($shortContent); ?></div>
+                                        <div class="news-title"><?= h($news['title']); ?></div>
+                                        <div class="news-preview"><?= h($shortText); ?></div>
                                     </td>
-                                    <td><?= getCategoryBadge($newsCategory); ?></td>
+                                    <td><?= getCategoryBadge($news['category'] ?? 'INFO'); ?></td>
                                     <td class="cell-date"><?= date('Y. m. d. H:i', strtotime($news['created_at'] ?? 'now')); ?></td>
                                     <td>
-                                        <button type="button" class="toggle-btn <?= $visible ? 'active' : ''; ?> toggle-visibility" data-id="<?= $newsId; ?>" data-visible="<?= $visible ? '1' : '0'; ?>">
+                                        <button type="button" class="toggle-btn <?= $visible ? 'active' : ''; ?> toggle-visibility" data-id="<?= $news['id']; ?>" data-visible="<?= $visible ? '1' : '0'; ?>">
                                             <div class="toggle-circle"></div>
                                         </button>
                                     </td>
                                     <td class="text-right cell-actions">
                                         <button type="button" class="btn btn-outline btn-sm btn-edit-news">Szerkeszt</button>
-                                        <button type="button" class="btn btn-danger btn-sm btn-delete-news" data-id="<?= $newsId; ?>">Töröl</button>
+                                        <button type="button" class="btn btn-danger btn-sm btn-delete-news" data-id="<?= $news['id']; ?>">Töröl</button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
