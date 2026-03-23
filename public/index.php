@@ -152,7 +152,7 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
         <?php endif; ?>
 
         <div style="text-align: center; margin-top: 3rem;">
-            <a href="/hirek.php" class="btn btn-outline" style="padding: 0.8rem 2rem; font-size: 1rem;">Összes hír megtekintése <span class="arrow">→</span></a>
+            <a href="/news.php" class="btn btn-outline" style="padding: 0.8rem 2rem; font-size: 1rem;">Összes hír megtekintése <span class="arrow">→</span></a>
         </div> 
 
     </section>
