@@ -1,24 +1,11 @@
 <?php
-session_start();
+require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/../database.php';
+require_once __DIR__ . '/log.php';
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
-if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
-    header('Location: /admin/login.php');
-    exit;
-}
-
-$currentUser = 'Ismeretlen';
-if (!empty($_SESSION['admin_username'])) {
-    $currentUser = $_SESSION['admin_username'];
-} elseif (!empty($_SESSION['username'])) {
-    $currentUser = $_SESSION['username'];
-}
-
-require_once __DIR__ . '/../database.php';
-require_once __DIR__ . '/log.php';
 
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
@@ -28,8 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json; charset=utf-8');
 
     $action = isset($_POST['action']) ? $_POST['action'] : '';
-
-    $adminId   = !empty($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0;
     $adminName = $currentUser;
 
     try {
@@ -86,7 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($isNew) {
                 $id = (int)$pdo->lastInsertId();
-
                 try {
                     log_admin_action(
                         $pdo,
@@ -100,8 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             'order_idx' => $order_index,
                         ]
                     );
-                } catch (Throwable $e) {
-                }
+                } catch (Throwable $e) {}
             } else {
                 try {
                     log_admin_action(
@@ -116,8 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             'order_idx' => $order_index,
                         ]
                     );
-                } catch (Throwable $e) {
-                }
+                } catch (Throwable $e) {}
             }
 
             echo json_encode(['ok' => true, 'id' => $id]);
@@ -148,8 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "Hír törlése: " . ($titleForLog ? "'{$titleForLog}'" : "ID={$id}"),
                     ['news_id' => $id]
                 );
-            } catch (Throwable $e) {
-            }
+            } catch (Throwable $e) {}
 
             echo json_encode(['ok' => true]);
             exit;
@@ -190,8 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'state'   => $stateText,
                     ]
                 );
-            } catch (Throwable $e) {
-            }
+            } catch (Throwable $e) {}
 
             echo json_encode(['ok' => true, 'id' => $id, 'is_visible' => $isVisible]);
             exit;
@@ -246,7 +226,7 @@ $currentNav = 'news';
                     <span class="divider">|</span>
                     <span>Látható: <strong class="text-success"><?= (int)$visibleNews; ?></strong></span>
                 </div>
-                <button type="button" class="btn btn-glow" id="btn-add-news">+ Új hír</button>
+                <button type="button" class="btn btn-glow-red" id="btn-add-news">+ Új hír</button>
             </div>
         </header>
 
@@ -256,7 +236,7 @@ $currentNav = 'news';
                     <div class="empty-icon">📰</div>
                     <h3>Nincs még egyetlen hír sem.</h3>
                     <p>Kattints a gombra, és oszd meg az első frissítést a játékosokkal!</p>
-                    <button type="button" class="btn btn-glow" id="btn-add-news-empty">+ Első hír létrehozása</button>
+                    <button type="button" class="btn btn-glow-red" id="btn-add-news-empty">+ Első hír létrehozása</button>
                 </div>
             <?php else: ?>
                 <div class="table-container">
@@ -374,7 +354,7 @@ $currentNav = 'news';
                 <div class="action-buttons">
                     <span class="error-text" id="news-error" hidden></span>
                     <button type="button" class="btn btn-outline" id="news-cancel">Mégse</button>
-                    <button type="submit" class="btn btn-glow">Mentés</button>
+                    <button type="submit" class="btn btn-glow-red">Mentés</button>
                 </div>
             </div>
         </form>

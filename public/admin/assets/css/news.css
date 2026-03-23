@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --bg-deep: #05050A;
-  --glass-bg: rgba(20, 20, 35, 0.45);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --accent-primary: #8b5cf6;
-  --accent-secondary: #a855f7;
-  --accent-glow: rgba(139, 92, 246, 0.4);
+  --bg-deep: #0a0505;
+  --glass-bg: rgba(35, 10, 10, 0.45);
+  --glass-border: rgba(255, 100, 100, 0.15);
+  --accent-primary: #dc2626;
+  --accent-secondary: #ef4444;
+  --accent-glow: rgba(220, 38, 38, 0.4);
   --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --input-bg: rgba(0, 0, 0, 0.3);
+  --text-muted: #fca5a5;
+  --input-bg: rgba(0, 0, 0, 0.4);
   --danger: #ef4444;
   --success: #22c55e;
   --radius-sm: 8px;
@@ -21,14 +21,7 @@
 body.admin-body {
   margin: 0;
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: var(--bg-deep);
   color: var(--text-main);
-  min-height: 100vh;
-}
-
-.admin-layout {
-  display: flex;
-  min-height: 100vh;
 }
 
 .admin-main {
@@ -65,7 +58,7 @@ body.admin-body {
   font-size: 1.8rem;
   font-weight: 700;
   letter-spacing: 0.05em;
-  background: linear-gradient(135deg, #fff 0%, #a855f7 100%);
+  background: linear-gradient(135deg, #fff 0%, #fca5a5 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -114,15 +107,15 @@ body.admin-body {
   justify-content: center;
 }
 
-.btn-glow {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+.btn-glow-red {
+  background: linear-gradient(135deg, #b91c1c, #ef4444);
   color: #fff;
   box-shadow: 0 4px 15px var(--accent-glow);
 }
 
-.btn-glow:hover {
+.btn-glow-red:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px var(--accent-glow);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
 }
 
 .btn-outline {
@@ -176,11 +169,11 @@ body.admin-body {
 }
 
 .data-table tbody tr { transition: var(--transition); }
-.data-table tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+.data-table tbody tr:hover { background: rgba(255, 255, 255, 0.05); }
 .data-table tbody tr:last-child td { border-bottom: none; }
 
 .cell-order { color: var(--text-muted); font-weight: 600; }
-.cell-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.2rem; }
+.cell-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.2rem; color: #fff; }
 .cell-desc { color: var(--text-muted); font-size: 0.8rem; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cell-date { color: var(--text-muted); font-size: 0.85rem; }
 .text-right { text-align: right; }
@@ -193,10 +186,10 @@ body.admin-body {
   text-transform: uppercase;
 }
 
-.badge-default { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
-.badge-event { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
-.badge-info { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
-.badge-test { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+.badge-default { background: rgba(255, 100, 100, 0.1); color: #fca5a5; }
+.badge-event { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.badge-info { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+.badge-test { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
 
 .toggle-btn {
   width: 44px;
@@ -213,7 +206,7 @@ body.admin-body {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--text-muted);
+  background: rgba(255, 255, 255, 0.5);
   position: absolute;
   top: 2px;
   left: 2px;
@@ -232,11 +225,10 @@ body.admin-body {
 
 .cell-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
 
-/* Modal Styles */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
@@ -275,7 +267,7 @@ body.admin-body {
 
 .modal-form { padding: 2rem; }
 
-.modal-title { margin: 0 0 1.5rem; font-size: 1.4rem; }
+.modal-title { margin: 0 0 1.5rem; font-size: 1.4rem; color: #fff; }
 
 .form-grid {
   display: grid;
@@ -322,7 +314,7 @@ body.admin-body {
 .form-group select:focus,
 .form-group textarea:focus {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.2);
 }
 
 .form-group textarea { resize: vertical; }
