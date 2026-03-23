@@ -4,12 +4,13 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 $adminName = $_SESSION['admin_username'] ?? 'Ismeretlen';
-$adminRole = $_SESSION['admin_role'] ?? 'ADMIN';
+$adminRole = $_SESSION['admin_role'] ?? 'admin';
 
 $currentNav = $currentNav ?? '';
 ?>
 <aside class="admin-sidebar glass-panel-sidebar" id="admin-sidebar">
     <div class="sidebar-inner">
+        
         <div class="sidebar-user-card">
             <div class="sidebar-avatar">
                 <img src="https://minotar.net/helm/<?= htmlspecialchars($adminName, ENT_QUOTES, 'UTF-8'); ?>/44.png" alt="Skin" style="border-radius: 10px; width: 44px; height: 44px; image-rendering: pixelated;">
@@ -17,10 +18,11 @@ $currentNav = $currentNav ?? '';
             <div class="sidebar-user-meta">
                 <div class="sidebar-user-label">Vezérlőpult</div>
                 <div class="sidebar-user-name"><?= htmlspecialchars($adminName, ENT_QUOTES, 'UTF-8'); ?></div>
-                <div class="sidebar-user-role" style="color: <?= ADMIN_ROLES[$adminRole]['color'] ?? '#ef4444'; ?>;">
-    <?= htmlspecialchars(mb_strtoupper(getRoleName($adminRole), 'UTF-8'), ENT_QUOTES, 'UTF-8'); ?>            </div>
-        </div>
-
+                <div class="sidebar-user-role" style="color: <?= defined('ADMIN_ROLES') && isset(ADMIN_ROLES[$adminRole]) ? ADMIN_ROLES[$adminRole]['color'] : '#ef4444'; ?>;">
+                    <?= htmlspecialchars(mb_strtoupper(function_exists('getRoleName') ? getRoleName($adminRole) : $adminRole, 'UTF-8'), ENT_QUOTES, 'UTF-8'); ?>
+                </div>
+            </div>
+        </div> 
         <nav class="sidebar-nav">
             <div class="sidebar-section">
                 <div class="sidebar-section-label">Áttekintés</div>
@@ -33,7 +35,7 @@ $currentNav = $currentNav ?? '';
             <div class="sidebar-section">
                 <div class="sidebar-section-label">Tartalom</div>
                 <a href="/admin/news.php" class="sidebar-link ripple-btn<?= $currentNav === 'news' ? ' is-active' : ''; ?>">
-                    <span class="material-symbols-rounded">newspaper</span>
+                    <span class="material-symbols-rounded sidebar-icon">newspaper</span>
                     <span class="sidebar-link-text">Hírek kezelése</span>
                 </a>
                 <a href="/admin/admins.php" class="sidebar-link ripple-btn<?= $currentNav === 'admins' ? ' is-active' : ''; ?>">
@@ -93,4 +95,5 @@ $currentNav = $currentNav ?? '';
         </div>
     </div>
 </aside>
+
 <?php require __DIR__ . '/_chat.php'; ?>
