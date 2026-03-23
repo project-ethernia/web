@@ -1,25 +1,25 @@
 <?php
 const ADMIN_ROLES = [
     'owner' => [
-        'name'   => 'Tulajdonos',
+        'name'   => 'OWNER',
         'power'  => 100,
-        'color'  => '#fbbf24',
-        'bg'     => 'rgba(245, 158, 11, 0.15)',
-        'border' => 'rgba(245, 158, 11, 0.3)'
+        'color'  => '#a524fb',
+        'bg'     => 'rgba(147, 0, 167, 0.84)',
+        'border' => 'rgba(108, 0, 117, 0.89)'
     ],
     'admin' => [
-        'name'   => 'Adminisztrátor',
+        'name'   => 'ADMIN',
         'power'  => 50,
-        'color'  => '#fca5a5',
-        'bg'     => 'rgba(239, 68, 68, 0.15)',
-        'border' => 'rgba(239, 68, 68, 0.3)'
+        'color'  => '#df0b0bd3',
+        'bg'     => 'rgba(194, 8, 8, 0.84)',
+        'border' => 'rgba(126, 3, 3, 0.89)'
     ],
     'mod' => [
-        'name'   => 'Moderátor',
+        'name'   => 'MOD',
         'power'  => 10,
-        'color'  => '#86efac',
-        'bg'     => 'rgba(34, 197, 94, 0.15)',
-        'border' => 'rgba(34, 197, 94, 0.3)'
+        'color'  => '#25f0ff',
+        'bg'     => 'rgba(6, 205, 219, 0.84)',
+        'border' => 'rgba(11, 111, 141, 0.89)'
     ]
 ];
 
