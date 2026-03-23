@@ -141,25 +141,31 @@ $currentNav = 'news';
                         <tbody>
                             <?php foreach ($newsList as $news): ?>
                                 <?php 
-                                    $visible = (int)$news['is_visible'] === 1; 
-                                    $shortContent = mb_strimwidth(strip_tags($news['content']), 0, 50, '...');
+                                    // BIZTONSÁGI VIZSGÁLATOK (hogy ne kapjunk Undefined array key hibát)
+                                    $newsId = (int)($news['id'] ?? 0);
+                                    $newsTitle = $news['title'] ?? 'Névtelen hír';
+                                    $newsContent = $news['content'] ?? $news['text'] ?? ''; // Hátha text a neve
+                                    $newsCategory = $news['category'] ?? 'INFO';
+                                    $visible = (int)($news['is_visible'] ?? 0) === 1; 
+                                    
+                                    $shortContent = mb_strimwidth(strip_tags($newsContent), 0, 50, '...');
                                 ?>
-                                <tr class="news-row" data-id="<?= $news['id']; ?>" data-title="<?= h($news['title']); ?>" data-content="<?= h($news['content']); ?>" data-category="<?= h($news['category']); ?>" data-visible="<?= $news['is_visible']; ?>">
-                                    <td class="cell-order"><?= (int)$news['id']; ?></td>
+                                <tr class="news-row" data-id="<?= $newsId; ?>" data-title="<?= h($newsTitle); ?>" data-content="<?= h($newsContent); ?>" data-category="<?= h($newsCategory); ?>" data-visible="<?= $visible ? '1' : '0'; ?>">
+                                    <td class="cell-order"><?= $newsId; ?></td>
                                     <td>
-                                        <div class="news-title"><?= h($news['title']); ?></div>
+                                        <div class="news-title"><?= h($newsTitle); ?></div>
                                         <div class="news-preview"><?= h($shortContent); ?></div>
                                     </td>
-                                    <td><?= getCategoryBadge($news['category']); ?></td>
-                                    <td class="cell-date"><?= date('Y. m. d. H:i', strtotime($news['created_at'])); ?></td>
+                                    <td><?= getCategoryBadge($newsCategory); ?></td>
+                                    <td class="cell-date"><?= date('Y. m. d. H:i', strtotime($news['created_at'] ?? 'now')); ?></td>
                                     <td>
-                                        <button type="button" class="toggle-btn <?= $visible ? 'active' : ''; ?> toggle-visibility" data-id="<?= $news['id']; ?>" data-visible="<?= $visible ? '1' : '0'; ?>">
+                                        <button type="button" class="toggle-btn <?= $visible ? 'active' : ''; ?> toggle-visibility" data-id="<?= $newsId; ?>" data-visible="<?= $visible ? '1' : '0'; ?>">
                                             <div class="toggle-circle"></div>
                                         </button>
                                     </td>
                                     <td class="text-right cell-actions">
                                         <button type="button" class="btn btn-outline btn-sm btn-edit-news">Szerkeszt</button>
-                                        <button type="button" class="btn btn-danger btn-sm btn-delete-news" data-id="<?= $news['id']; ?>">Töröl</button>
+                                        <button type="button" class="btn btn-danger btn-sm btn-delete-news" data-id="<?= $newsId; ?>">Töröl</button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
