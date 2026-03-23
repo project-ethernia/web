@@ -1,14 +1,11 @@
 <?php
-session_start();
+require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/../database.php';
+require_once __DIR__ . '/log.php';
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
-if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
-    header('Location: /admin/login.php');
-    exit;
-}
 
 if (empty($_SESSION['admin_role']) || $_SESSION['admin_role'] !== 'owner') {
     http_response_code(403);
@@ -19,9 +16,6 @@ if (empty($_SESSION['admin_role']) || $_SESSION['admin_role'] !== 'owner') {
 $currentUserId   = isset($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0;
 $currentUsername = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
 
-require_once __DIR__ . '/../database.php';
-require_once __DIR__ . '/log.php';
-
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
@@ -31,9 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $action = isset($_POST['action']) ? $_POST['action'] : '';
-
-        $currentAdminId   = isset($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : 0;
-        $currentAdminName = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Ismeretlen';
 
         if ($action === 'add_admin') {
             $username = isset($_POST['username']) ? trim($_POST['username']) : '';
@@ -48,16 +39,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $role = 'admin';
             }
 
-            $stmt = $pdo->prepare('SELECT id FROM admin_users WHERE username = :u LIMIT 1');
+            $stmt = $pdo->prepare('SELECT id FROM admins WHERE username = :u LIMIT 1');
             $stmt->execute([':u' => $username]);
             if ($stmt->fetch()) {
                 throw new Exception('Ez a felhasználónév már foglalt.');
             }
 
-            $hash = password_hash($password, PASSWORD_DEFAULT);
+            $hash = password_hash($password, PASSWORD_BCRYPT);
 
             $stmt = $pdo->prepare('
-                INSERT INTO admin_users (username, password_hash, role, is_active)
+                INSERT INTO admins (username, password_hash, role, is_active)
                 VALUES (:u, :h, :r, 1)
             ');
             $stmt->execute([
@@ -71,16 +62,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 log_admin_action(
                     $pdo,
-                    $currentAdminId,
-                    $currentAdminName,
+                    $currentUserId,
+                    $currentUsername,
                     "Új admin felhasználó létrehozása: '{$username}' ({$role})",
                     [
                         'new_admin_id' => $id,
                         'new_role'     => $role,
                     ]
                 );
-            } catch (Throwable $e) {
-            }
+            } catch (Throwable $e) {}
 
             echo json_encode([
                 'ok'   => true,
@@ -105,11 +95,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Hiányzó admin ID.');
             }
 
-            if ($id === $currentAdminId && $isActive === 0) {
+            if ($id === $currentUserId && $isActive === 0) {
                 throw new Exception('Nem inaktiválhatod saját magad.');
             }
 
-            $stmt = $pdo->prepare('SELECT username, role FROM admin_users WHERE id = :id');
+            $stmt = $pdo->prepare('SELECT username, role FROM admins WHERE id = :id');
             $stmt->execute([':id' => $id]);
             $row = $stmt->fetch();
             if (!$row) {
@@ -118,11 +108,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $targetName = $row['username'];
 
-            if ($row['role'] === 'owner' && $id !== $currentAdminId) {
+            if ($row['role'] === 'owner' && $id !== $currentUserId) {
                 throw new Exception('Másik owner fiókját nem inaktiválhatod.');
             }
 
-            $stmt = $pdo->prepare('UPDATE admin_users SET is_active = :a WHERE id = :id');
+            $stmt = $pdo->prepare('UPDATE admins SET is_active = :a WHERE id = :id');
             $stmt->execute([
                 ':a'  => $isActive,
                 ':id' => $id,
@@ -133,8 +123,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 log_admin_action(
                     $pdo,
-                    $currentAdminId,
-                    $currentAdminName,
+                    $currentUserId,
+                    $currentUsername,
                     "Admin fiók {$stateText}: '{$targetName}'",
                     [
                         'target_admin_id' => $id,
@@ -143,8 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'state'           => $stateText,
                     ]
                 );
-            } catch (Throwable $e) {
-            }
+            } catch (Throwable $e) {}
 
             echo json_encode([
                 'ok'        => true,
@@ -162,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Hiányzó ID vagy jelszó.');
             }
 
-            $stmt = $pdo->prepare('SELECT username FROM admin_users WHERE id = :id');
+            $stmt = $pdo->prepare('SELECT username FROM admins WHERE id = :id');
             $stmt->execute([':id' => $id]);
             $row = $stmt->fetch();
             if (!$row) {
@@ -170,9 +159,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $targetName = $row['username'];
 
-            $hash = password_hash($password, PASSWORD_DEFAULT);
+            $hash = password_hash($password, PASSWORD_BCRYPT);
 
-            $stmt = $pdo->prepare('UPDATE admin_users SET password_hash = :h WHERE id = :id');
+            $stmt = $pdo->prepare('UPDATE admins SET password_hash = :h WHERE id = :id');
             $stmt->execute([
                 ':h'  => $hash,
                 ':id' => $id,
@@ -181,16 +170,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 log_admin_action(
                     $pdo,
-                    $currentAdminId,
-                    $currentAdminName,
+                    $currentUserId,
+                    $currentUsername,
                     "Admin jelszó módosítása: '{$targetName}'",
                     [
                         'target_admin_id' => $id,
                         'target_username' => $targetName,
                     ]
                 );
-            } catch (Throwable $e) {
-            }
+            } catch (Throwable $e) {}
 
             echo json_encode(['ok' => true, 'id' => $id]);
             exit;
@@ -207,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 try {
     $stmt = $pdo->query('
         SELECT id, username, role, is_active, created_at, last_login
-        FROM admin_users
+        FROM admins
         ORDER BY role = "owner" DESC, username ASC
     ');
     $admins = $stmt->fetchAll();
@@ -221,117 +209,87 @@ $currentNav = 'admins';
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <title>ETHERNIA Admin – Admin felhasználók</title>
+    <title>ETHERNIA Admin – Hozzáférés kezelése</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
+    <link rel="stylesheet" href="/admin/assets/css/news.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/admins.css?v=<?= time(); ?>">
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;500&display=swap">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 </head>
 <body class="admin-body">
-<div class="admin-layout">
 
+<div class="admin-layout">
     <?php require __DIR__ . '/_sidebar.php'; ?>
 
     <main class="admin-main">
-        <header class="admin-header">
-            <div>
-                <h1 class="admin-title">Admin felhasználók</h1>
-                <p class="admin-subtitle">
-                    Itt tudsz új adminokat felvenni, meglévőket inaktiválni vagy jelszót cserélni.
-                </p>
+        <header class="admin-header glass-panel">
+            <div class="header-text">
+                <h1 class="admin-title">Hozzáférés</h1>
+                <p class="admin-subtitle">Itt tudsz új adminokat felvenni, inaktiválni vagy jelszót cserélni.</p>
             </div>
-            <div class="admin-header-actions">
-                <button type="button" class="btn btn-primary" id="btn-add-admin">
-                    + Új admin
-                </button>
+            <div class="header-actions">
+                <button type="button" class="btn btn-glow-red" id="btn-add-admin">+ Új admin</button>
             </div>
         </header>
 
-        <section class="admin-section">
+        <section class="admin-content glass-panel">
             <?php if (empty($admins)): ?>
-                <div class="admin-empty">
-                    <p>Még nincs egyetlen admin felhasználó sem.</p>
-                    <button type="button" class="btn btn-primary" id="btn-add-admin-empty">
-                        + Hozz létre egy admin fiókot
-                    </button>
+                <div class="empty-state">
+                    <div class="empty-icon">🛡️</div>
+                    <h3>Nincs megjeleníthető admin.</h3>
+                    <p>Hozd létre az első további adminisztrátort!</p>
+                    <button type="button" class="btn btn-glow-red" id="btn-add-admin-empty">+ Hozz létre egy fiókot</button>
                 </div>
             <?php else: ?>
-                <div class="admin-table-wrapper">
-                    <table class="admin-table">
+                <div class="table-container">
+                    <table class="data-table">
                         <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Felhasználónév</th>
-                            <th>Rang</th>
-                            <th>Aktív</th>
-                            <th>Létrehozva</th>
-                            <th>Utolsó belépés</th>
-                            <th>Műveletek</th>
-                        </tr>
+                            <tr>
+                                <th>ID</th>
+                                <th>Felhasználónév</th>
+                                <th>Rang</th>
+                                <th>Aktív</th>
+                                <th>Létrehozva</th>
+                                <th>Utolsó belépés</th>
+                                <th class="text-right">Műveletek</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($admins as $a): ?>
-                            <tr
-                                data-id="<?php echo (int)$a['id']; ?>"
-                                data-username="<?php echo h($a['username']); ?>"
-                                data-role="<?php echo h($a['role']); ?>"
-                                data-is_active="<?php echo (int)$a['is_active']; ?>"
-                                data-created_at="<?php echo h($a['created_at']); ?>"
-                                data-last_login="<?php echo h($a['last_login']); ?>"
-                            >
-                                <td class="cell-id"><?php echo (int)$a['id']; ?></td>
-                                <td class="cell-username">
-                                    <?php echo h($a['username']); ?>
-                                    <?php if ($a['id'] === $currentUserId): ?>
-                                        <span class="self-pill">te</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="cell-role">
-                                    <?php
-                                    $role  = $a['role'];
-                                    $class = 'role-pill';
-                                    if ($role === 'owner') {
-                                        $class .= ' role-owner';
-                                    } elseif ($role === 'admin') {
-                                        $class .= ' role-admin';
-                                    } elseif ($role === 'mod') {
-                                        $class .= ' role-mod';
-                                    }
-                                    ?>
-                                    <span class="<?php echo $class; ?>">
-                                        <?php echo strtoupper(h($role)); ?>
-                                    </span>
-                                </td>
-                                <td class="cell-active">
-                                    <?php $active = (int)$a['is_active'] === 1; ?>
-                                    <button
-                                        type="button"
-                                        class="visibility-toggle <?php echo $active ? 'is-on' : 'is-off'; ?>"
-                                        data-id="<?php echo (int)$a['id']; ?>"
-                                        data-visible="<?php echo $active ? '1' : '0'; ?>"
-                                        aria-pressed="<?php echo $active ? 'true' : 'false'; ?>"
-                                        title="<?php echo $active ? 'Aktív – kattints az inaktiváláshoz' : 'Inaktív – kattints az aktiváláshoz'; ?>"
-                                    >
-                                        <span class="toggle-knob"></span>
-                                    </button>
-                                </td>
-                                <td class="cell-date">
-                                    <?php echo h($a['created_at']); ?>
-                                </td>
-                                <td class="cell-date">
-                                    <?php echo h($a['last_login'] ? $a['last_login'] : '–'); ?>
-                                </td>
-                                <td class="cell-actions">
-                                    <button type="button" class="btn btn-sm btn-secondary btn-reset-pw">
-                                        Jelszó csere
-                                    </button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
+                            <?php foreach ($admins as $a): ?>
+                                <?php
+                                $role = $a['role'];
+                                $roleClass = 'badge-default';
+                                if ($role === 'owner') $roleClass = 'badge-event';
+                                elseif ($role === 'admin') $roleClass = 'badge-info';
+                                elseif ($role === 'mod') $roleClass = 'badge-test';
+                                $active = (int)$a['is_active'] === 1;
+                                ?>
+                                <tr data-id="<?= (int)$a['id']; ?>"
+                                    data-username="<?= h($a['username']); ?>"
+                                    data-role="<?= h($a['role']); ?>"
+                                    data-is_active="<?= (int)$a['is_active']; ?>">
+                                    
+                                    <td class="cell-order">#<?= (int)$a['id']; ?></td>
+                                    <td class="cell-title">
+                                        <?= h($a['username']); ?>
+                                        <?php if ((int)$a['id'] === $currentUserId): ?>
+                                            <span class="badge badge-success" style="margin-left:5px;font-size:0.65rem;">TE</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><span class="badge <?= $roleClass; ?>"><?= strtoupper(h($role)); ?></span></td>
+                                    <td>
+                                        <button type="button" class="toggle-btn <?= $active ? 'active' : ''; ?>" data-id="<?= (int)$a['id']; ?>" data-visible="<?= $active ? '1' : '0'; ?>">
+                                            <div class="toggle-circle"></div>
+                                        </button>
+                                    </td>
+                                    <td class="cell-date"><?= h($a['created_at']); ?></td>
+                                    <td class="cell-date"><?= h($a['last_login'] ? $a['last_login'] : 'Még nem lépett be'); ?></td>
+                                    <td class="text-right cell-actions">
+                                        <button type="button" class="btn btn-outline btn-sm btn-reset-pw">Jelszó csere</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
@@ -340,19 +298,17 @@ $currentNav = 'admins';
     </main>
 </div>
 
-<div class="modal" id="admin-modal" aria-hidden="true">
-    <div class="modal-backdrop"></div>
-    <div class="modal-dialog" role="dialog" aria-modal="true">
-        <button type="button" class="modal-close" aria-label="Bezárás">×</button>
-
-        <form class="modal-content" id="admin-form">
-            <h2>Új admin felhasználó</h2>
-
+<div class="modal-overlay" id="admin-modal">
+    <div class="modal-container glass-panel">
+        <button type="button" class="modal-close" aria-label="Bezárás">&times;</button>
+        <form id="admin-form" class="modal-form">
+            <h2 class="modal-title">Új admin létrehozása</h2>
+            
             <input type="hidden" name="action" value="add_admin">
 
             <div class="form-group">
                 <label for="admin-username">Felhasználónév</label>
-                <input type="text" id="admin-username" name="username" required>
+                <input type="text" id="admin-username" name="username" required autocomplete="off">
             </div>
 
             <div class="form-group">
@@ -361,26 +317,20 @@ $currentNav = 'admins';
             </div>
 
             <div class="form-group">
-                <label for="admin-role">Szerep</label>
+                <label for="admin-role">Jogosultsági szint</label>
                 <select id="admin-role" name="role">
-                    <option value="admin">admin</option>
-                    <option value="mod">mod</option>
-                    <option value="owner">owner</option>
+                    <option value="admin">Admin (Általános)</option>
+                    <option value="mod">Moderátor (Korlátozott)</option>
+                    <option value="owner">Tulajdonos (Minden jog)</option>
                 </select>
-                <p class="form-hint">
-                    Owner: teljes jogkör • admin: általános admin • mod: korlátozott (későbbre).
-                </p>
             </div>
 
-            <p class="form-meta">
-                Az új admin azonnal be tud majd lépni a /admin/login felületen.
-            </p>
-
-            <div class="modal-actions">
-                <p class="form-error" id="admin-error" hidden></p>
-                <div class="actions-right">
-                    <button type="button" class="btn btn-secondary" id="admin-cancel">Mégse</button>
-                    <button type="submit" class="btn btn-primary">Létrehozás</button>
+            <div class="modal-footer">
+                <div class="meta-info">Az új admin azonnal be tud jelentkezni.</div>
+                <div class="action-buttons">
+                    <span class="error-text" id="admin-error" hidden></span>
+                    <button type="button" class="btn btn-outline" id="admin-cancel">Mégse</button>
+                    <button type="submit" class="btn btn-glow-red">Létrehozás</button>
                 </div>
             </div>
         </form>

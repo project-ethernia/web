@@ -1,10 +1,10 @@
 "use strict";
+/// <reference lib="dom" />
 document.addEventListener("DOMContentLoaded", function () {
     var modal = document.getElementById("admin-modal");
     var form = document.getElementById("admin-form");
     var errorEl = document.getElementById("admin-error");
     var closeBtn = modal ? modal.querySelector(".modal-close") : null;
-    var backdrop = modal ? modal.querySelector(".modal-backdrop") : null;
     var cancelBtn = document.getElementById("admin-cancel");
     var addBtn = document.getElementById("btn-add-admin");
     var addBtnEmpty = document.getElementById("btn-add-admin-empty");
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
         addBtn.addEventListener("click", openModal);
     if (addBtnEmpty)
         addBtnEmpty.addEventListener("click", openModal);
-    var closeElements = [closeBtn, backdrop, cancelBtn];
+    var closeElements = [closeBtn, cancelBtn];
     closeElements.forEach(function (el) {
         if (!el)
             return;
@@ -40,19 +40,27 @@ document.addEventListener("DOMContentLoaded", function () {
             closeModal();
         });
     });
+    if (modal) {
+        modal.addEventListener("click", function (e) {
+            if (e.target === modal)
+                closeModal();
+        });
+    }
     document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") {
+        if (e.key === "Escape")
             closeModal();
-        }
     });
     if (form) {
         form.addEventListener("submit", function (e) {
             e.preventDefault();
-            if (!form)
-                return;
             if (errorEl) {
                 errorEl.hidden = true;
                 errorEl.textContent = "";
+            }
+            var submitBtn = form.querySelector("button[type='submit']");
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Létrehozás...";
             }
             var formData = new FormData(form);
             fetch("admins.php", {
@@ -64,28 +72,32 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!data.ok) {
                     if (errorEl) {
                         errorEl.hidden = false;
-                        errorEl.textContent = data.error || "Ismeretlen hiba történt az admin létrehozásakor.";
+                        errorEl.textContent = data.error || "Ismeretlen hiba.";
                     }
                     else {
                         alert(data.error || "Ismeretlen hiba.");
+                    }
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = "Létrehozás";
                     }
                     return;
                 }
                 window.location.reload();
             })
-                .catch(function (err) {
-                console.error(err);
+                .catch(function () {
                 if (errorEl) {
                     errorEl.hidden = false;
-                    errorEl.textContent = "Hálózati hiba történt a mentés során.";
+                    errorEl.textContent = "Hálózati hiba történt.";
                 }
-                else {
-                    alert("Hálózati hiba történt.");
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Létrehozás";
                 }
             });
         });
     }
-    document.querySelectorAll(".visibility-toggle").forEach(function (btn) {
+    document.querySelectorAll(".toggle-btn").forEach(function (btn) {
         btn.addEventListener("click", function () {
             var id = btn.dataset.id;
             if (!id)
@@ -103,25 +115,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(function (res) { return res.json(); })
                 .then(function (data) {
                 if (!data.ok) {
-                    alert(data.error || "Hiba az aktiválás/inaktiválás során.");
+                    alert(data.error || "Hiba az állapot módosításakor.");
                     return;
                 }
                 btn.dataset.visible = String(next);
-                btn.setAttribute("aria-pressed", next ? "true" : "false");
-                btn.classList.toggle("is-on", !!next);
-                btn.classList.toggle("is-off", !next);
-                btn.title = next
-                    ? "Aktív – kattints az inaktiváláshoz"
-                    : "Inaktív – kattints az aktiváláshoz";
+                btn.classList.toggle("active", !!next);
                 var tr = btn.closest("tr");
-                if (tr) {
+                if (tr)
                     tr.dataset.is_active = String(next);
-                }
             })
-                .catch(function (err) {
-                console.error(err);
-                alert("Hálózati hiba történt az állapot módosítása közben.");
-            });
+                .catch(function () { return alert("Hálózati hiba történt."); });
         });
     });
     document.querySelectorAll(".btn-reset-pw").forEach(function (btn) {
@@ -133,13 +136,11 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!id)
                 return;
             var username = tr.dataset.username || id;
-            var newPw = window.prompt("Új jelszó beállítása ehhez az adminhoz: " +
-                username +
-                "\n\nÍrd be az új jelszót:");
+            var newPw = window.prompt("Új jelszó beállítása ehhez: " + username);
             if (!newPw)
                 return;
             if (newPw.length < 4) {
-                alert("A jelszó legyen legalább 4 karakter.");
+                alert("A jelszó legyen legalább 4 karakter!");
                 return;
             }
             var formData = new FormData();
@@ -156,12 +157,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     alert(data.error || "Hiba a jelszó csere során.");
                     return;
                 }
-                alert("Jelszó sikeresen módosítva ehhez az adminhoz: " + username);
+                alert("Jelszó sikeresen módosítva!");
             })
-                .catch(function (err) {
-                console.error(err);
-                alert("Hálózati hiba történt a jelszó módosítása közben.");
-            });
+                .catch(function () { return alert("Hálózati hiba a jelszó módosításakor."); });
         });
     });
 });

@@ -1,13 +1,13 @@
+/// <reference lib="dom" />
+
 document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("admin-modal") as HTMLElement | null;
   const form = document.getElementById("admin-form") as HTMLFormElement | null;
   const errorEl = document.getElementById("admin-error") as HTMLElement | null;
   const closeBtn = modal ? (modal.querySelector(".modal-close") as HTMLElement | null) : null;
-  const backdrop = modal ? (modal.querySelector(".modal-backdrop") as HTMLElement | null) : null;
   const cancelBtn = document.getElementById("admin-cancel") as HTMLElement | null;
   const addBtn = document.getElementById("btn-add-admin") as HTMLElement | null;
   const addBtnEmpty = document.getElementById("btn-add-admin-empty") as HTMLElement | null;
-
   const usernameInput = document.getElementById("admin-username") as HTMLInputElement | null;
 
   function openModal(): void {
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (addBtn) addBtn.addEventListener("click", openModal);
   if (addBtnEmpty) addBtnEmpty.addEventListener("click", openModal);
 
-  const closeElements: (HTMLElement | null)[] = [closeBtn, backdrop, cancelBtn];
+  const closeElements: (HTMLElement | null)[] = [closeBtn, cancelBtn];
   closeElements.forEach((el) => {
     if (!el) return;
     el.addEventListener("click", (e: Event) => {
@@ -38,20 +38,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+  }
+
   document.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
-      closeModal();
-    }
+    if (e.key === "Escape") closeModal();
   });
 
   if (form) {
     form.addEventListener("submit", (e: Event) => {
       e.preventDefault();
-      if (!form) return;
-
+      
       if (errorEl) {
         errorEl.hidden = true;
         errorEl.textContent = "";
+      }
+
+      const submitBtn = form.querySelector("button[type='submit']") as HTMLButtonElement | null;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Létrehozás...";
       }
 
       const formData = new FormData(form);
@@ -65,27 +74,32 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!data.ok) {
             if (errorEl) {
               errorEl.hidden = false;
-              errorEl.textContent = data.error || "Ismeretlen hiba történt az admin létrehozásakor.";
+              errorEl.textContent = data.error || "Ismeretlen hiba.";
             } else {
               alert(data.error || "Ismeretlen hiba.");
+            }
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = "Létrehozás";
             }
             return;
           }
           window.location.reload();
         })
-        .catch((err) => {
-          console.error(err);
+        .catch(() => {
           if (errorEl) {
             errorEl.hidden = false;
-            errorEl.textContent = "Hálózati hiba történt a mentés során.";
-          } else {
-            alert("Hálózati hiba történt.");
+            errorEl.textContent = "Hálózati hiba történt.";
+          }
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Létrehozás";
           }
         });
     });
   }
 
-  document.querySelectorAll<HTMLButtonElement>(".visibility-toggle").forEach((btn) => {
+  document.querySelectorAll<HTMLButtonElement>(".toggle-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.dataset.id;
       if (!id) return;
@@ -105,27 +119,17 @@ document.addEventListener("DOMContentLoaded", () => {
         .then((res) => res.json())
         .then((data) => {
           if (!data.ok) {
-            alert(data.error || "Hiba az aktiválás/inaktiválás során.");
+            alert(data.error || "Hiba az állapot módosításakor.");
             return;
           }
 
           btn.dataset.visible = String(next);
-          btn.setAttribute("aria-pressed", next ? "true" : "false");
-          btn.classList.toggle("is-on", !!next);
-          btn.classList.toggle("is-off", !next);
-          btn.title = next
-            ? "Aktív – kattints az inaktiváláshoz"
-            : "Inaktív – kattints az aktiváláshoz";
+          btn.classList.toggle("active", !!next);
 
           const tr = btn.closest("tr") as HTMLTableRowElement | null;
-          if (tr) {
-            tr.dataset.is_active = String(next);
-          }
+          if (tr) tr.dataset.is_active = String(next);
         })
-        .catch((err) => {
-          console.error(err);
-          alert("Hálózati hiba történt az állapot módosítása közben.");
-        });
+        .catch(() => alert("Hálózati hiba történt."));
     });
   });
 
@@ -139,15 +143,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const username = tr.dataset.username || id;
 
-      const newPw = window.prompt(
-        "Új jelszó beállítása ehhez az adminhoz: " +
-          username +
-          "\n\nÍrd be az új jelszót:"
-      );
+      const newPw = window.prompt("Új jelszó beállítása ehhez: " + username);
       if (!newPw) return;
 
       if (newPw.length < 4) {
-        alert("A jelszó legyen legalább 4 karakter.");
+        alert("A jelszó legyen legalább 4 karakter!");
         return;
       }
 
@@ -166,12 +166,9 @@ document.addEventListener("DOMContentLoaded", () => {
             alert(data.error || "Hiba a jelszó csere során.");
             return;
           }
-          alert("Jelszó sikeresen módosítva ehhez az adminhoz: " + username);
+          alert("Jelszó sikeresen módosítva!");
         })
-        .catch((err) => {
-          console.error(err);
-          alert("Hálózati hiba történt a jelszó módosítása közben.");
-        });
+        .catch(() => alert("Hálózati hiba a jelszó módosításakor."));
     });
   });
 });
