@@ -93,3 +93,4 @@ $currentNav = $currentNav ?? '';
         </div>
     </div>
 </aside>
+<?php require __DIR__ . '/_chat.php'; ?>
