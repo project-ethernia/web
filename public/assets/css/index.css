@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap');
 
 :root {
   --bg-deep: #05050A;
@@ -41,7 +42,6 @@ a {
   text-decoration: none;
 }
 
-/* Glassmorphism Helper */
 .glass-panel {
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
@@ -50,7 +50,6 @@ a {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-/* --- Hero Section --- */
 .hero {
   position: relative;
   padding: 3rem 1.5rem 2rem;
@@ -74,15 +73,17 @@ a {
 }
 
 .hero-title {
-  font-size: 3.5rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  background: linear-gradient(135deg, #ffffff 0%, #a855f7 100%);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  background: linear-gradient(to right, #a855f7, #ec4899, #8b5cf6);
   -webkit-background-clip: text !important;
   background-clip: text !important;
   color: transparent !important;
-  filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.3));
-  margin-bottom: 0.2rem;
+  filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.4));
+  margin-bottom: 0.5rem;
   display: inline-block;
 }
 
@@ -282,10 +283,9 @@ a {
   transform: translateX(4px);
 }
 
-/* --- Main Content --- */
 .page-main {
   flex: 1;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
   width: 100%;
   padding: 0 1.5rem;
@@ -314,15 +314,17 @@ a {
   color: var(--text-muted);
 }
 
-/* News Grid */
 .news-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 1.5rem;
-  margin-bottom: 4rem;
+  width: 100%;
+  margin-bottom: 2rem;
 }
 
 .news-card {
+  min-width: 0;
+  word-break: break-word;
   border-radius: var(--radius-md);
   padding: 1.5rem;
   display: flex;
@@ -420,7 +422,6 @@ a {
   opacity: 0.5;
 }
 
-/* Features Section */
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -454,7 +455,7 @@ a {
   padding: 5rem 1.5rem 3rem;
   margin-top: 5rem;
   position: relative;
-  text-align: center; /* Minden szöveget központosít */
+  text-align: center;
 }
 
 .site-footer::before {
@@ -468,12 +469,12 @@ a {
 }
 
 .footer-inner {
-  max-width: 600px; /* Keskenyebb konténer a letisztultabb hatásért */
+  max-width: 600px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem; /* Térköz az ikonok és szöveg között */
+  gap: 1.5rem;
 }
 
 .footer-social {
@@ -522,7 +523,7 @@ a {
   color: var(--text-muted);
   font-size: 0.75rem;
   line-height: 1.5;
-  max-width: 400px; /* Hogy ne nyúljon túl hosszúra a sor */
+  max-width: 400px;
   margin: 0 auto;
 }
 
@@ -576,7 +577,6 @@ a {
 .modal-title { font-size: 1.5rem; margin-bottom: 1rem; }
 .modal-text { color: var(--text-muted); line-height: 1.7; }
 
-/* --- Toast Notification --- */
 .toast-container {
   position: fixed;
   bottom: 2rem;
@@ -607,7 +607,10 @@ a {
   to { opacity: 0; }
 }
 
-/* --- Responsive --- */
+@media (max-width: 1400px) {
+  .news-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
 @media (max-width: 992px) {
   .hero-inner { flex-direction: column; }
   .hero-stat-card { width: 100%; justify-content: space-between; }
@@ -619,4 +622,14 @@ a {
   .footer-inner { grid-template-columns: 1fr; text-align: center; }
   .footer-meta { text-align: center; margin-top: 1rem; }
   .footer-brand p { margin: 0 auto; }
+  
+  .news-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .hero-title { font-size: 3rem; }
+}
+
+@media (max-width: 600px) {
+  .news-grid { grid-template-columns: 1fr; }
 }
