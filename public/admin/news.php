@@ -24,16 +24,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'add' || $action === 'edit') {
             $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
             $title = trim($_POST['title'] ?? '');
+            $shortText = trim($_POST['short_text'] ?? ''); // Kézi rövid szöveg
             $content = trim($_POST['content'] ?? ''); // Ez megy a full_text-be
             $category = $_POST['category'] ?? 'INFO';
             $isVisible = isset($_POST['is_visible']) ? 1 : 0;
 
-            if ($title === '' || $content === '') throw new Exception('Cím és tartalom kötelező!');
+            if ($title === '' || $shortText === '' || $content === '') throw new Exception('Cím, rövid leírás és tartalom kötelező!');
             if (!array_key_exists($category, NEWS_CATEGORIES)) $category = 'INFO';
 
             // Automatikus mezők generálása a DB-hez
             $tag = ucfirst(strtolower($category)); // Pl: INFO -> Info
-            $shortText = mb_strimwidth(strip_tags($content), 0, 100, '...'); // Automatikus előnézet
             $dateDisplay = date('Y. m. d.');
 
             if ($action === 'add') {
@@ -148,13 +148,13 @@ $currentNav = 'news';
                                 <?php 
                                     $visible = (int)($news['is_visible'] ?? 0) === 1; 
                                     $fullText = $news['full_text'] ?? '';
-                                    $shortText = $news['short_text'] ?? mb_strimwidth(strip_tags($fullText), 0, 50, '...');
+                                    $shortText = $news['short_text'] ?? '';
                                 ?>
-                                <tr class="news-row" data-id="<?= $news['id']; ?>" data-title="<?= h($news['title']); ?>" data-content="<?= h($fullText); ?>" data-category="<?= h($news['category'] ?? 'INFO'); ?>" data-visible="<?= $visible ? '1' : '0'; ?>">
+                                <tr class="news-row" data-id="<?= $news['id']; ?>" data-title="<?= h($news['title']); ?>" data-shorttext="<?= h($shortText); ?>" data-content="<?= h($fullText); ?>" data-category="<?= h($news['category'] ?? 'INFO'); ?>" data-visible="<?= $visible ? '1' : '0'; ?>">
                                     <td class="cell-order"><?= (int)$news['id']; ?></td>
                                     <td>
                                         <div class="news-title"><?= h($news['title']); ?></div>
-                                        <div class="news-preview"><?= h($shortText); ?></div>
+                                        <div class="news-preview"><?= h(mb_strimwidth(strip_tags($shortText), 0, 60, '...')); ?></div>
                                     </td>
                                     <td><?= getCategoryBadge($news['category'] ?? 'INFO'); ?></td>
                                     <td class="cell-date"><?= date('Y. m. d. H:i', strtotime($news['created_at'] ?? 'now')); ?></td>
@@ -201,8 +201,13 @@ $currentNav = 'news';
             </div>
 
             <div class="form-group">
-                <label for="news-content">Tartalom (HTML engedélyezett)</label>
-                <textarea id="news-content" name="content" rows="6" required placeholder="Írd le a hír részleteit..."></textarea>
+                <label for="news-shorttext">Rövid leírás (Hírkártyára)</label>
+                <textarea id="news-shorttext" name="short_text" rows="2" required placeholder="Pár mondatos kedvcsináló szöveg a publikus oldalra..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="news-content">Teljes tartalom (HTML engedélyezett)</label>
+                <textarea id="news-content" name="content" rows="6" required placeholder="A hír teljes kifejtett tartalma..."></textarea>
             </div>
             
             <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px;">

@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById("news-modal") as HTMLElement | null;
     const form = document.getElementById("news-form") as HTMLFormElement | null;
     const titleInput = document.getElementById("news-title") as HTMLInputElement | null;
+    const shortTextInput = document.getElementById("news-shorttext") as HTMLTextAreaElement | null;
     const contentInput = document.getElementById("news-content") as HTMLTextAreaElement | null;
     const categoryInput = document.getElementById("news-category") as HTMLSelectElement | null;
     const visibleInput = document.getElementById("news-visible") as HTMLInputElement | null;
@@ -15,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const errorText = document.getElementById("news-error") as HTMLElement | null;
 
     // Ha valami nagyon hiányzik, ne fusson le hibára
-    if (!modal || !form || !titleInput || !contentInput || !categoryInput || !visibleInput || !actionInput || !idInput || !modalTitle || !submitBtn || !errorText) {
+    if (!modal || !form || !titleInput || !shortTextInput || !contentInput || !categoryInput || !visibleInput || !actionInput || !idInput || !modalTitle || !submitBtn || !errorText) {
         console.warn("A hírek kezelőjének egyes DOM elemei nem találhatóak.");
         return;
     }
@@ -57,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
             actionInput.value = "edit";
             idInput.value = row.dataset.id || "";
             titleInput.value = row.dataset.title || "";
+            shortTextInput.value = row.dataset.shorttext || ""; // Új mező betöltése
             contentInput.value = row.dataset.content || "";
             categoryInput.value = row.dataset.category || "INFO";
             visibleInput.checked = row.dataset.visible === "1";

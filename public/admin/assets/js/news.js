@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var modal = document.getElementById("news-modal");
     var form = document.getElementById("news-form");
     var titleInput = document.getElementById("news-title");
+    var shortTextInput = document.getElementById("news-shorttext");
     var contentInput = document.getElementById("news-content");
     var categoryInput = document.getElementById("news-category");
     var visibleInput = document.getElementById("news-visible");
@@ -15,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var submitBtn = document.getElementById("news-submit-btn");
     var errorText = document.getElementById("news-error");
     // Ha valami nagyon hiányzik, ne fusson le hibára
-    if (!modal || !form || !titleInput || !contentInput || !categoryInput || !visibleInput || !actionInput || !idInput || !modalTitle || !submitBtn || !errorText) {
+    if (!modal || !form || !titleInput || !shortTextInput || !contentInput || !categoryInput || !visibleInput || !actionInput || !idInput || !modalTitle || !submitBtn || !errorText) {
         console.warn("A hírek kezelőjének egyes DOM elemei nem találhatóak.");
         return;
     }
@@ -52,6 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
             actionInput.value = "edit";
             idInput.value = row.dataset.id || "";
             titleInput.value = row.dataset.title || "";
+            shortTextInput.value = row.dataset.shorttext || ""; // Új mező betöltése
             contentInput.value = row.dataset.content || "";
             categoryInput.value = row.dataset.category || "INFO";
             visibleInput.checked = row.dataset.visible === "1";
