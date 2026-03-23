@@ -30,14 +30,16 @@ body.admin-body {
   background-image: radial-gradient(circle at top left, rgba(220, 38, 38, 0.05) 0%, transparent 50%);
   color: var(--text-main);
   min-height: 100vh;
-  display: flex;
-  padding-left: 280px;
+  /* KIVETTÜK A DISPLAY: FLEX-ET INNEN */
+  padding-left: 280px; /* Ez tartja a távolságot a sidebartól */
 }
 
-@media (max-width: 992px) {
-  body.admin-body {
-    padding-left: 0;
-  }
+/* ÚJ: Ezzel kényszerítjük, hogy az elrendezés kitöltse a teljes maradék helyet */
+.admin-layout {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-main {
@@ -47,7 +49,7 @@ body.admin-body {
   flex-direction: column;
   gap: 2rem;
   max-width: 1400px;
-  margin: 0 auto;
+  margin: 0 auto; /* Ez középre igazítja a tartalmat a fennmaradó helyen */
   width: 100%;
 }
 
@@ -144,20 +146,26 @@ body.admin-body {
 
 .form-group textarea { resize: vertical; }
 
+/* Brutál-fix ikon betöltés */
 .material-symbols-rounded {
-font-family: 'Material Symbols Rounded', sans-serif !important; /* Erőszakos betűtípus */
+  font-family: 'Material Symbols Rounded' !important;
   font-weight: normal;
   font-style: normal;
-  font-size: 22px !important; /* Fix méret, hogy ne legyen hatalmas */
+  font-size: 22px !important;
   line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
   display: inline-block;
   white-space: nowrap;
   word-wrap: normal;
   direction: ltr;
-  -webkit-font-feature-settings: 'liga';
-  font-feature-settings: "liga";
   -webkit-font-smoothing: antialiased;
-  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'liga';
+}
+
+/* Mobilos nézet javítása (hogy ne maradjon meg a 280px bal padding, ha becsukódik a menü) */
+@media (max-width: 992px) {
+  body.admin-body {
+    padding-left: 0;
+  }
 }
