@@ -1,212 +1,162 @@
 /// <reference lib="dom" />
 
 document.addEventListener("DOMContentLoaded", () => {
-  const modal = document.getElementById("news-modal") as HTMLElement | null;
-  const form = document.getElementById("news-form") as HTMLFormElement | null;
-  const errorEl = document.getElementById("news-error") as HTMLElement | null;
+    // 1. DOM elemek lekérése típusokkal
+    const modal = document.getElementById("news-modal") as HTMLElement | null;
+    const form = document.getElementById("news-form") as HTMLFormElement | null;
+    const titleInput = document.getElementById("news-title") as HTMLInputElement | null;
+    const contentInput = document.getElementById("news-content") as HTMLTextAreaElement | null;
+    const categoryInput = document.getElementById("news-category") as HTMLSelectElement | null;
+    const visibleInput = document.getElementById("news-visible") as HTMLInputElement | null;
+    const actionInput = document.getElementById("news-action") as HTMLInputElement | null;
+    const idInput = document.getElementById("news-id") as HTMLInputElement | null;
+    const modalTitle = document.getElementById("news-modal-title") as HTMLElement | null;
+    const submitBtn = document.getElementById("news-submit-btn") as HTMLButtonElement | null;
+    const errorText = document.getElementById("news-error") as HTMLElement | null;
 
-  const closeBtn = modal?.querySelector<HTMLElement>(".modal-close") ?? null;
-  const cancelBtn = document.getElementById("news-cancel") as HTMLElement | null;
-
-  const addBtn = document.getElementById("btn-add-news") as HTMLElement | null;
-  const addBtnEmpty = document.getElementById("btn-add-news-empty") as HTMLElement | null;
-  const modalTitle = document.getElementById("news-modal-title") as HTMLElement | null;
-
-  const idInput = document.getElementById("news-id") as HTMLInputElement | null;
-  const titleInput = document.getElementById("news-title") as HTMLInputElement | null;
-  const tagSelect = document.getElementById("news-tag") as HTMLSelectElement | null;
-  const shortInput = document.getElementById("news-short") as HTMLTextAreaElement | null;
-  const fullInput = document.getElementById("news-full") as HTMLTextAreaElement | null;
-  const orderInput = document.getElementById("news-order") as HTMLInputElement | null;
-  const visibleInput = document.getElementById("news-visible") as HTMLInputElement | null;
-  const metaAuthor = document.getElementById("news-meta-author") as HTMLElement | null;
-  const metaDate = document.getElementById("news-meta-date") as HTMLElement | null;
-
-  const openModal = (): void => {
-    if (!modal) return;
-    modal.classList.add("open");
-  };
-
-  const closeModal = (): void => {
-    if (!modal) return;
-    modal.classList.remove("open");
-    if (errorEl) {
-      errorEl.hidden = true;
-      errorEl.textContent = "";
+    // Ha valami nagyon hiányzik, ne fusson le hibára
+    if (!modal || !form || !titleInput || !contentInput || !categoryInput || !visibleInput || !actionInput || !idInput || !modalTitle || !submitBtn || !errorText) {
+        console.warn("A hírek kezelőjének egyes DOM elemei nem találhatóak.");
+        return;
     }
-  };
 
-  const resetForm = (): void => {
-    if (!form) return;
-    form.reset();
-    if (idInput) idInput.value = "";
-    if (orderInput) orderInput.value = "0";
-    if (visibleInput) visibleInput.checked = true;
-    if (metaAuthor) metaAuthor.textContent = "-";
-    if (metaDate) metaDate.textContent = "-";
-  };
+    // Modal kezelő függvények
+    const openModal = () => {
+        errorText.hidden = true;
+        modal.classList.add("open");
+    };
 
-  const fillFormFromRow = (tr: HTMLTableRowElement): void => {
-    if (idInput) idInput.value = tr.dataset.id || "";
-    if (titleInput) titleInput.value = tr.dataset.title || "";
-    if (tagSelect) tagSelect.value = tr.dataset.tag || "Info";
-    if (shortInput) shortInput.value = tr.dataset.short_text || "";
-    if (fullInput) fullInput.value = tr.dataset.full_text || "";
-    if (orderInput) orderInput.value = tr.dataset.order_index || "0";
-    if (visibleInput) visibleInput.checked = tr.dataset.is_visible === "1";
-    if (metaAuthor) metaAuthor.textContent = tr.dataset.author || "Ismeretlen";
-    if (metaDate) metaDate.textContent = tr.dataset.date_display || "-";
-  };
+    const closeModal = () => {
+        modal.classList.remove("open");
+        form.reset();
+    };
 
-  const handleNewClick = (): void => {
-    resetForm();
-    if (modalTitle) modalTitle.textContent = "Új hír létrehozása";
-    openModal();
-  };
-
-  if (addBtn) addBtn.addEventListener("click", handleNewClick);
-  if (addBtnEmpty) addBtnEmpty.addEventListener("click", handleNewClick);
-
-  document.querySelectorAll<HTMLElement>(".btn-edit").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const tr = btn.closest("tr") as HTMLTableRowElement | null;
-      if (!tr) return;
-      resetForm();
-      fillFormFromRow(tr);
-      if (modalTitle) modalTitle.textContent = "Hír szerkesztése";
-      openModal();
+    // --- Új hír nyitása ---
+    document.getElementById("btn-add-news")?.addEventListener("click", () => {
+        form.reset();
+        actionInput.value = "add";
+        idInput.value = "";
+        modalTitle.textContent = "Új hír írása";
+        submitBtn.textContent = "Közzététel";
+        openModal();
     });
-  });
 
-  document.querySelectorAll<HTMLElement>(".btn-delete").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const tr = btn.closest("tr") as HTMLTableRowElement | null;
-      if (!tr) return;
-
-      const id = tr.dataset.id;
-      if (!id) return;
-
-      if (!window.confirm("Biztosan törlöd ezt a hírt?")) return;
-
-      const formData = new FormData();
-      formData.append("action", "delete");
-      formData.append("id", id);
-
-      fetch("news.php", {
-        method: "POST",
-        body: formData
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.ok) {
-            window.alert(data.error || "Hiba törlés közben.");
-            return;
-          }
-          tr.remove();
-          window.location.reload();
-        })
-        .catch(() => window.alert("Hálózati hiba a törlés során."));
+    // Ha üres az oldal és arra a gombra nyom
+    document.getElementById("btn-add-news-empty")?.addEventListener("click", () => {
+        document.getElementById("btn-add-news")?.click();
     });
-  });
 
-  document.querySelectorAll<HTMLElement>(".toggle-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.id;
-      if (!id) return;
+    // --- Szerkesztés nyitása ---
+    document.querySelectorAll(".btn-edit-news").forEach(btn => {
+        btn.addEventListener("click", (e: Event) => {
+            const target = e.currentTarget as HTMLElement;
+            const row = target.closest("tr") as HTMLTableRowElement | null;
+            
+            if (!row) return;
 
-      const current = btn.dataset.visible === "1";
-      const next = current ? 0 : 1;
-
-      const formData = new FormData();
-      formData.append("action", "toggle_visible");
-      formData.append("id", id);
-      formData.append("is_visible", String(next));
-
-      fetch("news.php", {
-        method: "POST",
-        body: formData
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.ok) {
-            window.alert(data.error || "Hiba a láthatóság állításakor.");
-            return;
-          }
-
-          btn.dataset.visible = String(next);
-          btn.classList.toggle("active", !!next);
-
-          const tr = btn.closest("tr") as HTMLTableRowElement | null;
-          if (tr) tr.dataset.is_visible = String(next);
-        })
-        .catch(() => window.alert("Hálózati hiba a láthatóság állításakor."));
-    });
-  });
-
-  const closers: (HTMLElement | null)[] = [closeBtn, cancelBtn];
-  closers.forEach((el) => {
-    if (!el) return;
-    el.addEventListener("click", (e) => {
-      e.preventDefault();
-      closeModal();
-    });
-  });
-
-  if (modal) {
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) closeModal();
-    });
-  }
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeModal();
-  });
-
-  if (form) {
-    form.addEventListener("submit", (e: Event) => {
-      e.preventDefault();
-      if (errorEl) {
-        errorEl.hidden = true;
-        errorEl.textContent = "";
-      }
-
-      const submitBtn = form.querySelector("button[type='submit']") as HTMLButtonElement | null;
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Mentés...";
-      }
-
-      const formData = new FormData(form);
-
-      fetch("news.php", {
-        method: "POST",
-        body: formData
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.ok) {
-            if (errorEl) {
-              errorEl.textContent = data.error || "Hiba mentés közben.";
-              errorEl.hidden = false;
-            }
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = "Mentés";
-            }
-            return;
-          }
-          window.location.reload();
-        })
-        .catch(() => {
-          if (errorEl) {
-            errorEl.textContent = "Hálózati hiba a mentés során.";
-            errorEl.hidden = false;
-          }
-          if (submitBtn) {
-            submitBtn.disabled = false;
+            actionInput.value = "edit";
+            idInput.value = row.dataset.id || "";
+            titleInput.value = row.dataset.title || "";
+            contentInput.value = row.dataset.content || "";
+            categoryInput.value = row.dataset.category || "INFO";
+            visibleInput.checked = row.dataset.visible === "1";
+            
+            modalTitle.textContent = "Hír szerkesztése";
             submitBtn.textContent = "Mentés";
-          }
+            openModal();
         });
     });
-  }
+
+    // --- Bezárás gombok ---
+    document.querySelector(".modal-close")?.addEventListener("click", closeModal);
+    document.getElementById("news-cancel")?.addEventListener("click", closeModal);
+
+    // ESC gombra is záródjon be
+    document.addEventListener("keydown", (e: KeyboardEvent) => {
+        if (e.key === "Escape" && modal.classList.contains("open")) {
+            closeModal();
+        }
+    });
+
+    // --- Form beküldése (Hozzáadás/Szerkesztés) ---
+    form.addEventListener("submit", (e: SubmitEvent) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+
+        fetch("/admin/news.php", {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.ok) {
+                location.reload();
+            } else {
+                errorText.textContent = data.error || "Hiba történt a mentés során.";
+                errorText.hidden = false;
+            }
+        })
+        .catch(() => {
+            errorText.textContent = "Hálózati hiba történt a kommunikáció során.";
+            errorText.hidden = false;
+        });
+    });
+
+    // --- Láthatóság Toggle (A zöld/szürke csúszka) ---
+    document.querySelectorAll(".toggle-visibility").forEach(btn => {
+        btn.addEventListener("click", (e: Event) => {
+            const target = e.currentTarget as HTMLButtonElement;
+            const id = target.dataset.id || "0";
+            const currentVisible = target.dataset.visible === "1";
+            const newVisible = currentVisible ? 0 : 1;
+
+            const formData = new FormData();
+            formData.append("action", "toggle_visible");
+            formData.append("id", id);
+            formData.append("is_visible", newVisible.toString());
+
+            fetch("/admin/news.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.ok) {
+                    target.dataset.visible = newVisible.toString();
+                    target.classList.toggle("active", newVisible === 1);
+                } else {
+                    alert(data.error || "Hiba történt a módosítás során!");
+                }
+            })
+            .catch(console.error);
+        });
+    });
+
+    // --- Törlés ---
+    document.querySelectorAll(".btn-delete-news").forEach(btn => {
+        btn.addEventListener("click", (e: Event) => {
+            if (!confirm("Biztosan törölni szeretnéd ezt a hírt? Ezt nem lehet visszavonni!")) return;
+            
+            const target = e.currentTarget as HTMLButtonElement;
+            const id = target.dataset.id || "0";
+            
+            const formData = new FormData();
+            formData.append("action", "delete");
+            formData.append("id", id);
+
+            fetch("/admin/news.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.ok) {
+                    location.reload();
+                } else {
+                    alert(data.error || "Hiba történt a törlés során!");
+                }
+            })
+            .catch(console.error);
+        });
+    });
 });
