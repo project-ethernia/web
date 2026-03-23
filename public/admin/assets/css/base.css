@@ -31,6 +31,13 @@ body.admin-body {
   color: var(--text-main);
   min-height: 100vh;
   display: flex;
+  padding-left: 280px;
+}
+
+@media (max-width: 992px) {
+  body.admin-body {
+    padding-left: 0;
+  }
 }
 
 .admin-main {
@@ -138,5 +145,19 @@ body.admin-body {
 .form-group textarea { resize: vertical; }
 
 .material-symbols-rounded {
+font-family: 'Material Symbols Rounded', sans-serif !important; /* Erőszakos betűtípus */
+  font-weight: normal;
+  font-style: normal;
+  font-size: 22px !important; /* Fix méret, hogy ne legyen hatalmas */
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
   font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
 }
