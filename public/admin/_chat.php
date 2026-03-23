@@ -10,7 +10,7 @@
         <div class="chat-header">
             <div class="chat-header-info">
                 <span class="material-symbols-rounded">forum</span>
-                <strong>Stáb Chat</strong>
+                <strong>Chat</strong>
             </div>
             <button id="chat-close-btn" class="material-symbols-rounded chat-close-icon">close</button>
         </div>
