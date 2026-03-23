@@ -23,18 +23,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($username) || empty($password)) {
             $error = "Minden mező kitöltése kötelező!";
         } else {
-            $stmt = $pdo->prepare("SELECT id, username, password_hash FROM admins WHERE username = :username");
+            $stmt = $pdo->prepare("SELECT id, username, password_hash, role, is_active FROM admins WHERE username = :username");
             $stmt->execute(['username' => $username]);
             $admin = $stmt->fetch();
 
             if ($admin && password_verify($password, $admin['password_hash'])) {
-                session_regenerate_id(true);
-                $_SESSION['is_admin'] = true;
-                $_SESSION['admin_id'] = $admin['id'];
-                $_SESSION['admin_username'] = $admin['username'];
-                
-                header("Location: /admin/news.php");
-                exit;
+                if ((int)$admin['is_active'] === 0) {
+                    $error = "Ez az admin fiók inaktiválva lett!";
+                } else {
+                    $updateStmt = $pdo->prepare("UPDATE admins SET last_login = NOW() WHERE id = :id");
+                    $updateStmt->execute(['id' => $admin['id']]);
+
+                    session_regenerate_id(true);
+                    $_SESSION['is_admin'] = true;
+                    $_SESSION['admin_id'] = $admin['id'];
+                    $_SESSION['admin_username'] = $admin['username'];
+                    $_SESSION['admin_role'] = $admin['role'];
+                    
+                    header("Location: /admin/news.php");
+                    exit;
+                }
             } else {
                 $error = "Helytelen adminisztrátori név vagy jelszó!";
             }

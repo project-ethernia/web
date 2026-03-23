@@ -12,7 +12,7 @@ $currentNav = $currentNav ?? '';
     <div class="sidebar-inner">
         <div class="sidebar-user-card">
             <div class="sidebar-avatar">
-                <span><?= strtoupper(substr($adminName, 0, 1)); ?></span>
+                <img src="https://minotar.net/helm/<?= htmlspecialchars($adminName, ENT_QUOTES, 'UTF-8'); ?>/44.png" alt="Skin" style="border-radius: 10px; width: 44px; height: 44px; image-rendering: pixelated;">
             </div>
             <div class="sidebar-user-meta">
                 <div class="sidebar-user-label">Vezérlőpult</div>
@@ -86,7 +86,7 @@ $currentNav = $currentNav ?? '';
                 <span class="material-symbols-rounded sidebar-footer-icon">help</span>
                 <span>Segítség</span>
             </a>
-            <a href="/auth/logout.php" class="sidebar-footer-link sidebar-footer-link-danger ripple-btn">
+            <a href="/admin/logout.php" class="sidebar-footer-link sidebar-footer-link-danger ripple-btn">
                 <span class="material-symbols-rounded sidebar-footer-icon">logout</span>
                 <span>Kijelentkezés</span>
             </a>
