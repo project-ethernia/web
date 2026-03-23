@@ -2,41 +2,49 @@
 
 document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById("log-modal") as HTMLElement | null;
-    const rows = document.querySelectorAll(".log-row") as NodeListOf<HTMLElement>;
     const uaContainer = document.getElementById("log-ua");
     const ctxContainer = document.getElementById("log-context");
-    const closeBtn = modal?.querySelector(".modal-close");
-    const closeBtnFooter = document.getElementById("log-close-btn");
+    const closeBtns = document.querySelectorAll(".modal-close, #log-close-btn");
+    const logRows = document.querySelectorAll(".log-row");
 
     if (!modal || !uaContainer || !ctxContainer) return;
 
-    rows.forEach(row => {
+    logRows.forEach(row => {
         row.addEventListener("click", () => {
-            const ua = row.getAttribute("data-ua") || "Nincs adat";
-            const context = row.getAttribute("data-context") || "{}";
+            const ua = row.getAttribute("data-ua") || "Ismeretlen böngésző";
+            const contextRaw = row.getAttribute("data-context") || "{}";
 
             uaContainer.textContent = ua;
             
             try {
-                const parsed = JSON.parse(context);
+                // Megpróbáljuk szépen formázni a JSON-t
+                const parsed = JSON.parse(contextRaw);
                 ctxContainer.textContent = JSON.stringify(parsed, null, 4);
             } catch (e) {
-                ctxContainer.textContent = context;
+                ctxContainer.textContent = contextRaw;
             }
 
             modal.classList.add("open");
         });
     });
 
-    const closeModal = () => modal.classList.remove("open");
+    const closeModal = () => {
+        modal.classList.remove("open");
+    };
 
-    closeBtn?.addEventListener("click", closeModal);
-    closeBtnFooter?.addEventListener("click", closeModal);
-    
+    closeBtns.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            closeModal();
+        });
+    });
+
+    // Ha a sötét háttérre kattint
     modal.addEventListener("click", (e) => {
         if (e.target === modal) closeModal();
     });
 
+    // ESC gombra záródjon
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") closeModal();
     });
