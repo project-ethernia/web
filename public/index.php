@@ -13,15 +13,12 @@ if (empty($_SESSION['is_user']) || $_SESSION['is_user'] !== true) {
     exit;
 }
 
-// Ha nincs login_time (pl. régi session), most beállítjuk
 if (!isset($_SESSION['login_time'])) {
     $_SESSION['login_time'] = time();
 }
 
-// Kiszámoljuk, mennyi idő telt el a belépés óta
 $elapsed_time = time() - $_SESSION['login_time'];
 
-// Ha eltelt az 1 óra, kíméletlenül kidobja
 if ($elapsed_time >= $timeout_duration) {
     session_unset();
     session_destroy();
@@ -29,7 +26,6 @@ if ($elapsed_time >= $timeout_duration) {
     exit;
 }
 
-// Kiszámoljuk a hátralévő másodperceket a JS timernek
 $remaining_time = $timeout_duration - $elapsed_time;
 // ------------------------------------------
 
@@ -102,34 +98,8 @@ $currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] :
     </div>
 </header>
 
-<nav class="navbar">
-    <div class="navbar-inner glass">
-        
-        <div class="nav-side nav-left">
-            <div class="session-timer glass" title="Automatikus kijelentkezés">
-                <span class="material-symbols-rounded">timer</span>
-                <span id="countdown-timer" data-seconds="<?= $remaining_time ?>">60:00</span>
-            </div>
-        </div>
-        
-        <ul class="nav-links">
-            <li><a href="/" class="active">Főoldal</a></li>
-            <li><a href="#">Webshop</a></li>
-            <li><a href="#">Szabályzat</a></li>
-            <li><a href="#">Statisztikák</a></li>
-            <li><a href="#">Kapcsolat</a></li>
-        </ul>
-
-        <div class="nav-side nav-right">
-            <a href="/profile.php" class="user-badge glass hover-lift" style="text-decoration: none;">
-                <img src="https://minotar.net/helm/<?= h($currentUser); ?>/32.png" alt="Skin">
-                <span><?= h($currentUser); ?></span>
-            </a>
-            <a href="/auth/logout.php" class="btn btn-logout">Kijelentkezés</a>
-        </div>
-        
-    </div>
-</nav>
+<?php $current_page = 'home'; ?>
+<?php require_once __DIR__ . '/includes/navbar.php'; ?>
 
 <main class="container">
     <section class="section">

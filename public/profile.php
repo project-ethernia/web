@@ -113,31 +113,8 @@ $maskedEmail = substr($userData['email'], 0, 3) . '***@' . explode('@', $userDat
 </head>
 <body>
 
-<nav class="navbar">
-    <div class="navbar-inner glass">
-        <div class="nav-side nav-left">
-            <div class="session-timer glass" title="Automatikus kijelentkezés">
-                <span class="material-symbols-rounded">timer</span>
-                <span id="countdown-timer" data-seconds="<?= $remaining_time ?>">60:00</span>
-            </div>
-        </div>
-        
-        <ul class="nav-links">
-            <li><a href="/">Főoldal</a></li>
-            <li><a href="/news.php">Hírek</a></li>
-            <li><a href="#">Webshop</a></li>
-            <li><a href="#">Szabályzat</a></li>
-        </ul>
-
-        <div class="nav-side nav-right">
-            <a href="/profile.php" class="user-badge glass hover-lift" style="text-decoration: none;">
-                <img src="https://minotar.net/helm/<?= h($currentUser); ?>/32.png" alt="Skin">
-                <span><?= h($currentUser); ?></span>
-            </a>
-            <a href="/auth/logout.php" class="btn btn-logout">Kijelentkezés</a>
-        </div>
-    </div>
-</nav>
+<?php $current_page = 'profile'; ?>
+<?php require_once __DIR__ . '/includes/navbar.php'; ?>
 
 <main class="container" style="padding-top: 8rem; min-height: 80vh;">
     
