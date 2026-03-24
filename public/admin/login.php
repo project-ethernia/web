@@ -7,7 +7,7 @@ if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
     exit;
 }
 
-$discordWebhookUrl = "https://discord.com/api/webhooks/1486000917999386738/HvV8ve01gurjCAna3mb7sZEG9BzomI546ZEwgH1t7NbWMzvso--jGFhz49OnmkLxHMFJ";
+$discordWebhookUrl = "IDE_MASOLD_A_DISCORD_WEBHOOK_LINKEDET";
 $maxFailedAttempts = 3;
 $lockoutMinutes = 15;
 
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
                 $code = sprintf("%06d", mt_rand(1, 999999));
                 $expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
-                $update = $pdo->prepare("UPDATE admins SET failed_logins = 0, lockout_time = NULL, two_factor_code = ?, two_factor_expires = ? WHERE id = ?");
+                $update = $pdo->prepare("UPDATE admins SET failed_logins = 0, lockout_time = NULL, unlock_token = NULL, two_factor_code = ?, two_factor_expires = ? WHERE id = ?");
                 $update->execute([$code, $expires, $admin['id']]);
 
                 $_SESSION['pending_2fa_admin_id'] = $admin['id'];
@@ -65,12 +65,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
                 $failed = (int)$admin['failed_logins'] + 1;
                 if ($failed >= $maxFailedAttempts) {
                     $lockoutTimeStr = date('Y-m-d H:i:s', strtotime("+$lockoutMinutes minutes"));
-                    $update = $pdo->prepare("UPDATE admins SET failed_logins = ?, lockout_time = ? WHERE id = ?");
-                    $update->execute([$failed, $lockoutTimeStr, $admin['id']]);
+                    $unlockToken = bin2hex(random_bytes(16)); // Generálunk egy titkos 32 karakteres kulcsot
+                    
+                    $update = $pdo->prepare("UPDATE admins SET failed_logins = ?, lockout_time = ?, unlock_token = ? WHERE id = ?");
+                    $update->execute([$failed, $lockoutTimeStr, $unlockToken, $admin['id']]);
                     
                     $_SESSION['lockout_end'] = strtotime($lockoutTimeStr);
                     $lockoutEnd = $_SESSION['lockout_end'];
                     $error = "Túl sok hibás próbálkozás! A védelem aktiválódott.";
+
+                    // KIKÜLDJÜK A RIASZTÁST ÉS A FELOLDÓ LINKET DISCORDRA
+                    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+                    $domain = $_SERVER['HTTP_HOST'];
+                    $unlockUrl = "{$protocol}://{$domain}/admin/unlock.php?token={$unlockToken}";
+
+                    $msg = "🚨 **VIGYÁZAT: FIÓK ZÁROLVA!** 🚨\nValaki túl sokszor rontotta el a jelszót!\n👤 **Fiók:** `{$admin['username']}`\n🌍 **IP cím:** `{$clientIp}`\n\n🔓 **Kattints ide a zárolás feloldásához:**\n{$unlockUrl}";
+                    $json_data = json_encode(["content" => $msg]);
+                    $ch = curl_init($discordWebhookUrl);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+                    curl_setopt($ch, CURLOPT_POST, 1);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_exec($ch);
+                    curl_close($ch);
+
                 } else {
                     $update = $pdo->prepare("UPDATE admins SET failed_logins = ? WHERE id = ?");
                     $update->execute([$failed, $admin['id']]);
@@ -122,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
 <body>
 
 <div class="login-box glass-panel">
-    <img src="https://minotar.net/helm/Steve/80.png" alt="ETHERNIA" class="login-logo" id="dynamic-avatar">
+    <span class="material-symbols-rounded login-logo-icon">admin_panel_settings</span>
     
     <?php if ($lockoutEnd > 0): ?>
         <h1 class="login-title">Fiók Zárolva</h1>

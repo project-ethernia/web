@@ -154,3 +154,11 @@ body {
     font-variant-numeric: tabular-nums; 
     margin-bottom: 0.5rem; 
 }
+
+.login-logo-icon {
+    font-size: 4.5rem;
+    color: var(--danger);
+    filter: drop-shadow(0 0 15px var(--danger-glow));
+    margin-bottom: 1rem;
+    display: inline-block;
+}
