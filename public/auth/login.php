@@ -1,45 +1,38 @@
 <?php
 session_start();
-require_once __DIR__ . '/../database.php';
 
-if (!empty($_SESSION['is_user'])) {
-    header("Location: /");
+// Ha már be van lépve, azonnal menjen a főoldalra
+if (!empty($_SESSION['is_user']) && $_SESSION['is_user'] === true) {
+    header('Location: /');
     exit;
 }
 
+require_once __DIR__ . '/../database.php';
+
 $error = '';
-
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
-        $error = "Érvénytelen kérés!";
-    } else {
-        $username = trim($_POST['username'] ?? '');
-        $password = $_POST['password'] ?? '';
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
 
-        if (empty($username) || empty($password)) {
-            $error = "Minden mező kitöltése kötelező!";
+    if ($username !== '' && $password !== '') {
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? LIMIT 1");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch();
+
+        if ($user && password_verify($password, $user['password'])) {
+            // SIKERES BELÉPÉS
+            $_SESSION['is_user'] = true;
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_username'] = $user['username'];
+            $_SESSION['last_activity'] = time(); // A 30 perces limithez
+            
+            header('Location: /');
+            exit;
         } else {
-            $stmt = $pdo->prepare("SELECT id, username, password_hash, role FROM users WHERE username = :username");
-            $stmt->execute(['username' => $username]);
-            $user = $stmt->fetch();
-
-            if ($user && password_verify($password, $user['password_hash'])) {
-                session_regenerate_id(true);
-                $_SESSION['is_user'] = true;
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['user_username'] = $user['username'];
-                $_SESSION['user_role'] = $user['role'];
-                
-                header("Location: /");
-                exit;
-            } else {
-                $error = "Helytelen felhasználónév vagy jelszó!";
-            }
+            $error = 'Hibás felhasználónév vagy jelszó!';
         }
+    } else {
+        $error = 'Kérlek, tölts ki minden mezőt!';
     }
 }
 ?>
@@ -47,41 +40,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <title>ETHERNIA – Bejelentkezés</title>
+    <title>Belépés | ETHERNIA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300..700&display=block">
     <link rel="stylesheet" href="/assets/css/auth.css?v=<?= time(); ?>">
 </head>
-<body class="auth-body">
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-box glass">
+            
+            <div class="auth-header">
+                <img src="https://minotar.net/helm/Steve/100.png" alt="Avatar" class="avatar-img" id="dynamic-avatar">
+                <h1 class="auth-title">ETHERNIA</h1>
+                <p class="auth-subtitle">Jelentkezz be a fiókodba</p>
+            </div>
 
-<div class="auth-container glass-panel">
-    <h1 class="auth-title">Bejelentkezés</h1>
-    
-    <?php if ($error): ?>
-        <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
-    
-    <form method="POST" action="login.php" class="auth-form" id="login-form">
-        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-        
-        <div class="form-group">
-            <label for="username">Felhasználónév</label>
-            <input type="text" id="username" name="username" required>
+            <?php if ($error): ?>
+                <div class="auth-alert error"><?= htmlspecialchars($error) ?></div>
+            <?php endif; ?>
+            
+            <?php if (isset($_GET['registered'])): ?>
+                <div class="auth-alert success">Sikeres regisztráció! Most már beléphetsz.</div>
+            <?php endif; ?>
+
+            <?php if (isset($_GET['reset'])): ?>
+                <div class="auth-alert success">A jelszavad sikeresen megváltozott!</div>
+            <?php endif; ?>
+
+            <form method="POST" action="/auth/login.php">
+                <div class="input-group">
+                    <label for="username">Felhasználónév</label>
+                    <div class="input-with-icon">
+                        <span class="material-symbols-rounded input-icon">person</span>
+                        <input type="text" id="username" name="username" required autocomplete="off" placeholder="Minecraft neved">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="label-row">
+                        <label for="password">Jelszó</label>
+                        <a href="/auth/forgot.php" class="forgot-link">Elfelejtetted?</a>
+                    </div>
+                    <div class="input-with-icon">
+                        <span class="material-symbols-rounded input-icon">lock</span>
+                        <input type="password" id="password" name="password" required placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-glow btn-full">Belépés <span class="material-symbols-rounded">login</span></button>
+            </form>
+
+            <div class="auth-footer">
+                Még nincs fiókod? <a href="/auth/register.php">Regisztrálj itt!</a>
+            </div>
         </div>
-        
-        <div class="form-group">
-            <label for="password">Jelszó</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        
-        <button type="submit" class="btn btn-glow w-100">Bejelentkezés</button>
-    </form>
-    
-    <div class="auth-footer">
-        <p>Nincs még fiókod? <a href="/auth/register.php">Regisztráció</a></p>
-        <a href="/" class="back-link">&larr; Vissza a főoldalra</a>
     </div>
-</div>
-
-<script src="/assets/js/auth.js?v=<?= time(); ?>"></script>
+    
+    <script src="/assets/js/auth.js?v=<?= time(); ?>"></script>
 </body>
 </html>

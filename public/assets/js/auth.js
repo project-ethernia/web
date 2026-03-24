@@ -1,45 +1,89 @@
 "use strict";
 /// <reference lib="dom" />
 document.addEventListener("DOMContentLoaded", () => {
-    const loginForm = document.getElementById("login-form");
-    if (loginForm) {
-        let isSubmitting = false;
-        loginForm.addEventListener("submit", (e) => {
-            if (isSubmitting) {
-                e.preventDefault();
+    // 1. DINAMIKUS MINECRAFT AVATAR (Gépelés közben változik)
+    const usernameInput = document.getElementById('username');
+    const avatarImg = document.getElementById('dynamic-avatar');
+    if (usernameInput && avatarImg) {
+        // Kis késleltetés, hogy ne spammeljük le a Minotar API-t minden betűnél
+        let debounceTimer;
+        usernameInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const val = usernameInput.value.trim();
+                if (val.length >= 3) {
+                    // Ha legalább 3 karakter, lekérjük a fejét
+                    avatarImg.src = `https://minotar.net/helm/${val}/100.png`;
+                }
+                else {
+                    // Alapértelmezett Steve fej
+                    avatarImg.src = `https://minotar.net/helm/Steve/100.png`;
+                }
+            }, 400); // 400ms várakozás gépelés után
+        });
+    }
+    // 2. ÉLŐ JELSZÓ-ERŐSSÉG MÉRŐ
+    const passInput = document.getElementById('password');
+    const strengthBar = document.getElementById('strength-bar');
+    const strengthText = document.getElementById('strength-text');
+    if (passInput && strengthBar && strengthText) {
+        passInput.addEventListener('input', () => {
+            const val = passInput.value;
+            let strength = 0;
+            if (val.length === 0) {
+                strengthBar.style.width = '0%';
+                strengthText.textContent = 'Írj be egy jelszót...';
+                strengthText.style.color = 'var(--text-muted)';
                 return;
             }
-            isSubmitting = true;
-            const btn = loginForm.querySelector("button[type='submit']");
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = "Bejelentkezés folyamatban...";
+            // Pontrendszer:
+            if (val.length >= 6)
+                strength += 25; // Alaphossz
+            if (val.length >= 10)
+                strength += 25; // Jó hosszú
+            if (/[A-Z]/.test(val))
+                strength += 25; // Tartalmaz nagybetűt
+            if (/[0-9]/.test(val) && /[^A-Za-z0-9]/.test(val))
+                strength += 25; // Szám ÉS speciális karakter
+            // Vizuális frissítés
+            strengthBar.style.width = `${strength}%`;
+            if (strength <= 25) {
+                strengthBar.style.background = '#ef4444'; // Piros
+                strengthText.textContent = 'Gyenge';
+                strengthText.style.color = '#ef4444';
+            }
+            else if (strength <= 75) {
+                strengthBar.style.background = '#eab308'; // Sárga
+                strengthText.textContent = 'Közepes';
+                strengthText.style.color = '#eab308';
+            }
+            else {
+                strengthBar.style.background = '#22c55e'; // Zöld
+                strengthText.textContent = 'Erős';
+                strengthText.style.color = '#22c55e';
             }
         });
     }
-    const registerForm = document.getElementById("register-form");
-    if (registerForm) {
-        let isSubmitting = false;
-        registerForm.addEventListener("submit", (e) => {
-            if (isSubmitting) {
-                e.preventDefault();
+    // 3. JELSZÓ EGYEZÉS VALÓS IDŐBEN
+    const passConfirmInput = document.getElementById('password_confirm');
+    const matchIcon = document.getElementById('match-icon');
+    if (passInput && passConfirmInput && matchIcon) {
+        const checkMatch = () => {
+            if (passConfirmInput.value.length === 0) {
+                matchIcon.textContent = '';
                 return;
             }
-            const passwordInput = document.getElementById("password");
-            const confirmInput = document.getElementById("password_confirm");
-            if (passwordInput && confirmInput) {
-                if (passwordInput.value !== confirmInput.value) {
-                    e.preventDefault();
-                    alert("A két jelszó nem egyezik!");
-                    return;
-                }
+            if (passInput.value === passConfirmInput.value) {
+                matchIcon.textContent = 'check_circle'; // Zöld Pipa
+                matchIcon.style.color = '#22c55e';
             }
-            isSubmitting = true;
-            const btn = registerForm.querySelector("button[type='submit']");
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = "Fiók létrehozása...";
+            else {
+                matchIcon.textContent = 'cancel'; // Piros X
+                matchIcon.style.color = '#ef4444';
             }
-        });
+        };
+        // Mindkét mező változásakor ellenőrizzük
+        passInput.addEventListener('input', checkMatch);
+        passConfirmInput.addEventListener('input', checkMatch);
     }
 });
