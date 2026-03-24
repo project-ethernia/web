@@ -90,7 +90,6 @@ a { color: inherit; text-decoration: none; }
     display: flex; align-items: center; justify-content: space-between;
 }
 
-/* A nav-side felel azért, hogy a középső menü TÉNYLEG középen maradjon */
 .nav-side {
     display: flex; align-items: center; gap: 0.8rem;
     flex: 1; 
@@ -153,7 +152,7 @@ a { color: inherit; text-decoration: none; }
     filter: drop-shadow(0 0 25px rgba(168, 85, 247, 0.5));
 }
 
-.hero-subtitle { display: none; } /* Alcím eltávolítva */
+.hero-subtitle { color: var(--text-muted); font-size: 1.1rem; letter-spacing: 0.05em; margin: 0; }
 
 /* EGYSÉGES MODERN WIDGETEK */
 .stat-widget {
@@ -241,7 +240,7 @@ a { color: inherit; text-decoration: none; }
 
 /* --- TOAST ÉS MODAL ALAPOK --- */
 #toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
-.toast { background: var(--bg-base); border-left: 4px solid var(--primary); padding: 1rem; border-radius: var(--radius-sm); box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 0.9rem; color: #fff;}
+.toast { background: var(--bg-base); border-left: 4px solid var(--primary); padding: 1rem; border-radius: var(--radius-sm); box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 0.9rem; color:#fff;}
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: var(--transition); }
 .modal-overlay.open { opacity: 1; pointer-events: auto; }
 .modal-container { width: 90%; max-width: 600px; padding: 2rem; border-radius: var(--radius-md); position: relative; transform: translateY(20px); transition: var(--transition); max-height: 90vh; overflow-y: auto; }

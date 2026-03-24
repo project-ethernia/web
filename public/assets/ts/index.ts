@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear().toString();
 
-    // 2. IP Másolás funkció és Toast (Okosított)
+    // 2. IP Másolás funkció és Toast (Vizuális visszajelzéssel)
     const toastContainer = document.getElementById('toast-container');
     const showToast = (message: string) => {
         if (!toastContainer) return;
@@ -28,10 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const originalText = labelEl ? labelEl.textContent : 'Kattints a másoláshoz';
 
             navigator.clipboard.writeText(ip).then(() => {
-                // Siker esetén a gomb szövege is megváltozik 3 másodpercre!
                 if (labelEl) {
                     labelEl.textContent = 'IP Másolva! ✔️';
-                    (labelEl as HTMLElement).style.color = '#22c55e'; // Szép zöld szín
+                    (labelEl as HTMLElement).style.color = '#22c55e'; 
                     (labelEl as HTMLElement).style.fontWeight = 'bold';
                 }
                 
@@ -82,31 +81,62 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Session Timeout Visszaszámláló
     const timerEl = document.getElementById('countdown-timer');
     if (timerEl) {
-        // A PHP-ből kapott hátralévő másodpercek
         let seconds = parseInt(timerEl.dataset.seconds || '1800', 10);
         
         const updateTimer = () => {
             if (seconds <= 0) {
-                // Ha lejárt, azonnali kiléptetés
                 window.location.href = '/auth/logout.php?error=timeout';
                 return;
             }
             
-            // Másodperc konvertálása MM:SS formátumba
             const m = Math.floor(seconds / 60).toString().padStart(2, '0');
             const s = (seconds % 60).toString().padStart(2, '0');
             timerEl.textContent = `${m}:${s}`;
             
-            // Ha kevesebb mint 1 perc van hátra, kezdjen el vörösen villogni a doboz
             if (seconds <= 60) {
                 timerEl.parentElement?.classList.add('danger-pulse');
             }
-            
             seconds--;
         };
         
-        // Azonnali frissítés, majd 1 másodperces időzítő
         updateTimer();
         setInterval(updateTimer, 1000);
+    }
+
+    // 5. API LEKÉRDEZÉSEK (Minecraft & Discord)
+    // --- Minecraft API ---
+    const mcOnlineEl = document.getElementById('mc-online');
+    const mcMaxEl = document.getElementById('mc-max');
+    const serverIp = 'play.ethernia.hu';
+
+    fetch(`https://api.mcsrvstat.us/3/${serverIp}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.online && mcOnlineEl && mcMaxEl) {
+                mcOnlineEl.textContent = data.players.online.toString();
+                mcMaxEl.textContent = data.players.max.toString();
+            } else if (mcOnlineEl && mcMaxEl) {
+                mcOnlineEl.textContent = '0';
+                mcMaxEl.textContent = '0';
+            }
+        })
+        .catch(err => console.error("Minecraft API hiba:", err));
+
+    // --- Discord API ---
+    const discordOnlineEl = document.getElementById('discord-online');
+    
+    // !!! FIGYELEM: IDE ÍRD BE A SAJÁT DISCORD SZERVERED ID-JÉT !!!
+    // (Például: '123456789012345678')
+    const discordServerId = '1322224781000577046'; 
+
+    if (discordServerId !== '1322224781000577046') {
+        fetch(`https://discord.com/api/guilds/${discordServerId}/widget.json`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.presence_count !== undefined && discordOnlineEl) {
+                    discordOnlineEl.textContent = data.presence_count.toString();
+                }
+            })
+            .catch(err => console.error("Discord API hiba:", err));
     }
 });
