@@ -1,7 +1,6 @@
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-base);
-    /* Központi szín használata a háttér ragyogásánál is! */
     background-image: 
         radial-gradient(circle at 15% 0%, var(--eth-primary-glow) 0%, transparent 50%),
         radial-gradient(circle at 85% 100%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
@@ -38,7 +37,6 @@ body {
 
 .auth-header { text-align: center; margin-bottom: 2.5rem; }
 
-/* ÚJ IKON A MINECRAFT FEJ HELYETT */
 .auth-main-icon {
     font-size: 4.5rem;
     color: var(--eth-primary);
@@ -52,7 +50,7 @@ body {
     font-size: 2rem; 
     font-weight: 900; 
     letter-spacing: 0.1em; 
-    color: var(--eth-primary); /* Gradies helyett teli szín */
+    color: var(--eth-primary);
     margin-bottom: 0.2rem; 
     filter: drop-shadow(0 0 10px var(--eth-primary-glow));
 }
@@ -81,16 +79,26 @@ body {
 .input-group input:focus { border-color: var(--eth-primary); background: rgba(0,0,0,0.5); box-shadow: 0 0 15px var(--eth-primary-glow); }
 .input-group input:focus + .input-icon { color: var(--eth-primary); }
 
-.strength-meter { margin-top: 0.8rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem;}
-.strength-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: var(--radius-pill); overflow: hidden; }
-.strength-bar { height: 100%; width: 0%; background: var(--eth-danger); transition: width 0.4s ease, background-color 0.4s ease; }
-.strength-text { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); min-width: 50px; text-align: right;}
-
-/* GOMB (Gradienst levettük, csak a fős szín) */
-.btn { display: inline-flex; align-items: center; justify-content: center; padding: 1rem; font-size: 1rem; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); border: none; text-decoration: none; }
+/* --- ÚJ, MENŐ GOMB STÍLUS A FŐ GOMBOKHOZ --- */
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 1rem; font-size: 1rem; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); border: none; text-decoration: none; }
 .btn-full { width: 100%; }
-.btn-solid { background: var(--eth-primary); color: #fff; box-shadow: 0 4px 15px var(--eth-primary-glow); }
-.btn-solid:hover { transform: translateY(-2px); box-shadow: 0 8px 25px var(--eth-primary-glow); filter: brightness(1.1); }
+
+.btn-auth {
+    background: transparent;
+    color: var(--text-main);
+    border: 2px solid var(--eth-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.2em; /* Ettől lesz R E G I S Z T R Á L O K hatása! */
+    font-weight: 800;
+    box-shadow: 0 0 10px rgba(0,0,0,0);
+}
+.btn-auth:hover {
+    background: rgba(168, 85, 247, 0.2); /* Világosabb lila kitöltés */
+    border-color: #c084fc; /* Kicsit világosabb lila keret */
+    color: #fff;
+    box-shadow: 0 0 20px var(--eth-primary-glow), inset 0 0 15px rgba(168, 85, 247, 0.2);
+    transform: translateY(-2px);
+}
 
 .auth-footer { margin-top: 2rem; text-align: center; font-size: 0.9rem; color: var(--text-muted); border-top: 1px solid var(--border-glass); padding-top: 1.5rem;}
 .auth-footer a { color: var(--text-main); font-weight: 600; text-decoration: none; transition: var(--transition); margin-left: 0.5rem;}

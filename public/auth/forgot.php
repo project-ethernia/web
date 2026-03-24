@@ -14,23 +14,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
 
         if ($user) {
-            // Generálunk egy egyedi, biztonságos tokent (érvényes 1 óráig)
             $token = bin2hex(random_bytes(32));
             $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
             $update = $pdo->prepare("UPDATE users SET reset_token = ?, reset_expires = ? WHERE id = ?");
             $update->execute([$token, $expires, $user['id']]);
 
-            // EMAIL KÜLDÉS LOGIKÁJA
             $resetLink = "https://{$_SERVER['HTTP_HOST']}/auth/reset.php?token=$token";
             $subject = "Jelszo Visszaallitas - ETHERNIA";
             $message = "Szia {$user['username']}!\n\nKaptunk egy kérést a jelszavad visszaállítására.\nKattints az alábbi linkre a folytatáshoz (1 óráig érvényes):\n\n$resetLink\n\nHa nem te kérted, hagyd figyelmen kívül ezt az e-mailt!";
             $headers = "From: noreply@ethernia.hu";
 
-            // (Megjegyzés: Éles szerveren a mail() függvény helyett PHPMailer használata ajánlott!)
             @mail($email, $subject, $message, $headers);
-            
-            // Biztonság: Még ha nincs is ilyen email, ugyanazt írjuk ki, hogy ne tudják lekerdezni, kinek van fiókja
         }
         $success = 'Ha a megadott e-mail cím létezik a rendszerünkben, elküldtük rá a visszaállító linket!';
     } else {
@@ -46,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Montserrat:wght@800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300..700&display=block">
+    <link rel="stylesheet" href="/assets/css/globals.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/assets/css/auth.css?v=<?= time(); ?>">
 </head>
 <body>
@@ -53,8 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="auth-box glass">
             
             <div class="auth-header">
-                <span class="material-symbols-rounded" style="font-size: 4rem; color: var(--primary); filter: drop-shadow(0 0 15px var(--primary-glow));">lock_reset</span>
-                <h1 class="auth-title" style="margin-top: 1rem;">JELSZÓ RESET</h1>
+                <span class="material-symbols-rounded auth-main-icon">lock_reset</span>
+                <h1 class="auth-title">JELSZÓ RESET</h1>
                 <p class="auth-subtitle">Add meg az e-mail címedet, és küldünk egy visszaállító linket.</p>
             </div>
 
@@ -73,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <input type="email" id="email" name="email" required placeholder="valami@email.hu">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-glow btn-full">Küldés <span class="material-symbols-rounded">send</span></button>
+                    <button type="submit" class="btn btn-auth btn-full">Küldés</button>
                 </form>
             <?php endif; ?>
 

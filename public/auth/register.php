@@ -95,22 +95,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <span class="material-symbols-rounded input-icon">lock</span>
                         <input type="password" id="password" name="password" required placeholder="••••••••">
                     </div>
-                    <div class="strength-meter">
-                        <div class="strength-bar-bg"><div class="strength-bar" id="strength-bar"></div></div>
-                        <span class="strength-text" id="strength-text">Írj be egy jelszót...</span>
-                    </div>
                 </div>
 
                 <div class="input-group">
                     <label for="password_confirm">Jelszó Újra</label>
                     <div class="input-with-icon">
-                        <span class="material-symbols-rounded input-icon">password</span>
+                        <span class="material-symbols-rounded input-icon">lock</span>
                         <input type="password" id="password_confirm" name="password_confirm" required placeholder="••••••••">
                         <span class="material-symbols-rounded match-icon" id="match-icon"></span>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-solid btn-full">Regisztráció</button>
+                <button type="submit" class="btn btn-auth btn-full">Regisztrálok</button>
             </form>
 
             <div class="auth-footer">

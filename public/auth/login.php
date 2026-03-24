@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-solid btn-full">Belépés</button>
+                <button type="submit" class="btn btn-auth btn-full">Belépés</button>
             </form>
 
             <div class="auth-footer">
