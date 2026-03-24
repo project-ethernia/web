@@ -1,6 +1,7 @@
 <?php
+http_response_code(404);
+
 session_start();
-// Opcionális: megnézzük be van-e lépve, de egy 404-nél amúgy is mindegy
 $isLoggedIn = !empty($_SESSION['is_user']) && $_SESSION['is_user'] === true;
 ?>
 <!DOCTYPE html>

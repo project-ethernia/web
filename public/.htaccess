@@ -1,11 +1,6 @@
-ErrorDocument 404 /404.php
-
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
-
-  # Ne irányítsuk át a 404 oldalt magát (kerüljük a loop-ot)
-  RewriteCond %{REQUEST_URI} !^/404(\.php|\.html)?$
 
   # 1) Régi .php vagy .html URL-eket irányítsuk át az új, kiterjesztés nélküli verzióra (csak GET-re)
   RewriteCond %{REQUEST_METHOD} =GET
@@ -28,4 +23,14 @@ ErrorDocument 404 /404.php
   # 4) Ha a kért útvonalhoz létezik .html, belsőleg arra irányítsunk
   RewriteCond %{REQUEST_FILENAME}.html -f
   RewriteRule ^(.+)$ $1.html [L,QSA]
+
+  # 5) A "KIDOBÓEMBER": Ha nem létezik sem fájl, sem mappa, sem .php, sem .html -> 404.php betöltése
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME}.php !-f
+  RewriteCond %{REQUEST_FILENAME}.html !-f
+  RewriteRule ^ /404.php [L]
 </IfModule>
+
+# Biztonsági háló, ha a fenti esetleg nem futna le
+ErrorDocument 404 /404.php
