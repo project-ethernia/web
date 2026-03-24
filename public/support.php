@@ -133,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
         $tickets = $stmt->fetchAll();
         ?>
         <div class="support-toolbar">
-            <a href="/support.php?action=new" class="btn btn-auth" style="width: auto; margin-bottom: 2rem;">+ Új Hibajegy Nyitása</a>
+            <a href="/support.php?action=new" class="btn btn-auth" style="margin-bottom: 2rem;">ÚJ HIBAJEGY NYITÁSA</a>
         </div>
 
         <?php if (empty($tickets)): ?>
@@ -146,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                 <?php foreach ($tickets as $t): ?>
                     <?php 
                         $statusClass = $t['status'] === 'closed' ? 'status-closed' : ($t['status'] === 'answered' ? 'status-answered' : 'status-open');
-                        $statusText = $t['status'] === 'closed' ? 'Lezárva' : ($t['status'] === 'answered' ? 'Megválaszolva' : 'Nyitott');
+                        $statusText = $t['status'] === 'closed' ? 'LEZÁRVA' : ($t['status'] === 'answered' ? 'MEGVÁLASZOLVA' : 'NYITOTT');
                     ?>
                     <a href="/support.php?action=view&id=<?= $t['id'] ?>" class="ticket-card glass hover-lift">
                         <div class="ticket-card-header">
@@ -163,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
     <?php elseif ($action === 'new'): ?>
         <div class="glass support-form-container">
             <div class="support-toolbar" style="margin-bottom: 2rem;">
-                <a href="/support.php" class="btn btn-outline-glow" style="font-size: 0.8rem;"><span class="material-symbols-rounded">arrow_back</span> Vissza</a>
+                <a href="/support.php" class="btn btn-outline-glow" style="font-size: 0.8rem;">VISSZA</a>
             </div>
             
             <form method="POST" action="/support.php?action=create" enctype="multipart/form-data" class="password-form">
@@ -194,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                     <input type="file" name="attachment" accept="image/png, image/jpeg, image/gif" class="support-file">
                 </div>
 
-                <button type="submit" class="btn btn-auth">Ticket Beküldése <span class="material-symbols-rounded">send</span></button>
+                <button type="submit" class="btn btn-auth" style="margin-top: 1rem;">HIBAJEGY BEKÜLDÉSE</button>
             </form>
         </div>
 
@@ -219,9 +219,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
             $messages = $msgStmt->fetchAll();
             
             $statusClass = $ticket['status'] === 'closed' ? 'status-closed' : ($ticket['status'] === 'answered' ? 'status-answered' : 'status-open');
+            
+            // JAVÍTOTT, MAGYARÍTOTT STÁTUSZ SZÖVEG
+            $statusText = $ticket['status'] === 'closed' ? 'LEZÁRVA' : ($ticket['status'] === 'answered' ? 'MEGVÁLASZOLVA' : 'NYITOTT');
         ?>
             <div class="support-toolbar" style="margin-bottom: 1.5rem;">
-                <a href="/support.php" class="btn btn-outline-glow" style="font-size: 0.8rem;"><span class="material-symbols-rounded">arrow_back</span> Vissza a listához</a>
+                <a href="/support.php" class="btn btn-outline-glow" style="font-size: 0.8rem;">VISSZA A LISTÁHOZ</a>
             </div>
 
             <div class="chat-container glass">
@@ -230,7 +233,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                         <h2>#<?= $ticket['id'] ?> - <?= h($ticket['subject']) ?></h2>
                         <span class="badge tag-default"><?= h($ticket['category']) ?></span>
                     </div>
-                    <span class="ticket-status <?= $statusClass ?>" style="font-size: 0.8rem;"><?= strtoupper($ticket['status']) ?></span>
+                    <span class="ticket-status <?= $statusClass ?>" style="font-size: 0.8rem;"><?= $statusText ?></span>
                 </div>
 
                 <div class="chat-messages" id="chat-messages">
@@ -265,7 +268,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                                 <span class="material-symbols-rounded">image</span>
                                 <input type="file" name="attachment" accept="image/*" style="display: none;" id="chat-file-input">
                             </label>
-                            <textarea name="message" placeholder="Írj egy választ..." required class="chat-textarea"></textarea>
+                            <textarea name="message" placeholder="Írj egy választ (Küldés: Enter, Új sor: Shift+Enter)..." required class="chat-textarea"></textarea>
                             <button type="submit" class="chat-send-btn"><span class="material-symbols-rounded">send</span></button>
                         </form>
                         <div id="file-name-display" style="font-size: 0.75rem; color: var(--eth-primary); margin-top: 0.5rem; text-align: left;"></div>
@@ -278,11 +281,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
             </div>
             
             <script>
-                // Auto-scroll az üzenetek aljára + Fájlnév kiírása
                 document.addEventListener("DOMContentLoaded", function() {
+                    // Auto-scroll az üzenetek aljára
                     const chatMsgs = document.getElementById("chat-messages");
                     if (chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
 
+                    // Fájlnév kiírása csatoláskor
                     const fileInput = document.getElementById("chat-file-input");
                     const fileDisplay = document.getElementById("file-name-display");
                     if (fileInput && fileDisplay) {
@@ -291,6 +295,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                                 fileDisplay.textContent = "Csatolva: " + this.files[0].name;
                             } else {
                                 fileDisplay.textContent = "";
+                            }
+                        });
+                    }
+
+                    // JAVÍTÁS: Enterrel küldés, Shift+Enter új sor
+                    const chatTextarea = document.querySelector(".chat-textarea");
+                    if (chatTextarea) {
+                        chatTextarea.addEventListener("keydown", function(e) {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault(); // Megakadályozza az új sort
+                                if (this.value.trim() !== '') {
+                                    this.closest("form").submit(); // Elküldi a formot
+                                }
                             }
                         });
                     }
