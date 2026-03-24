@@ -8,13 +8,11 @@ error_reporting(E_ALL);
 // --- KÖTELEZŐ BEJELENTKEZÉS ÉS INAKTIVITÁS ELLENŐRZÉSE ---
 $timeout_duration = 1800; // 30 perc (másodpercben)
 
-// 1. Van-e egyáltalán belépve valaki?
 if (empty($_SESSION['is_user']) || $_SESSION['is_user'] !== true) {
     header('Location: /auth/login.php');
     exit;
 }
 
-// 2. Túl sok ideje volt inaktív? (Lejárt a 30 perc?)
 if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout_duration) {
     session_unset();
     session_destroy();
@@ -22,9 +20,8 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) >
     exit;
 }
 
-// 3. Frissítjük az aktivitás idejét a jelenlegi másodpercre
 $_SESSION['last_activity'] = time();
-$remaining_time = $timeout_duration; // Ezt adjuk át a Javascriptnek
+$remaining_time = $timeout_duration;
 // ------------------------------------------
 
 require_once __DIR__ . '/database.php';
@@ -59,6 +56,7 @@ $currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] :
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300..700&display=block">
+    <link rel="stylesheet" href="/assets/css/globals.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/assets/css/index.css?v=<?= time(); ?>">
 </head>
 <body>
@@ -165,7 +163,7 @@ $currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] :
             </div>
             
             <div class="news-action">
-                <a href="/news.php" class="btn btn-outline">Összes hír archívuma <span class="material-symbols-rounded" style="vertical-align: middle; font-size:1.2rem; margin-left:0.5rem;">auto_stories</span></a>
+                <a href="/news.php" class="btn btn-outline-glow">Összes hír archívuma</a>
             </div>
         <?php else: ?>
             <div class="empty-state glass">
@@ -178,17 +176,17 @@ $currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] :
     <section class="section">
         <div class="features-grid">
             <div class="feature-card glass hover-lift">
-                <div class="feature-icon glow-purple"><span class="material-symbols-rounded">rocket_launch</span></div>
+                <div class="feature-icon glow-primary"><span class="material-symbols-rounded">rocket_launch</span></div>
                 <h3>Modern Játékélmény</h3>
                 <p>Nincsenek elavult rendszerek. A legújabb verziókon futunk, optimalizált, szaggatásmentes élményt nyújtva minden játékosnak.</p>
             </div>
             <div class="feature-card glass hover-lift">
-                <div class="feature-icon glow-pink"><span class="material-symbols-rounded">diversity_3</span></div>
+                <div class="feature-icon glow-primary"><span class="material-symbols-rounded">diversity_3</span></div>
                 <h3>Barátságos Közösség</h3>
                 <p>Szigorú, de igazságos moderáció. Nálunk a tisztelet a legfontosabb, így egy toxicitástól mentes környezetben játszhatsz.</p>
             </div>
             <div class="feature-card glass hover-lift">
-                <div class="feature-icon glow-blue"><span class="material-symbols-rounded">emoji_events</span></div>
+                <div class="feature-icon glow-primary"><span class="material-symbols-rounded">emoji_events</span></div>
                 <h3>Folyamatos Események</h3>
                 <p>Rendszeres eventek, egyedi küldetések és szezonális kihívások, hogy sose unatkozz a túlélés során.</p>
             </div>
