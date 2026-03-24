@@ -1,11 +1,10 @@
 /* ==========================================================================
    ETHERNIA - FŐOLDAL STÍLUSOK (Tiszta, monokróm prémium dizájn)
-   Minden szín a globals.css-ből jön!
+   Minden szín és betűtípus a globals.css-ből jön!
    ========================================================================== */
 
 body {
     background-color: var(--bg-base);
-    /* Két hatalmas, nagyon finom fénypaca a háttérbe a fő színnel */
     background-image: 
         radial-gradient(circle at 15% 0%, var(--eth-primary-glow) 0%, transparent 40%),
         radial-gradient(circle at 85% 100%, var(--eth-primary-glow) 0%, transparent 40%);
@@ -36,7 +35,6 @@ body {
     border: none; text-decoration: none;
 }
 
-/* Új "Auth-szerű" keretes gomb a Hírek archívumához */
 .btn-outline-glow { 
     background: transparent; 
     border: 2px solid var(--eth-primary); 
@@ -46,13 +44,12 @@ body {
     font-weight: 700;
 }
 .btn-outline-glow:hover { 
-    background: rgba(168, 85, 247, 0.2); /* Nagyon enyhe kitöltés */
+    background: rgba(168, 85, 247, 0.2); 
     border-color: var(--eth-primary); 
     color: #fff;
     box-shadow: 0 0 20px var(--eth-primary-glow), inset 0 0 15px rgba(168, 85, 247, 0.2);
 }
 
-/* Kijelentkezés gomb a globális Danger színnel */
 .btn-logout {
     background: rgba(239, 68, 68, 0.1);
     color: var(--eth-danger);
@@ -133,13 +130,19 @@ body {
 }
 
 .hero-title {
-    font-family: 'Montserrat', sans-serif; font-size: 5rem; font-weight: 900;
+    font-size: 5rem; font-weight: 900;
     letter-spacing: 0.1em; margin-bottom: 0.5rem; line-height: 1;
-    color: var(--eth-primary); /* Sima, brutál szín, nincs átmenet! */
+    color: var(--eth-primary); 
     filter: drop-shadow(0 0 30px var(--eth-primary-glow));
 }
 
-.hero-subtitle { color: var(--text-muted); font-size: 1.1rem; letter-spacing: 0.05em; margin: 0; }
+.hero-subtitle { 
+    color: var(--text-muted); 
+    font-size: 1.1rem; 
+    letter-spacing: 0.05em; 
+    margin: 0; 
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Árnyék, hogy kiemelkedjen a ragyogásból */
+}
 
 /* WIDGETEK */
 .stat-widget {
@@ -169,9 +172,8 @@ body {
 .container { flex: 1; max-width: 1400px; margin: 0 auto; width: 100%; padding: 0 1.5rem; }
 .section { margin-bottom: 6rem; }
 .section-header { text-align: center; margin-bottom: 3rem; }
-.section-title { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; font-family: 'Montserrat', sans-serif; }
+.section-title { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem;}
 
-/* A cím alatti vonal is tiszta primary szín! */
 .title-line { height: 4px; width: 60px; background: var(--eth-primary); box-shadow: 0 0 10px var(--eth-primary-glow); margin: 0 auto 1rem; border-radius: 2px; }
 .section-subtitle { color: var(--text-muted); font-size: 1rem; }
 
@@ -190,7 +192,6 @@ body {
 .news-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
 .badge { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 0.3rem 0.8rem; border-radius: var(--radius-pill); letter-spacing: 0.05em; }
 
-/* A Tageket szándékosan hagytam picit eltérő színűre a jó láthatóságért, de tompítottam őket */
 .tag-event { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
 .tag-info { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
 .tag-update { background: var(--eth-primary-glow); color: var(--eth-primary); border: 1px solid rgba(168, 85, 247, 0.5); }
@@ -198,12 +199,11 @@ body {
 
 .date { font-size: 0.8rem; color: var(--text-muted); }
 .news-title { font-size: 1.2rem; margin-bottom: 0.8rem; line-height: 1.3; font-weight: 700; }
-.news-text { color: var(--text-muted); font-size: 0.9rem; flex: 1; margin-bottom: 1.5rem; }
+.news-text { color: var(--text-muted); font-size: 0.95rem; flex: 1; margin-bottom: 1.5rem; line-height: 1.6;}
 .news-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-glass); padding-top: 1rem; }
 .author { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
 .author img { width: 24px; height: 24px; border-radius: 4px; image-rendering: pixelated; }
 
-/* Gombok és ikonok a kártyán */
 .read-more { background: transparent; border: none; color: var(--eth-primary); font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.2rem; transition: var(--transition); }
 .news-card:hover .read-more { color: #fff; text-shadow: 0 0 10px var(--eth-primary-glow); gap: 0.5rem; }
 
@@ -215,13 +215,12 @@ body {
 .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
 .feature-card { padding: 2.5rem 2rem; text-align: center; border-radius: var(--radius-md); }
 
-/* MINDEN IKON UGYANAZT A GLOBÁLIS SZÍNT KAPJA */
 .feature-icon { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; background: rgba(255,255,255,0.05); font-size: 2rem; transition: var(--transition); }
 .feature-card:hover .feature-icon { transform: scale(1.1); }
 .glow-primary { color: var(--eth-primary); box-shadow: 0 0 20px var(--eth-primary-glow); }
 
 .feature-card h3 { font-size: 1.3rem; margin-bottom: 0.8rem; }
-.feature-card p { color: var(--text-muted); font-size: 0.95rem; }
+.feature-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;}
 
 /* --- LÁBLÉC --- */
 .footer { border-top: 1px solid var(--border-glass); margin-top: 4rem; padding: 4rem 1.5rem 2rem; background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.5)); text-align: center; }
