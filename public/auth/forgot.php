@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $update = $pdo->prepare("UPDATE users SET reset_token = ?, reset_expires = ? WHERE id = ?");
             $update->execute([$token, $expires, $user['id']]);
 
-            $resetLink = "https://{$_SERVER['HTTP_HOST']}/auth/reset.php?token=$token";
+            $resetLink = "https://{$_SERVER['HTTP_HOST']}/auth/reset-password.php?token=$token";
             $subject = "Jelszo Visszaallitas - ETHERNIA";
             $message = "Szia {$user['username']}!\n\nKaptunk egy kérést a jelszavad visszaállítására.\nKattints az alábbi linkre a folytatáshoz (1 óráig érvényes):\n\n$resetLink\n\nHa nem te kérted, hagyd figyelmen kívül ezt az e-mailt!";
             $headers = "From: noreply@ethernia.hu";
