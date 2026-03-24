@@ -5,6 +5,28 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// --- KÖTELEZŐ BEJELENTKEZÉS ÉS INAKTIVITÁS ELLENŐRZÉSE ---
+$timeout_duration = 1800; // 30 perc (másodpercben)
+
+// 1. Van-e egyáltalán belépve valaki?
+if (empty($_SESSION['is_user']) || $_SESSION['is_user'] !== true) {
+    header('Location: /auth/login.php');
+    exit;
+}
+
+// 2. Túl sok ideje volt inaktív? (Lejárt a 30 perc?)
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout_duration) {
+    session_unset();
+    session_destroy();
+    header('Location: /auth/login.php?error=timeout');
+    exit;
+}
+
+// 3. Frissítjük az aktivitás idejét a jelenlegi másodpercre
+$_SESSION['last_activity'] = time();
+$remaining_time = $timeout_duration; // Ezt adjuk át a Javascriptnek
+// ------------------------------------------
+
 require_once __DIR__ . '/database.php';
 
 function h($str) {
@@ -25,8 +47,7 @@ try {
     die('Adatbázis hiba: ' . $e->getMessage());
 }
 
-$isLoggedIn = !empty($_SESSION['is_user']) && $_SESSION['is_user'] === true;
-$currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['user_username'] : null;
+$currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] : 'Játékos';
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -70,9 +91,8 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
 
 <nav class="navbar">
     <div class="navbar-inner glass">
-        <a href="/" class="nav-brand">
-            <span class="nav-logo-text" style="background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; color: transparent; letter-spacing: 0.1em;">ETHERNIA</span>
-        </a>
+        
+        <div style="width: 150px;" class="nav-spacer"></div>
         
         <ul class="nav-links">
             <li><a href="/" class="active">Főoldal</a></li>
@@ -83,17 +103,18 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
         </ul>
 
         <div class="nav-auth">
-            <?php if ($isLoggedIn): ?>
-                <div class="user-badge glass">
-                    <img src="https://minotar.net/helm/<?= h($currentUser); ?>/32.png" alt="Skin">
-                    <span><?= h($currentUser); ?></span>
-                </div>
-                <a href="/auth/logout.php" class="btn btn-outline">Kijelentkezés</a>
-            <?php else: ?>
-                <a href="/auth/login.php" class="btn btn-outline">Belépés</a>
-                <a href="/auth/register.php" class="btn btn-glow">Regisztráció</a>
-            <?php endif; ?>
+            <div class="session-timer glass" title="Automatikus kijelentkezés">
+                <span class="material-symbols-rounded">timer</span>
+                <span id="countdown-timer" data-seconds="<?= $remaining_time ?>">30:00</span>
+            </div>
+            
+            <div class="user-badge glass">
+                <img src="https://minotar.net/helm/<?= h($currentUser); ?>/32.png" alt="Skin">
+                <span><?= h($currentUser); ?></span>
+            </div>
+            <a href="/auth/logout.php" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.85rem;">Kijelentkezés</a>
         </div>
+        
     </div>
 </nav>
 

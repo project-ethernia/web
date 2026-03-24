@@ -1,11 +1,11 @@
 "use strict";
 /// <reference lib="dom" />
 document.addEventListener("DOMContentLoaded", () => {
-    // Évszám beállítása a footerben
+    // 1. Évszám beállítása a footerben
     const yearEl = document.getElementById('year');
     if (yearEl)
         yearEl.textContent = new Date().getFullYear().toString();
-    // IP Másolás funkció és Toast
+    // 2. IP Másolás funkció és Toast
     const toastContainer = document.getElementById('toast-container');
     const showToast = (message) => {
         if (!toastContainer)
@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
         toast.className = 'toast';
         toast.textContent = message;
         toastContainer.appendChild(toast);
-        // Animációk miatt 3 mp múlva töröljük
         setTimeout(() => {
             toast.style.opacity = '0';
             setTimeout(() => toast.remove(), 300);
@@ -28,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     });
-    // Modal kezelés a hírekhez
+    // 3. Modal kezelés a hírekhez
     const modal = document.getElementById('news-modal');
     const modalInner = document.getElementById('modal-content-inner');
     const modalCloseBtn = document.querySelector('.modal-close');
@@ -54,6 +53,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 modal.classList.remove('open');
         });
     }
-    // Ide jöhet a Minecraft/Discord fetch API logika (ugyanaz maradhat, ami volt)
-    // fetch('https://api.mcsrvstat.us/2/play.ethernia.hu')... stb.
+    // 4. Session Timeout Visszaszámláló
+    const timerEl = document.getElementById('countdown-timer');
+    if (timerEl) {
+        // A PHP-ből kapott hátralévő másodpercek
+        let seconds = parseInt(timerEl.dataset.seconds || '1800', 10);
+        const updateTimer = () => {
+            var _a;
+            if (seconds <= 0) {
+                // Ha lejárt, azonnali kiléptetés
+                window.location.href = '/auth/logout.php?error=timeout';
+                return;
+            }
+            // Másodperc konvertálása MM:SS formátumba
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            timerEl.textContent = `${m}:${s}`;
+            // Ha kevesebb mint 1 perc van hátra, kezdjen el vörösen villogni a doboz
+            if (seconds <= 60) {
+                (_a = timerEl.parentElement) === null || _a === void 0 ? void 0 : _a.classList.add('danger-pulse');
+            }
+            seconds--;
+        };
+        // Azonnali frissítés, majd 1 másodperces időzítő
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    }
 });
