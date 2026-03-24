@@ -7,7 +7,7 @@ if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
     exit;
 }
 
-$discordWebhookUrl = "IDE_MASOLD_A_DISCORD_WEBHOOK_LINKEDET";
+$discordWebhookUrl = "https://discord.com/api/webhooks/1486000917999386738/HvV8ve01gurjCAna3mb7sZEG9BzomI546ZEwgH1t7NbWMzvso--jGFhz49OnmkLxHMFJ";
 $maxFailedAttempts = 3;
 $lockoutMinutes = 15;
 
