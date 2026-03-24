@@ -1,3 +1,5 @@
+ErrorDocument 404 /404.php
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
@@ -27,6 +29,3 @@
   RewriteCond %{REQUEST_FILENAME}.html -f
   RewriteRule ^(.+)$ $1.html [L,QSA]
 </IfModule>
-
-# Dinamikus 404 PHP oldal
-ErrorDocument 404 /404.php
