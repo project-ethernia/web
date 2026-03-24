@@ -1,5 +1,3 @@
-hibas sor xyd
-
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
