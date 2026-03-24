@@ -26,7 +26,7 @@ $currentUser = $_SESSION['user_username'];
 $action = $_GET['action'] ?? 'list';
 $msg = '';
 
-// KÉPFELTÖLTŐ FUNKCIÓ
+// KÉPFELTÖLTŐ FUNKCIÓ (Már csak a chatnél használjuk!)
 function uploadImage($fileArray) {
     if (isset($fileArray) && $fileArray['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($fileArray['name'], PATHINFO_EXTENSION);
@@ -43,7 +43,7 @@ function uploadImage($fileArray) {
     return null;
 }
 
-// ÚJ TICKET LÉTREHOZÁSA
+// ÚJ TICKET LÉTREHOZÁSA (Itt kivettük a képfeltöltést)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
     $subject = trim($_POST['subject'] ?? '');
     $category = trim($_POST['category'] ?? '');
@@ -56,10 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
             $stmt->execute([$user_id, $subject, $category]);
             $ticket_id = $pdo->lastInsertId();
 
-            $attachment = uploadImage($_FILES['attachment'] ?? null);
-
-            $stmt2 = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, ?)");
-            $stmt2->execute([$ticket_id, $user_id, $message, $attachment]);
+            // Első üzenetnél nincs csatolmány (NULL)
+            $stmt2 = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, NULL)");
+            $stmt2->execute([$ticket_id, $user_id, $message]);
 
             $pdo->commit();
             header("Location: /support.php?action=view&id=" . $ticket_id);
@@ -73,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
     }
 }
 
-// VÁLASZ KÜLDÉSE
+// VÁLASZ KÜLDÉSE (A chatben már van képfeltöltés)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET['id'])) {
     $ticket_id = (int)$_GET['id'];
     $message = trim($_POST['message'] ?? '');
@@ -162,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                 <span class="material-symbols-rounded">close</span>
             </a>
             
-            <form method="POST" action="/support.php?action=create" enctype="multipart/form-data" class="password-form" style="padding-top: 1rem;">
+            <form method="POST" action="/support.php?action=create" class="password-form" style="padding-top: 1rem;">
                 <div class="form-row">
                     <div class="input-group">
                         <label>Kategória</label>
@@ -183,11 +182,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                 <div class="input-group">
                     <label>Probléma Részletes Leírása</label>
                     <textarea name="message" required rows="6" placeholder="Írd le minél pontosabban a problémát..." class="support-textarea"></textarea>
-                </div>
-
-                <div class="input-group">
-                    <label>Kép Csatolása (Opcionális - PNG, JPG)</label>
-                    <input type="file" name="attachment" accept="image/png, image/jpeg, image/gif" class="support-file">
                 </div>
 
                 <div style="text-align: center; margin-top: 1.5rem;">
