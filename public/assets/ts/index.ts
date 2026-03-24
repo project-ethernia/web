@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear().toString();
 
-    // 2. IP Másolás funkció és Toast
+    // 2. IP Másolás funkció és Toast (Okosított)
     const toastContainer = document.getElementById('toast-container');
     const showToast = (message: string) => {
         if (!toastContainer) return;
@@ -22,9 +22,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll('.copy-ip').forEach(el => {
         el.addEventListener('click', () => {
-            const ip = (el as HTMLElement).dataset.ip || 'play.ethernia.hu';
+            const widget = el as HTMLElement;
+            const ip = widget.dataset.ip || 'play.ethernia.hu';
+            const labelEl = widget.querySelector('#mc-copy-text');
+            const originalText = labelEl ? labelEl.textContent : 'Kattints a másoláshoz';
+
             navigator.clipboard.writeText(ip).then(() => {
-                showToast(`Szerver IP (${ip}) másolva a vágólapra!`);
+                // Siker esetén a gomb szövege is megváltozik 3 másodpercre!
+                if (labelEl) {
+                    labelEl.textContent = 'IP Másolva! ✔️';
+                    (labelEl as HTMLElement).style.color = '#22c55e'; // Szép zöld szín
+                    (labelEl as HTMLElement).style.fontWeight = 'bold';
+                }
+                
+                showToast(`Szerver IP (${ip}) sikeresen másolva!`);
+
+                setTimeout(() => {
+                    if (labelEl) {
+                        labelEl.textContent = originalText;
+                        (labelEl as HTMLElement).style.color = '';
+                        (labelEl as HTMLElement).style.fontWeight = '';
+                    }
+                }, 3000);
+            }).catch(err => {
+                console.error("Nem sikerült a vágólapra másolni!", err);
+                showToast("Hiba történt a másolás során.");
             });
         });
     });

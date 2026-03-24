@@ -66,11 +66,10 @@ $currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] :
 <header class="hero">
     <div class="hero-bg-glow"></div>
     <div class="hero-content">
-        <h1 class="hero-title">ETHERNIA</h1>
-        <p class="hero-subtitle">A kaland itt kezdődik. Csatlakozz a legmodernebb magyar közösséghez!</p>
         
-        <div class="hero-stats">
-            <a href="https://dc.ethernia.hu" target="_blank" class="stat-card glass hover-lift">
+        <div class="hero-top-row">
+            
+            <a href="https://dc.ethernia.hu" target="_blank" class="stat-widget glass hover-lift">
                 <div class="stat-icon discord"><img src="/assets/img/discord.png" alt="DC" style="width:24px; filter:brightness(0) invert(1);"></div>
                 <div class="stat-info">
                     <span class="stat-value"><span id="discord-online">--</span> online</span>
@@ -78,14 +77,21 @@ $currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] :
                 </div>
             </a>
             
-            <div class="stat-card glass hover-lift copy-ip" data-ip="play.ethernia.hu">
+            <div class="hero-center-titles">
+                <h1 class="hero-title">ETHERNIA</h1>
+                <p class="hero-subtitle">A kaland itt kezdődik. Csatlakozz a legmodernebb magyar közösséghez!</p>
+            </div>
+            
+            <div class="stat-widget glass hover-lift copy-ip" data-ip="play.ethernia.hu">
                 <div class="stat-icon minecraft">⛏️</div>
                 <div class="stat-info">
                     <span class="stat-value"><span id="mc-online">--</span> / <span id="mc-max">--</span></span>
-                    <span class="stat-label click-to-copy">Kattints az IP másolásához</span>
+                    <span class="stat-label click-to-copy" id="mc-copy-text">Kattints a másoláshoz</span>
                 </div>
             </div>
+            
         </div>
+
     </div>
 </header>
 
