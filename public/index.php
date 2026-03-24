@@ -79,7 +79,6 @@ $currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] :
             
             <div class="hero-center-titles">
                 <h1 class="hero-title">ETHERNIA</h1>
-                <p class="hero-subtitle">A kaland itt kezdődik. Csatlakozz a legmodernebb magyar közösséghez!</p>
             </div>
             
             <div class="stat-widget glass hover-lift copy-ip" data-ip="play.ethernia.hu">
@@ -99,10 +98,6 @@ $currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] :
     <div class="navbar-inner glass">
         
         <div class="nav-side nav-left">
-            <div class="session-timer glass" title="Automatikus kijelentkezés">
-                <span class="material-symbols-rounded">timer</span>
-                <span id="countdown-timer" data-seconds="<?= $remaining_time ?>">30:00</span>
-            </div>
         </div>
         
         <ul class="nav-links">
