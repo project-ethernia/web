@@ -1,28 +1,7 @@
 "use strict";
 /// <reference lib="dom" />
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. DINAMIKUS MINECRAFT AVATAR (Gépelés közben változik)
-    const usernameInput = document.getElementById('username');
-    const avatarImg = document.getElementById('dynamic-avatar');
-    if (usernameInput && avatarImg) {
-        // Kis késleltetés, hogy ne spammeljük le a Minotar API-t minden betűnél
-        let debounceTimer;
-        usernameInput.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                const val = usernameInput.value.trim();
-                if (val.length >= 3) {
-                    // Ha legalább 3 karakter, lekérjük a fejét
-                    avatarImg.src = `https://minotar.net/helm/${val}/100.png`;
-                }
-                else {
-                    // Alapértelmezett Steve fej
-                    avatarImg.src = `https://minotar.net/helm/Steve/100.png`;
-                }
-            }, 400); // 400ms várakozás gépelés után
-        });
-    }
-    // 2. ÉLŐ JELSZÓ-ERŐSSÉG MÉRŐ
+    // 1. ÉLŐ JELSZÓ-ERŐSSÉG MÉRŐ
     const passInput = document.getElementById('password');
     const strengthBar = document.getElementById('strength-bar');
     const strengthText = document.getElementById('strength-text');
@@ -45,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 strength += 25; // Tartalmaz nagybetűt
             if (/[0-9]/.test(val) && /[^A-Za-z0-9]/.test(val))
                 strength += 25; // Szám ÉS speciális karakter
-            // Vizuális frissítés
+            // Vizuális frissítés (A globális CSS változókat is használhatnánk itt JS-ből, de a hex kód is jó)
             strengthBar.style.width = `${strength}%`;
             if (strength <= 25) {
                 strengthBar.style.background = '#ef4444'; // Piros
@@ -64,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-    // 3. JELSZÓ EGYEZÉS VALÓS IDŐBEN
+    // 2. JELSZÓ EGYEZÉS VALÓS IDŐBEN
     const passConfirmInput = document.getElementById('password_confirm');
     const matchIcon = document.getElementById('match-icon');
     if (passInput && passConfirmInput && matchIcon) {
@@ -82,7 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 matchIcon.style.color = '#ef4444';
             }
         };
-        // Mindkét mező változásakor ellenőrizzük
         passInput.addEventListener('input', checkMatch);
         passConfirmInput.addEventListener('input', checkMatch);
     }

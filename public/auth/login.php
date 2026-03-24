@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Ha már be van lépve, azonnal menjen a főoldalra
 if (!empty($_SESSION['is_user']) && $_SESSION['is_user'] === true) {
     header('Location: /');
     exit;
@@ -20,11 +19,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
-            // SIKERES BELÉPÉS
             $_SESSION['is_user'] = true;
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_username'] = $user['username'];
-            $_SESSION['last_activity'] = time(); // A 30 perces limithez
+            $_SESSION['last_activity'] = time();
             
             header('Location: /');
             exit;
@@ -44,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Montserrat:wght@800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300..700&display=block">
+    <link rel="stylesheet" href="/assets/css/globals.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/assets/css/auth.css?v=<?= time(); ?>">
 </head>
 <body>
@@ -51,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="auth-box glass">
             
             <div class="auth-header">
-                <img src="https://minotar.net/helm/Steve/100.png" alt="Avatar" class="avatar-img" id="dynamic-avatar">
+                <span class="material-symbols-rounded auth-main-icon">lock_person</span>
                 <h1 class="auth-title">ETHERNIA</h1>
                 <p class="auth-subtitle">Jelentkezz be a fiókodba</p>
             </div>
@@ -88,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-glow btn-full">Belépés <span class="material-symbols-rounded">login</span></button>
+                <button type="submit" class="btn btn-solid btn-full">Belépés</button>
             </form>
 
             <div class="auth-footer">

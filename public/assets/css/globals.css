@@ -1,0 +1,34 @@
+/* ==========================================================================
+   ETHERNIA - KÖZPONTI VÁLTOZÓK (GLOBALS)
+   Itt tudod egy helyen átállítani a teljes weboldal színvilágát!
+   ========================================================================== */
+:root {
+    /* FŐ SZÍNEK (Itt írd át a lila kódot, és mindenhol megváltozik!) */
+    --eth-primary: #a855f7;       /* Az Ethernia fő színe (Lila) */
+    --eth-primary-glow: rgba(168, 85, 247, 0.4); /* Ugyanaz a szín, csak áttetsző az árnyékokhoz */
+    
+    /* ÁLLAPOT SZÍNEK */
+    --eth-danger: #ef4444;        /* Piros (Hibák, kilépés) */
+    --eth-success: #22c55e;       /* Zöld (Sikerek, erős jelszó) */
+    --eth-warning: #eab308;       /* Sárga (Közepes jelszó) */
+
+    /* HÁTTÉR ÉS ÜVEG EFFEKT (Sötét téma) */
+    --bg-base: #07050f;
+    --bg-glass: rgba(20, 15, 35, 0.6);
+    --border-glass: rgba(255, 255, 255, 0.08);
+    --border-glass-focus: var(--eth-primary-glow);
+    
+    /* SZÖVEGEK */
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    /* EGYÉB GLOBÁLIS BEÁLLÍTÁSOK */
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-pill: 9999px;
+}
+
+/* Alapvető reset, ami minden oldalra kell */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+a { color: inherit; text-decoration: none; }

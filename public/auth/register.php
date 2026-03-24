@@ -26,13 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (!preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
             $error = 'A felhasználónév csak betűket, számokat és alulvonást tartalmazhat!';
         } else {
-            // Megnézzük, van-e már ilyen
             $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ? LIMIT 1");
             $stmt->execute([$username, $email]);
             if ($stmt->fetch()) {
                 $error = 'Ez a felhasználónév vagy e-mail cím már használatban van!';
             } else {
-                // SIKERES REGISZTRÁCIÓ
                 $hashed = password_hash($password, PASSWORD_DEFAULT);
                 $insert = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
                 
@@ -57,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Montserrat:wght@800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300..700&display=block">
+    <link rel="stylesheet" href="/assets/css/globals.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/assets/css/auth.css?v=<?= time(); ?>">
 </head>
 <body>
@@ -64,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="auth-box glass">
             
             <div class="auth-header">
-                <img src="https://minotar.net/helm/Steve/100.png" alt="Avatar" class="avatar-img" id="dynamic-avatar">
+                <span class="material-symbols-rounded auth-main-icon">person_add</span>
                 <h1 class="auth-title">CSATLAKOZZ</h1>
                 <p class="auth-subtitle">Hozd létre ETHERNIA fiókodat</p>
             </div>
@@ -111,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-glow btn-full">Regisztráció <span class="material-symbols-rounded">person_add</span></button>
+                <button type="submit" class="btn btn-solid btn-full">Regisztráció</button>
             </form>
 
             <div class="auth-footer">
