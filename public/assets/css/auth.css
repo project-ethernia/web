@@ -1,12 +1,13 @@
 body {
-    font-family: 'Inter', sans-serif;
     background-color: var(--bg-base);
-    /* A lila foltokat (radial-gradient) innen eltüntettük! */
-    color: var(--text-main);
-    min-height: 100vh;
+    background-image: 
+        radial-gradient(circle at 15% 0%, var(--eth-primary-glow) 0%, transparent 50%),
+        radial-gradient(circle at 85% 100%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    background-attachment: fixed;
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 100vh;
 }
 
 .auth-wrapper { padding: 2rem 1rem; width: 100%; display: flex; justify-content: center; }
@@ -43,9 +44,8 @@ body {
 }
 
 .auth-title { 
-    font-family: 'Montserrat', sans-serif; 
+    /* A betűtípust (Poppins) már a globals.css adja! */
     font-size: 2rem; 
-    font-weight: 900; 
     letter-spacing: 0.1em; 
     color: var(--eth-primary);
     margin-bottom: 0.2rem; 
@@ -68,10 +68,11 @@ body {
 .match-icon { position: absolute; right: 1.2rem; top: 50%; transform: translateY(-50%); font-size: 1.2rem; pointer-events: none; transition: var(--transition); }
 
 .input-group input { 
+    /* A betűtípust (Outfit) már a globals.css adja! */
     width: 100%; padding: 1rem 1rem 1rem 3.2rem; 
     background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); 
     border-radius: var(--radius-sm); color: #fff; font-size: 1rem; 
-    outline: none; transition: var(--transition); font-family: 'Inter', sans-serif;
+    outline: none; transition: var(--transition);
 }
 .input-group input:focus { border-color: var(--eth-primary); background: rgba(0,0,0,0.5); box-shadow: 0 0 15px var(--eth-primary-glow); }
 .input-group input:focus + .input-icon { color: var(--eth-primary); }
@@ -89,7 +90,7 @@ body {
     box-shadow: 0 0 10px rgba(0,0,0,0);
 }
 .btn-auth:hover {
-    background: rgba(168, 85, 247, 0.2);
+    background: rgba(168, 85, 247, 0.2); 
     border-color: #c084fc; 
     color: #fff;
     box-shadow: 0 0 20px var(--eth-primary-glow), inset 0 0 15px rgba(168, 85, 247, 0.2);
