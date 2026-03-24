@@ -5,23 +5,32 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// --- KÖTELEZŐ BEJELENTKEZÉS ÉS INAKTIVITÁS ELLENŐRZÉSE ---
-$timeout_duration = 1800; // 30 perc (másodpercben)
+// --- KÖTELEZŐ BEJELENTKEZÉS ÉS ABSZOLÚT IDŐKORLÁT ---
+$timeout_duration = 3600; // 1 óra (másodpercben)
 
 if (empty($_SESSION['is_user']) || $_SESSION['is_user'] !== true) {
     header('Location: /auth/login.php');
     exit;
 }
 
-if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout_duration) {
+// Ha nincs login_time (pl. régi session), most beállítjuk
+if (!isset($_SESSION['login_time'])) {
+    $_SESSION['login_time'] = time();
+}
+
+// Kiszámoljuk, mennyi idő telt el a belépés óta
+$elapsed_time = time() - $_SESSION['login_time'];
+
+// Ha eltelt az 1 óra, kíméletlenül kidobja
+if ($elapsed_time >= $timeout_duration) {
     session_unset();
     session_destroy();
     header('Location: /auth/login.php?error=timeout');
     exit;
 }
 
-$_SESSION['last_activity'] = time();
-$remaining_time = $timeout_duration;
+// Kiszámoljuk a hátralévő másodperceket a JS timernek
+$remaining_time = $timeout_duration - $elapsed_time;
 // ------------------------------------------
 
 require_once __DIR__ . '/database.php';
@@ -99,7 +108,7 @@ $currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] :
         <div class="nav-side nav-left">
             <div class="session-timer glass" title="Automatikus kijelentkezés">
                 <span class="material-symbols-rounded">timer</span>
-                <span id="countdown-timer" data-seconds="<?= $remaining_time ?>">30:00</span>
+                <span id="countdown-timer" data-seconds="<?= $remaining_time ?>">60:00</span>
             </div>
         </div>
         

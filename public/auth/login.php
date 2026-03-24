@@ -22,7 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['is_user'] = true;
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_username'] = $user['username'];
-            $_SESSION['last_activity'] = time();
+            
+            // AZ ÚJ ABSZOLÚT IDŐZÍTŐ ALAPJA: A belépés pillanata
+            $_SESSION['login_time'] = time(); 
             
             header('Location: /');
             exit;
@@ -44,7 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300..700&display=block">
     <link rel="stylesheet" href="/assets/css/globals.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/assets/css/auth.css?v=<?= time(); ?>">
@@ -69,6 +70,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <?php if (isset($_GET['reset'])): ?>
                 <div class="auth-alert success">A jelszavad sikeresen megváltozott!</div>
+            <?php endif; ?>
+            
+            <?php if (isset($_GET['error']) && $_GET['error'] === 'timeout'): ?>
+                <div class="auth-alert error">A munkameneted lejárt (1 óra). Kérlek, lépj be újra!</div>
             <?php endif; ?>
 
             <form method="POST" action="/auth/login.php">

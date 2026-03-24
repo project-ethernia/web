@@ -5,24 +5,28 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// --- KÖTELEZŐ BEJELENTKEZÉS ÉS INAKTIVITÁS ELLENŐRZÉSE ---
-// (Mivel a főoldal zárt, a hírarchívum is csak a tagoknak szól!)
-$timeout_duration = 1800; // 30 perc
+// --- KÖTELEZŐ BEJELENTKEZÉS ÉS ABSZOLÚT IDŐKORLÁT ---
+$timeout_duration = 3600; // 1 óra
 
 if (empty($_SESSION['is_user']) || $_SESSION['is_user'] !== true) {
     header('Location: /auth/login.php');
     exit;
 }
 
-if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout_duration) {
+if (!isset($_SESSION['login_time'])) {
+    $_SESSION['login_time'] = time();
+}
+
+$elapsed_time = time() - $_SESSION['login_time'];
+
+if ($elapsed_time >= $timeout_duration) {
     session_unset();
     session_destroy();
     header('Location: /auth/login.php?error=timeout');
     exit;
 }
 
-$_SESSION['last_activity'] = time();
-$remaining_time = $timeout_duration;
+$remaining_time = $timeout_duration - $elapsed_time;
 // ------------------------------------------
 
 require_once __DIR__ . '/database.php';
@@ -31,7 +35,6 @@ function h($str) {
     return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8');
 }
 
-// AZ ÖSSZES HÍR LEKÉRDEZÉSE (Nincs LIMIT)
 try {
     $stmt = $pdo->query("
         SELECT id, title, category, tag, date_display, short_text, full_text, author, created_at
@@ -69,7 +72,7 @@ $currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] :
         <div class="nav-side nav-left">
             <div class="session-timer glass" title="Automatikus kijelentkezés">
                 <span class="material-symbols-rounded">timer</span>
-                <span id="countdown-timer" data-seconds="<?= $remaining_time ?>">30:00</span>
+                <span id="countdown-timer" data-seconds="<?= $remaining_time ?>">60:00</span>
             </div>
         </div>
         
