@@ -42,36 +42,6 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
 </head>
 <body>
 
-<nav class="navbar">
-    <div class="navbar-inner glass">
-        <a href="/" class="nav-brand">
-            <img src="/assets/img/etherniareborn.png" alt="Ethernia" class="nav-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <span class="nav-logo-text" style="display:none;">ETHERNIA</span>
-        </a>
-        
-        <ul class="nav-links">
-            <li><a href="/" class="active">Főoldal</a></li>
-            <li><a href="#">Webshop</a></li>
-            <li><a href="#">Szabályzat</a></li>
-            <li><a href="#">Statisztikák</a></li>
-            <li><a href="#">Kapcsolat</a></li>
-        </ul>
-
-        <div class="nav-auth">
-            <?php if ($isLoggedIn): ?>
-                <div class="user-badge glass">
-                    <img src="https://minotar.net/helm/<?= h($currentUser); ?>/32.png" alt="Skin">
-                    <span><?= h($currentUser); ?></span>
-                </div>
-                <a href="/auth/logout.php" class="btn btn-outline">Kijelentkezés</a>
-            <?php else: ?>
-                <a href="/auth/login.php" class="btn btn-outline">Belépés</a>
-                <a href="/auth/register.php" class="btn btn-glow">Regisztráció</a>
-            <?php endif; ?>
-        </div>
-    </div>
-</nav>
-
 <header class="hero">
     <div class="hero-bg-glow"></div>
     <div class="hero-content">
@@ -97,6 +67,35 @@ $currentUser = $isLoggedIn && !empty($_SESSION['user_username']) ? $_SESSION['us
         </div>
     </div>
 </header>
+
+<nav class="navbar">
+    <div class="navbar-inner glass">
+        <a href="/" class="nav-brand">
+            <span class="nav-logo-text" style="background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; color: transparent; letter-spacing: 0.1em;">ETHERNIA</span>
+        </a>
+        
+        <ul class="nav-links">
+            <li><a href="/" class="active">Főoldal</a></li>
+            <li><a href="#">Webshop</a></li>
+            <li><a href="#">Szabályzat</a></li>
+            <li><a href="#">Statisztikák</a></li>
+            <li><a href="#">Kapcsolat</a></li>
+        </ul>
+
+        <div class="nav-auth">
+            <?php if ($isLoggedIn): ?>
+                <div class="user-badge glass">
+                    <img src="https://minotar.net/helm/<?= h($currentUser); ?>/32.png" alt="Skin">
+                    <span><?= h($currentUser); ?></span>
+                </div>
+                <a href="/auth/logout.php" class="btn btn-outline">Kijelentkezés</a>
+            <?php else: ?>
+                <a href="/auth/login.php" class="btn btn-outline">Belépés</a>
+                <a href="/auth/register.php" class="btn btn-glow">Regisztráció</a>
+            <?php endif; ?>
+        </div>
+    </div>
+</nav>
 
 <main class="container">
     <section class="section">
