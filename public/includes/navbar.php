@@ -20,8 +20,7 @@ $currentUser = $currentUser ?? 'Játékos';
             <li><a href="#" class="<?= $current_page === 'webshop' ? 'active' : '' ?>">Webshop</a></li>
             <li><a href="#" class="<?= $current_page === 'rules' ? 'active' : '' ?>">Szabályzat</a></li>
             <li><a href="#" class="<?= $current_page === 'stats' ? 'active' : '' ?>">Statisztikák</a></li>
-            <li><a href="#" class="<?= $current_page === 'contact' ? 'active' : '' ?>">Kapcsolat</a></li>
-        </ul>
+            <li><a href="/support.php" class="<?= $current_page === 'support' ? 'active' : '' ?>">Kapcsolat</a></li>        </ul>
 
         <div class="nav-side nav-right">
             <a href="/profile.php" class="user-badge glass hover-lift" style="text-decoration: none;">

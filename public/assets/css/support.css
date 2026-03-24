@@ -1,0 +1,290 @@
+/* ==========================================================================
+   ETHERNIA - TICKET & SUPPORT STÍLUSOK (MESSENGER STYLE)
+   ========================================================================== */
+
+/* Űrlap elemek */
+.support-form-container {
+    padding: 2.5rem;
+    border-radius: var(--radius-md);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.support-select, .support-input, .support-textarea, .support-file {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: var(--transition);
+    font-family: var(--font-body);
+}
+
+.support-select:focus, .support-input:focus, .support-textarea:focus {
+    border-color: var(--eth-primary);
+    background: rgba(0,0,0,0.5);
+    box-shadow: 0 0 15px var(--eth-primary-glow);
+}
+
+.support-select option {
+    background: var(--bg-base);
+    color: #fff;
+}
+
+/* Ticket Lista (Grid) */
+.ticket-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.ticket-card {
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    display: block;
+}
+
+.ticket-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.ticket-cat {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.ticket-subject {
+    font-size: 1.2rem;
+    color: var(--eth-primary);
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ticket-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Státusz Jelzők */
+.ticket-status {
+    padding: 0.3rem 0.8rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.status-open { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+.status-answered { background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+.status-closed { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+/* ==========================================================================
+   MESSENGER CHAT FELÜLET
+   ========================================================================== */
+.chat-container {
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    height: 70vh; /* Kőkemény fix magasságú chat ablak */
+    overflow: hidden;
+}
+
+.chat-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-glass);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.2);
+}
+
+.chat-title-area h2 {
+    font-size: 1.3rem;
+    margin-bottom: 0.3rem;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    /* Egyedi görgetősáv a chaten belül is! */
+    scrollbar-width: thin;
+    scrollbar-color: var(--eth-primary) transparent;
+}
+
+/* Üzenet Buborékok Flexbox Varázslat */
+.chat-bubble-wrapper {
+    display: flex;
+    gap: 1rem;
+    max-width: 80%;
+}
+
+.chat-bubble-wrapper.mine {
+    align-self: flex-end; /* Jobb oldalra tolja */
+    flex-direction: row-reverse; /* Megfordítja a profilképet és a szöveget */
+}
+
+.chat-bubble-wrapper.admin {
+    align-self: flex-start; /* Bal oldalon marad */
+}
+
+.chat-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    image-rendering: pixelated;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    flex-shrink: 0;
+}
+
+.chat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+/* A szövegbuborék */
+.chat-text {
+    padding: 1rem 1.2rem;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.mine .chat-text {
+    background: var(--eth-primary);
+    color: #fff;
+    border-top-right-radius: 4px; /* A jobb felső sarka élesebb */
+}
+
+.admin .chat-text {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-glass);
+    color: var(--text-main);
+    border-top-left-radius: 4px; /* A bal felső sarka élesebb */
+}
+
+.chat-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.8rem;
+}
+.mine .chat-meta { justify-content: flex-end; }
+
+.chat-author { font-weight: 700; color: var(--text-muted); }
+.chat-time { color: rgba(255,255,255,0.3); }
+
+.admin-badge {
+    background: var(--eth-danger);
+    color: #fff;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    margin-left: 0.5rem;
+}
+
+/* Csatolt kép a chatben */
+.chat-attachment {
+    margin-top: 0.8rem;
+    max-width: 100%;
+}
+.chat-attachment img {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 12px;
+    border: 1px solid var(--border-glass);
+    cursor: pointer;
+    transition: var(--transition);
+}
+.chat-attachment img:hover { filter: brightness(1.2); }
+
+/* Írási felület (Alsó sáv) */
+.chat-input-area {
+    padding: 1.5rem;
+    background: rgba(0,0,0,0.3);
+    border-top: 1px solid var(--border-glass);
+}
+
+.chat-form {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-pill);
+    padding: 0.5rem 1rem;
+}
+.chat-form:focus-within {
+    border-color: var(--eth-primary);
+    box-shadow: 0 0 15px var(--eth-primary-glow);
+}
+
+.chat-upload-btn {
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    transition: var(--transition);
+}
+.chat-upload-btn:hover { color: var(--eth-primary); }
+
+.chat-textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    resize: none;
+    height: 24px;
+    outline: none;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    padding: 0;
+}
+
+.chat-send-btn {
+    background: var(--eth-primary);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.chat-send-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--eth-primary-glow);
+}
+
+.chat-closed-alert {
+    padding: 1.5rem;
+    text-align: center;
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--eth-danger);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
