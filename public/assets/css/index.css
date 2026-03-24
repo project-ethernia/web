@@ -58,14 +58,29 @@ a { color: inherit; text-decoration: none; }
     display: inline-flex; align-items: center; justify-content: center;
     padding: 0.6rem 1.5rem; font-size: 0.95rem; font-weight: 600;
     border-radius: var(--radius-pill); cursor: pointer; transition: var(--transition);
-    border: none;
+    border: none; text-decoration: none;
 }
 .btn-outline { background: transparent; border: 1px solid var(--border-glass); color: var(--text-main); }
 .btn-outline:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
 .btn-glow { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; box-shadow: 0 4px 15px var(--primary-glow); }
 .btn-glow:hover { transform: translateY(-2px); box-shadow: 0 8px 25px var(--primary-glow); }
 
-/* --- NAVIGÁCIÓ --- */
+/* --- ÚJ: PIROS KIJELENTKEZÉS GOMB --- */
+.btn-logout {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+}
+.btn-logout:hover {
+    background: #ef4444;
+    color: #fff;
+    border-color: #ef4444;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+}
+
+/* --- NAVIGÁCIÓ (KIEGYENSÚLYOZOTT FLEXBOX) --- */
 .navbar {
     position: sticky; top: 1.5rem; z-index: 100;
     padding: 0 1.5rem;
@@ -75,12 +90,20 @@ a { color: inherit; text-decoration: none; }
     border-radius: var(--radius-pill); padding: 0.5rem 1rem;
     display: flex; align-items: center; justify-content: space-between;
 }
-.nav-links { display: flex; list-style: none; gap: 0.5rem; }
+
+/* A nav-side felel azért, hogy a középső menü TÉNYLEG középen maradjon */
+.nav-side {
+    display: flex; align-items: center; gap: 0.8rem;
+    flex: 1; /* Egyforma súly a bal és jobb oldalnak */
+}
+.nav-left { justify-content: flex-start; }
+.nav-right { justify-content: flex-end; }
+
+.nav-links { display: flex; list-style: none; gap: 0.5rem; justify-content: center; }
 .nav-links a { padding: 0.5rem 1rem; border-radius: var(--radius-pill); color: var(--text-muted); font-weight: 500; font-size: 0.9rem; transition: var(--transition); }
 .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.05); }
 .nav-links a.active { color: #fff; background: rgba(168, 85, 247, 0.15); }
 
-.nav-auth { display: flex; align-items: center; gap: 0.8rem; }
 .user-badge { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.8rem 0.3rem 0.3rem; border-radius: var(--radius-pill); font-size: 0.85rem; font-weight: 600; }
 .user-badge img { width: 26px; height: 26px; border-radius: 50%; image-rendering: pixelated; }
 
@@ -206,7 +229,7 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 992px) {
     .navbar { padding: 0.5rem; top: 0.5rem; }
     .navbar-inner { flex-direction: column; gap: 1rem; padding: 1rem; border-radius: var(--radius-md); }
-    .nav-spacer { display: none; }
+    .nav-side { flex: unset; width: 100%; justify-content: center; } /* Mobilon felülírjuk a Flex:1-et */
     .nav-links { flex-wrap: wrap; justify-content: center; }
     .hero-title { font-size: 3.5rem; }
 }
@@ -216,6 +239,4 @@ a { color: inherit; text-decoration: none; }
     .hero-title { font-size: 2.5rem; }
     .hero-stats { flex-direction: column; width: 100%; }
     .stat-card { width: 100%; justify-content: center; }
-    .nav-auth { width: 100%; justify-content: center; flex-wrap: wrap; gap: 0.5rem; }
-    .session-timer { width: 100%; justify-content: center; }
 }

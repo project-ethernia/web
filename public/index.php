@@ -92,7 +92,12 @@ $currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] :
 <nav class="navbar">
     <div class="navbar-inner glass">
         
-        <div style="width: 150px;" class="nav-spacer"></div>
+        <div class="nav-side nav-left">
+            <div class="session-timer glass" title="Automatikus kijelentkezés">
+                <span class="material-symbols-rounded">timer</span>
+                <span id="countdown-timer" data-seconds="<?= $remaining_time ?>">30:00</span>
+            </div>
+        </div>
         
         <ul class="nav-links">
             <li><a href="/" class="active">Főoldal</a></li>
@@ -102,17 +107,12 @@ $currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] :
             <li><a href="#">Kapcsolat</a></li>
         </ul>
 
-        <div class="nav-auth">
-            <div class="session-timer glass" title="Automatikus kijelentkezés">
-                <span class="material-symbols-rounded">timer</span>
-                <span id="countdown-timer" data-seconds="<?= $remaining_time ?>">30:00</span>
-            </div>
-            
+        <div class="nav-side nav-right">
             <div class="user-badge glass">
                 <img src="https://minotar.net/helm/<?= h($currentUser); ?>/32.png" alt="Skin">
                 <span><?= h($currentUser); ?></span>
             </div>
-            <a href="/auth/logout.php" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.85rem;">Kijelentkezés</a>
+            <a href="/auth/logout.php" class="btn btn-logout">Kijelentkezés</a>
         </div>
         
     </div>
