@@ -48,3 +48,39 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-main);
     font-weight: 700;
 }
+
+/* ==========================================================================
+   EGYEDI GÖRGETÉS (SCROLLBAR)
+   ========================================================================== */
+
+/* Firefox támogatás (Vékonyított lila tekerő, sötét alapon) */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--eth-primary) var(--bg-base);
+}
+
+/* Webkit (Chrome, Edge, Safari, Opera) */
+::-webkit-scrollbar {
+    width: 10px; /* A görgetősáv szélessége */
+    height: 10px; /* Vízszintes görgetősáv vastagsága (ha lenne) */
+}
+
+/* A sín, amin csúszik */
+::-webkit-scrollbar-track {
+    background: var(--bg-base);
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Maga a tekerő */
+::-webkit-scrollbar-thumb {
+    background: var(--eth-primary);
+    border-radius: var(--radius-pill);
+    /* Egy kis trükk: sötét keretet adunk neki, hogy úgy tűnjön, mintha "lebegne" a sínben */
+    border: 2px solid var(--bg-base); 
+    transition: var(--transition);
+}
+
+/* Ha ráviszed az egeret a tekerőre */
+::-webkit-scrollbar-thumb:hover {
+    background: #c084fc; /* Világosabb lila */
+}
