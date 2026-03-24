@@ -29,21 +29,35 @@
     box-shadow: 0 0 15px var(--eth-primary-glow);
 }
 
-.support-select option {
-    background: var(--bg-base);
-    color: #fff;
+/* KATEGÓRIA MENÜ EGYEDI DIZÁJNOZÁSA */
+.support-select {
+    appearance: none; /* Eltünteti a Windows gyári csúnya nyilát */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    /* Saját lila nyíl ikon generálása SVG-vel! */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a855f7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.2em;
+    padding-right: 3rem; /* Helyet hagyunk a nyílnak */
+    cursor: pointer;
 }
 
-/* --- HIÁNYZÓ GOMB DIZÁJN PÓTLÁSA --- */
+.support-select option {
+    background-color: var(--bg-base); /* Sötét háttér a listának */
+    color: #fff;
+    padding: 10px;
+}
+
 .btn-auth {
     background: transparent;
     color: var(--text-main);
     border: 2px solid var(--eth-primary);
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    font-weight: 800;
+    font-weight: 800; /* Vagy amire beállítottuk inline! */
     box-shadow: 0 0 10px rgba(0,0,0,0);
-    width: fit-content; /* Így nem lesz túl hosszú a gomb! */
+    width: fit-content;
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -117,7 +131,7 @@
     border-radius: var(--radius-md);
     display: flex;
     flex-direction: column;
-    height: 70vh; /* Kőkemény fix magasságú chat ablak */
+    height: 70vh;
     overflow: hidden;
 }
 
@@ -142,12 +156,11 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    /* Egyedi görgetősáv a chaten belül is! */
     scrollbar-width: thin;
     scrollbar-color: var(--eth-primary) transparent;
 }
 
-/* Üzenet Buborékok Flexbox Varázslat */
+/* Üzenet Buborékok */
 .chat-bubble-wrapper {
     display: flex;
     gap: 1rem;
@@ -155,12 +168,12 @@
 }
 
 .chat-bubble-wrapper.mine {
-    align-self: flex-end; /* Jobb oldalra tolja */
-    flex-direction: row-reverse; /* Megfordítja a profilképet és a szöveget */
+    align-self: flex-end; 
+    flex-direction: row-reverse; 
 }
 
 .chat-bubble-wrapper.admin {
-    align-self: flex-start; /* Bal oldalon marad */
+    align-self: flex-start; 
 }
 
 .chat-avatar {
@@ -177,7 +190,6 @@
     flex-direction: column;
 }
 
-/* A szövegbuborék */
 .chat-text {
     padding: 1rem 1.2rem;
     border-radius: 18px;
@@ -190,14 +202,14 @@
 .mine .chat-text {
     background: var(--eth-primary);
     color: #fff;
-    border-top-right-radius: 4px; /* A jobb felső sarka élesebb */
+    border-top-right-radius: 4px; 
 }
 
 .admin .chat-text {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid var(--border-glass);
     color: var(--text-main);
-    border-top-left-radius: 4px; /* A bal felső sarka élesebb */
+    border-top-left-radius: 4px; 
 }
 
 .chat-meta {
@@ -221,7 +233,6 @@
     margin-left: 0.5rem;
 }
 
-/* Csatolt kép a chatben */
 .chat-attachment {
     margin-top: 0.8rem;
     max-width: 100%;
@@ -236,7 +247,6 @@
 }
 .chat-attachment img:hover { filter: brightness(1.2); }
 
-/* Írási felület (Alsó sáv) */
 .chat-input-area {
     padding: 1.5rem;
     background: rgba(0,0,0,0.3);
