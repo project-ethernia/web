@@ -130,10 +130,10 @@ $maskedEmail = substr($userData['email'], 0, 3) . '***@' . explode('@', $userDat
         </ul>
 
         <div class="nav-side nav-right">
-            <div class="user-badge glass">
+            <a href="/profile.php" class="user-badge glass hover-lift" style="text-decoration: none;">
                 <img src="https://minotar.net/helm/<?= h($currentUser); ?>/32.png" alt="Skin">
                 <span><?= h($currentUser); ?></span>
-            </div>
+            </a>
             <a href="/auth/logout.php" class="btn btn-logout">Kijelentkezés</a>
         </div>
     </div>
