@@ -182,11 +182,25 @@ $all_admins = $stmt->fetchAll();
 
                             <div class="input-group">
                                 <label>Kiosztott Szerepkör</label>
-                                <select name="role" class="admin-input" required>
+                                <div class="role-grid">
                                     <?php foreach ($ADMIN_ROLES as $key => $data): ?>
-                                        <option value="<?= $key ?>"><?= h($data['name']) ?></option>
+                                        <?php
+                                            // Ikonok dinamikus hozzárendelése a rangokhoz
+                                            $icon = 'shield';
+                                            if($key === 'superadmin') $icon = 'local_police';
+                                            if($key === 'admin') $icon = 'admin_panel_settings';
+                                            if($key === 'moderator') $icon = 'gavel';
+                                            if($key === 'support') $icon = 'support_agent';
+                                        ?>
+                                        <label class="role-card" style="--role-color: <?= $data['color'] ?>;">
+                                            <input type="radio" name="role" value="<?= $key ?>" required <?= $key === 'support' ? 'checked' : '' ?>>
+                                            <div class="role-content">
+                                                <span class="material-symbols-rounded"><?= $icon ?></span>
+                                                <span><?= h($data['name']) ?></span>
+                                            </div>
+                                        </label>
                                     <?php endforeach; ?>
-                                </select>
+                                </div>
                             </div>
 
                             <button type="submit" class="btn-action btn-claim" style="width: 100%; margin-top: 1rem;">

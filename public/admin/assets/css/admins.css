@@ -30,7 +30,7 @@ body.admin-body {
 .text-red { color: var(--admin-red); }
 .text-muted { color: var(--text-muted); }
 
-/* --- ALAP LAYOUT (Ez hiányzott a Flexboxhoz!) --- */
+/* --- ALAP LAYOUT --- */
 .admin-layout {
     display: flex;
     min-height: 100vh;
@@ -259,16 +259,69 @@ body.admin-body {
     box-shadow: 0 0 15px var(--admin-red-glow);
 }
 
-.admin-input option {
-    background: #0f0a15;
-    color: #fff;
-    padding: 0.5rem;
-}
-
 .input-hint {
     font-size: 0.75rem;
     color: #f59e0b;
     font-style: italic;
+}
+
+/* KÁRTYÁS SZEREPKÖR VÁLASZTÓ (ÚJ!) */
+.role-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.role-card {
+    cursor: pointer;
+    display: block;
+}
+
+.role-card input[type="radio"] {
+    display: none;
+}
+
+.role-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    transition: var(--transition);
+    opacity: 0.6;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.role-content .material-symbols-rounded {
+    font-size: 1.8rem;
+    transition: var(--transition);
+}
+
+.role-card:hover .role-content {
+    opacity: 0.8;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Kattintva / Kiválasztva - Dinamikus színnel a CSS változóból! */
+.role-card input:checked + .role-content {
+    opacity: 1;
+    border-color: var(--role-color);
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 0 15px var(--role-color);
+}
+
+.role-card input:checked + .role-content .material-symbols-rounded {
+    color: var(--role-color);
+    filter: drop-shadow(0 0 5px var(--role-color));
 }
 
 .btn-action { 
@@ -319,12 +372,7 @@ body.admin-body {
 }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Reszponzív (Mobilon a form lekerül alulra) */
 @media (max-width: 1100px) {
-    .split-layout {
-        flex-direction: column;
-    }
-    .list-panel, .form-panel {
-        width: 100%;
-    }
+    .split-layout { flex-direction: column; }
+    .list-panel, .form-panel { width: 100%; }
 }
