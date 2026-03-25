@@ -342,43 +342,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                     </div>
                 <?php endif; ?>
             </div>
-            
-            <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    const chatMsgs = document.getElementById("chat-messages");
-                    if (chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
-
-                    const fileInput = document.getElementById("chat-file-input");
-                    const fileDisplay = document.getElementById("file-name-display");
-                    if (fileInput && fileDisplay) {
-                        fileInput.addEventListener("change", function() {
-                            if (this.files && this.files.length > 0) {
-                                fileDisplay.textContent = "Csatolva: " + this.files[0].name;
-                            } else {
-                                fileDisplay.textContent = "";
-                            }
-                        });
-                    }
-
-                    const chatTextarea = document.querySelector(".chat-textarea");
-                    if (chatTextarea) {
-                        // ÚJ: DINAMIKUS MAGASSÁG ÁLLÍTÁS ÍRÁS KÖZBEN
-                        chatTextarea.addEventListener("input", function() {
-                            this.style.height = "24px"; // Alaphelyzetbe állítás a méréshez
-                            this.style.height = (this.scrollHeight) + "px"; // Igazítás a tartalomhoz
-                        });
-
-                        chatTextarea.addEventListener("keydown", function(e) {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault(); 
-                                if (this.value.trim() !== '') {
-                                    this.closest("form").submit();
-                                }
-                            }
-                        });
-                    }
-                });
-            </script>
         <?php } ?>
     <?php endif; ?>
 </main>
@@ -388,5 +351,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
 </footer>
 
 <script src="/assets/js/index.js?v=<?= time(); ?>"></script>
+<script src="/assets/js/support.js?v=<?= time(); ?>"></script>
 </body>
 </html>

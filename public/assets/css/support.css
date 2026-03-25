@@ -277,7 +277,13 @@
 .chat-content {
     display: flex;
     flex-direction: column;
+    /* JAVÍTÁS: Rászűkítjük a flex oszlopot a szövegre! */
+    max-width: 100%;
 }
+
+/* JAVÍTÁS: Rácuppantjuk a szövegbuborékokat az oldalukra! */
+.mine .chat-content { align-items: flex-end; }
+.admin .chat-content { align-items: flex-start; }
 
 .chat-text {
     padding: 1rem 1.2rem;
@@ -303,7 +309,8 @@
     margin-bottom: 0.4rem;
     font-size: 0.8rem;
 }
-.mine .chat-meta { justify-content: flex-end; }
+/* A meta automatikusan jó helyen lesz az align-items miatt, de a mine-nél megfordítjuk az elemek sorrendjét */
+.mine .chat-meta { flex-direction: row-reverse; }
 
 .chat-author { font-weight: 700; color: var(--text-muted); }
 .chat-time { color: rgba(255,255,255,0.3); }
@@ -337,7 +344,6 @@
     border-top: 1px solid var(--border-glass);
 }
 
-/* JAVÍTÁS: flex-end igazítás, hogy a gombok a lenyíló textarea alján maradjanak */
 .chat-form {
     display: flex;
     align-items: flex-end;
@@ -360,29 +366,27 @@
     justify-content: center;
     padding: 0.5rem;
     transition: var(--transition);
-    margin-bottom: 2px; /* Vizuális igazítás a form aljához */
+    margin-bottom: 2px; 
 }
 .chat-upload-btn:hover { color: var(--eth-primary); }
 
-/* JAVÍTÁS: Auto-resize-hoz igazított textarea dizájn */
 .chat-textarea {
     flex: 1;
     background: transparent;
     border: none;
     color: #fff;
     resize: none;
-    height: 24px; /* Fix kezdőmagasság (1 sor) */
-    max-height: 150px; /* Ennél nagyobbra nem nő, görgethető lesz */
+    height: 24px; 
+    max-height: 150px; 
     overflow-y: auto;
     outline: none;
     font-family: var(--font-body);
     font-size: 0.95rem;
     padding: 0;
-    margin: 10px 0; /* Padding helyett margin a flex-end miatt */
+    margin: 10px 0; 
     line-height: 24px;
 }
 
-/* JAVÍTÁS: Átlátszó, lila-keretes dizájn a küldés gombnak */
 .chat-send-btn {
     background: transparent;
     border: 2px solid var(--eth-primary);
@@ -395,7 +399,7 @@
     color: var(--eth-primary);
     cursor: pointer;
     transition: var(--transition);
-    margin-bottom: 2px; /* Vizuális igazítás a form aljához */
+    margin-bottom: 2px; 
 }
 .chat-send-btn:hover {
     background: rgba(168, 85, 247, 0.2); 
