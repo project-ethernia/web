@@ -2,7 +2,7 @@
 $current_page = 'admins';
 require_once __DIR__ . '/includes/core.php';
 
-// JOGOSULTSÁG ELLENŐRZÉS! Ha nincs joga a személyzet kezeléséhez, kivágjuk az indexre!
+// JOGOSULTSÁG ELLENŐRZÉS! 
 if (!hasPermission($admin_role, 'manage_admins')) {
     header('Location: /admin/index.php?error=no_permission');
     exit;
@@ -18,21 +18,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $new_role = $_POST['role'] ?? 'support';
 
     if ($new_user && $new_pass && isset($ADMIN_ROLES[$new_role])) {
-        // Megnézzük, létezik-e már a név
-        $stmt = $pdo->prepare("SELECT id FROM admins WHERE username = ?");
-        $stmt->execute([$new_user]);
-        if ($stmt->fetch()) {
-            $msg = "Ez a felhasználónév már foglalt!";
+        try {
+            // Megnézzük, létezik-e már a név
+            $stmt = $pdo->prepare("SELECT id FROM admins WHERE username = ?");
+            $stmt->execute([$new_user]);
+            if ($stmt->fetch()) {
+                $msg = "Ez a felhasználónév már foglalt!";
+                $msgType = "error";
+            } else {
+                // JELSZÓ HASH GENERÁLÁSA!
+                $hash = password_hash($new_pass, PASSWORD_DEFAULT);
+                
+                // Atombiztos Insert (a failed_logins-t is 0-ra állítjuk biztos ami biztos)
+                $insert = $pdo->prepare("INSERT INTO admins (username, password_hash, role, failed_logins) VALUES (?, ?, ?, 0)");
+                $insert->execute([$new_user, $hash, $new_role]);
+                
+                $msg = "Új csapattag sikeresen hozzáadva: " . h($new_user);
+                $msgType = "success";
+            }
+        } catch (PDOException $e) {
+            // HA BÁRMI HIBA VAN A DB-VEL, ITT FOGJA KIÍRNI, NEM DOB EL SEHOVA!
+            $msg = "Adatbázis hiba történt: " . $e->getMessage();
             $msgType = "error";
-        } else {
-            // JELSZÓ HASH GENERÁLÁSA!
-            $hash = password_hash($new_pass, PASSWORD_DEFAULT);
-            
-            $insert = $pdo->prepare("INSERT INTO admins (username, password_hash, role) VALUES (?, ?, ?)");
-            $insert->execute([$new_user, $hash, $new_role]);
-            
-            $msg = "Új csapattag sikeresen hozzáadva: " . h($new_user);
-            $msgType = "success";
         }
     } else {
         $msg = "Kérjük tölts ki minden mezőt helyesen!";
@@ -44,7 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $target_id = (int)$_GET['delete'];
     
-    // Védelem: Önmagát nem törölheti, és az 1-es ID-t (Téged) sem!
     if ($target_id === $admin_id) {
         $msg = "Saját magadat nem törölheted!";
         $msgType = "error";
@@ -166,7 +172,7 @@ $all_admins = $stmt->fetchAll();
                         <h2><span class="material-symbols-rounded">person_add</span> Új Admin Felvevése</h2>
                     </div>
                     <div class="panel-body">
-                        <form method="POST" class="add-admin-form">
+                        <form method="POST" action="/admin/admins.php" class="add-admin-form">
                             <input type="hidden" name="action" value="add_admin">
                             
                             <div class="input-group">
@@ -185,7 +191,6 @@ $all_admins = $stmt->fetchAll();
                                 <div class="role-grid">
                                     <?php foreach ($ADMIN_ROLES as $key => $data): ?>
                                         <?php
-                                            // Ikonok dinamikus hozzárendelése a rangokhoz
                                             $icon = 'shield';
                                             if($key === 'superadmin') $icon = 'local_police';
                                             if($key === 'admin') $icon = 'admin_panel_settings';
