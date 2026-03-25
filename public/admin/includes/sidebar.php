@@ -58,3 +58,17 @@ $current_page = $current_page ?? '';
         </a>
     </div>
 </aside>
+
+<div id="eth-modal" class="eth-modal-overlay">
+    <div class="eth-modal-box glass">
+        <div class="eth-modal-icon">
+            <span class="material-symbols-rounded">warning</span>
+        </div>
+        <h3 class="eth-modal-title">Megerősítés</h3>
+        <p id="eth-modal-msg" class="eth-modal-text">Biztosan végrehajtod ezt a műveletet?</p>
+        <div class="eth-modal-actions">
+            <button id="eth-modal-cancel" class="btn-modal btn-cancel">Mégse</button>
+            <a href="#" id="eth-modal-confirm" class="btn-modal btn-confirm">Igen, végrehajtom</a>
+        </div>
+    </div>
+</div>

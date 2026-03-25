@@ -3,156 +3,77 @@
    ========================================================================== */
 
 .admin-sidebar {
-    width: 280px;
-    height: 100vh;
-    position: sticky;
-    top: 0;
-    display: flex;
-    flex-direction: column;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 100;
-    border-right: 1px solid rgba(239, 68, 68, 0.15);
-    background: rgba(15, 10, 20, 0.8);
-    overflow: hidden; 
+    width: 280px; height: 100vh; position: sticky; top: 0; display: flex; flex-direction: column;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100;
+    border-right: 1px solid rgba(239, 68, 68, 0.15); background: rgba(15, 10, 20, 0.8); overflow: hidden; 
 }
+.admin-sidebar.collapsed { width: 80px; }
 
-/* ÖSSZECSUKOTT ÁLLAPOT */
-.admin-sidebar.collapsed {
-    width: 80px;
-}
+.sidebar-header { height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.logo-wrapper { display: flex; align-items: center; gap: 0.8rem; overflow: hidden; white-space: nowrap; }
+.logo-icon { font-size: 2rem; color: var(--admin-red); filter: drop-shadow(0 0 10px var(--admin-red-glow)); flex-shrink: 0; }
+.logo-text { font-family: var(--font-heading); font-size: 1.2rem; font-weight: 800; letter-spacing: 0.1em; color: #fff; transition: opacity 0.2s; }
 
-.sidebar-header {
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 1.5rem;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-}
+.toggle-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem; border-radius: 8px; transition: 0.2s; flex-shrink: 0; }
+.toggle-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
 
-.logo-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-.logo-icon {
-    font-size: 2rem;
-    color: var(--admin-red);
-    filter: drop-shadow(0 0 10px var(--admin-red-glow));
-    flex-shrink: 0;
-}
-
-.logo-text {
-    font-family: var(--font-heading);
-    font-size: 1.2rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    color: #fff;
-    transition: opacity 0.2s;
-}
-
-.toggle-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem;
-    border-radius: 8px;
-    transition: 0.2s;
-    flex-shrink: 0;
-}
-
-.toggle-btn:hover {
-    color: #fff;
-    background: rgba(255,255,255,0.1);
-}
-
-.admin-sidebar.collapsed .logo-text { opacity: 0; pointer-events: none; }
-.admin-sidebar.collapsed .nav-text { opacity: 0; pointer-events: none; }
+.admin-sidebar.collapsed .logo-text, .admin-sidebar.collapsed .nav-text { opacity: 0; pointer-events: none; }
 .admin-sidebar.collapsed .nav-section { opacity: 0; height: 0; margin: 0; padding: 0; }
 
-/* MENÜ PONTOK */
-.sidebar-nav {
-    flex: 1; /* Kitölti a rendelkezésre álló helyet */
-    padding: 1.5rem 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    overflow-y: auto;
-    scrollbar-width: none; 
-}
+.sidebar-nav { flex: 1; padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.3rem; overflow-y: auto; scrollbar-width: none; }
 .sidebar-nav::-webkit-scrollbar { display: none; } 
 
-.nav-section {
-    font-size: 0.7rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.3);
-    margin: 1rem 0 0.5rem 0.8rem;
-    white-space: nowrap;
-    transition: opacity 0.2s;
-}
+.nav-section { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.3); margin: 1rem 0 0.5rem 0.8rem; white-space: nowrap; transition: opacity 0.2s; }
 
-.nav-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    /* A border-left miatt a bal oldali paddinget picit visszavesszük, hogy ne ugorjon a szöveg */
-    padding: 0.8rem 1rem 0.8rem 0.75rem; 
-    color: var(--text-muted);
-    text-decoration: none;
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: all 0.2s;
-    white-space: nowrap;
-    border-left: 4px solid transparent; /* Előkészítjük a helyet a piros csíknak */
-}
+.nav-item { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1rem 0.8rem 0.75rem; color: var(--text-muted); text-decoration: none; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-weight: 600; font-size: 0.95rem; transition: all 0.2s; white-space: nowrap; border-left: 4px solid transparent; }
+.nav-item .material-symbols-rounded { font-size: 1.4rem; flex-shrink: 0; transition: color 0.2s; }
+.nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
 
-.nav-item .material-symbols-rounded {
-    font-size: 1.4rem;
-    flex-shrink: 0;
-    transition: color 0.2s;
-}
+.nav-item.active { background: linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, transparent 100%); color: #fff; border-left: 4px solid var(--admin-red); }
+.nav-item.active .material-symbols-rounded { color: var(--admin-red); filter: drop-shadow(0 0 10px var(--admin-red-glow)); }
 
-.nav-item:hover {
-    background: rgba(255,255,255,0.05);
-    color: #fff;
-}
+.sidebar-footer { padding: 1rem; border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto; background: rgba(15, 10, 20, 0.9); }
+.logout-btn { border-radius: var(--radius-sm); color: #f87171; }
+.logout-btn:hover { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
 
-/* ÚJ: KŐKEMÉNY AKTÍV JELÖLÉS */
-.nav-item.active {
-    background: linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, transparent 100%);
-    color: #fff;
-    border-left: 4px solid var(--admin-red); /* Erős piros vonal a bal szélen */
+/* ==========================================================================
+   ÚJ: KÖZPONTI MODAL (MEGERŐSÍTÉS FELUGRÓ ABLAK)
+   ========================================================================== */
+.eth-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; opacity: 0; visibility: hidden; transition: 0.3s ease;
 }
+.eth-modal-overlay.active { opacity: 1; visibility: visible; }
 
-.nav-item.active .material-symbols-rounded {
-    color: var(--admin-red);
-    filter: drop-shadow(0 0 10px var(--admin-red-glow)); /* Izzó piros ikon */
+.eth-modal-box {
+    width: 90%; max-width: 400px; padding: 2.5rem 2rem; text-align: center;
+    transform: translateY(20px) scale(0.95); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    border: 1px solid rgba(239, 68, 68, 0.3); border-top: 2px solid var(--admin-red);
 }
+.eth-modal-overlay.active .eth-modal-box { transform: translateY(0) scale(1); }
 
-/* ÚJ: LÁBLÉC LEHORGONYZÁSA A LEGALJÁRA */
-.sidebar-footer {
-    padding: 1rem;
-    border-top: 1px solid rgba(255,255,255,0.05);
-    margin-top: auto; /* Ez a varázsszó: feltolja a menüt, és letolja magát a pokolba! */
-    background: rgba(15, 10, 20, 0.9); /* Pici extra sötétítés */
+.eth-modal-icon {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: rgba(239, 68, 68, 0.15); color: var(--admin-red);
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid rgba(239, 68, 68, 0.3); box-shadow: 0 0 20px var(--admin-red-glow);
+    margin-bottom: 0.5rem;
 }
+.eth-modal-icon .material-symbols-rounded { font-size: 2.2rem; }
 
-.logout-btn {
-    border-radius: var(--radius-sm);
-    color: #f87171;
-}
+.eth-modal-title { margin: 0; font-size: 1.4rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-heading); color: #fff;}
+.eth-modal-text { color: var(--text-muted); margin: 0 0 1rem 0; font-size: 0.95rem; line-height: 1.5; }
 
-.logout-btn:hover {
-    background: rgba(239, 68, 68, 0.15);
-    color: #fca5a5;
+.eth-modal-actions { display: flex; gap: 1rem; width: 100%; margin-top: 0.5rem; }
+.btn-modal {
+    flex: 1; padding: 0.8rem; border-radius: var(--radius-sm); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem; cursor: pointer;
+    transition: 0.2s; text-decoration: none; text-align: center; border: 1px solid transparent;
 }
+.btn-cancel { background: rgba(255,255,255,0.05); color: var(--text-muted); border-color: rgba(255,255,255,0.1); }
+.btn-cancel:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.btn-confirm { background: rgba(239, 68, 68, 0.15); color: var(--admin-red); border-color: var(--admin-red); }
+.btn-confirm:hover { background: var(--admin-red); color: #fff; box-shadow: 0 0 15px var(--admin-red-glow); }

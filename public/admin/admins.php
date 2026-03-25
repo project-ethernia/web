@@ -156,8 +156,7 @@ $all_admins = $stmt->fetchAll();
                                     </td>
                                     <td>
                                         <?php if ($a['id'] !== $admin_id && $a['id'] !== 1): ?>
-                                            <a href="?delete=<?= $a['id'] ?>" class="btn-sm btn-danger" onclick="return confirm('Biztosan ki akarod rúgni <?= h($a['username']) ?>-t a stábból?');">
-                                                <span class="material-symbols-rounded">person_remove</span>
+                                            <a href="?delete=<?= $a['id'] ?>" class="btn-sm btn-danger" onclick="ethConfirm(event, 'Biztosan ki akarod rúgni <?= h($a['username']) ?>-t a stábból?', this.href);">                                                <span class="material-symbols-rounded">person_remove</span>
                                             </a>
                                         <?php endif; ?>
                                     </td>
