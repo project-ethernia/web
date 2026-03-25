@@ -1,0 +1,1 @@
+<?php echo password_hash("ethernia", PASSWORD_DEFAULT); ?>
