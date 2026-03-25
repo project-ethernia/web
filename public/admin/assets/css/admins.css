@@ -1,5 +1,140 @@
 /* ==========================================================================
-   ETHERNIA ADMIN - ADMINISZTRÁTOROK KEZELÉSE
+   ETHERNIA ADMIN - ALAP LAYOUT ÉS ADMINISZTRÁTOROK KEZELÉSE
+   ========================================================================== */
+
+:root {
+    --admin-red: #ef4444;
+    --admin-red-glow: rgba(239, 68, 68, 0.3);
+    --admin-bg: #0b0710;
+}
+
+body.admin-body {
+    background-color: var(--admin-bg);
+    background-image: radial-gradient(circle at 50% 0%, rgba(239, 68, 68, 0.1) 0%, transparent 50%);
+    color: #fff;
+    font-family: var(--font-body);
+    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.glass {
+    background: rgba(20, 15, 25, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: var(--radius-md);
+}
+
+.text-red { color: var(--admin-red); }
+.text-muted { color: var(--text-muted); }
+
+/* --- ALAP LAYOUT (Ez hiányzott a Flexboxhoz!) --- */
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-main {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    overflow-y: auto;
+}
+
+/* --- FEJLÉC --- */
+.admin-header {
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.header-icon {
+    font-size: 3rem;
+    color: var(--admin-red);
+    filter: drop-shadow(0 0 10px var(--admin-red-glow));
+}
+
+.admin-header h1 {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    margin: 0 0 0.3rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.admin-header .subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.admin-user-info {
+    font-size: 0.95rem;
+    background: rgba(0,0,0,0.3);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.admin-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* --- ALAP TÁBLÁZAT --- */
+.admin-panel {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    padding: 1px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(0,0,0,0.2);
+}
+
+.admin-table th {
+    text-align: left;
+    padding: 1.2rem 1.5rem;
+    background: rgba(239, 68, 68, 0.1);
+    color: #f8fafc;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 2px solid var(--admin-red);
+}
+
+.admin-table td {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: middle;
+}
+
+.hover-row:hover { background: rgba(255, 255, 255, 0.03); }
+
+.td-id { color: var(--text-muted); font-family: monospace; font-size: 1.1rem; }
+.player-cell { display: flex; align-items: center; gap: 0.8rem; font-weight: 500; }
+.player-head { width: 28px; height: 28px; border-radius: 6px; image-rendering: pixelated; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+.btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-radius: var(--radius-pill); text-decoration: none; transition: var(--transition); display: inline-block; }
+
+
+/* ==========================================================================
+   ADMIN SPECIFIKUS DIZÁJN (SPLIT LAYOUT)
    ========================================================================== */
 
 .split-layout {
@@ -135,6 +270,31 @@
     color: #f59e0b;
     font-style: italic;
 }
+
+.btn-action { 
+    position: relative; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 1rem 1.5rem 1rem 3rem; 
+    border-radius: var(--radius-sm); 
+    font-weight: 700; 
+    cursor: pointer; 
+    text-transform: uppercase; 
+    letter-spacing: 0.05em; 
+    font-size: 0.85rem; 
+    background: rgba(0,0,0,0.3); 
+    transition: 0.2s; 
+    text-decoration: none; 
+    border: 1px solid transparent; 
+}
+.btn-action .material-symbols-rounded {
+    position: absolute;
+    left: 1.2rem;
+    font-size: 1.3rem;
+}
+.btn-claim { border-color: #22c55e; color: #22c55e; }
+.btn-claim:hover { background: rgba(34, 197, 94, 0.15); box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); color: #fff; }
 
 /* ÜZENET DOBOZOK */
 .alert-box {
