@@ -2,7 +2,6 @@
    ETHERNIA - TICKET & SUPPORT STÍLUSOK (MESSENGER STYLE)
    ========================================================================== */
 
-/* Űrlap elemek */
 .support-form-container {
     padding: 2.5rem;
     border-radius: var(--radius-md);
@@ -10,7 +9,6 @@
     margin: 3rem auto 0;
 }
 
-/* JAVÍTÁS 1: Szép, szellős térközt adunk a form elemei közé! */
 .support-form-container form {
     display: flex;
     flex-direction: column;
@@ -36,14 +34,11 @@
     box-shadow: 0 0 15px var(--eth-primary-glow);
 }
 
-/* JAVÍTÁS 2: Letiltjuk a szövegdoboz rángatását! */
 .support-textarea {
     resize: none;
 }
 
-/* ==========================================================================
-   ÚJ PRÉMIUM KATEGÓRIA VÁLASZTÓ KÁRTYÁK
-   ========================================================================== */
+/* KATEGÓRIA VÁLASZTÓ GRID */
 .category-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -72,7 +67,7 @@
     border-radius: var(--radius-sm);
     color: var(--text-muted);
     transition: var(--transition);
-    opacity: 0.6; /* Alapból elhalványítva */
+    opacity: 0.6;
     text-align: center;
     font-weight: 600;
 }
@@ -88,7 +83,6 @@
     background: rgba(0, 0, 0, 0.5);
 }
 
-/* Egyedi Aktív Állapotok Színekkel */
 .cat-bug input:checked + .cat-content {
     opacity: 1;
     border-color: var(--eth-danger);
@@ -145,6 +139,30 @@
     color: #fff;
     box-shadow: 0 0 20px var(--eth-primary-glow), inset 0 0 15px rgba(168, 85, 247, 0.2);
     transform: translateY(-2px);
+}
+
+/* FIGYELMEZTETÉS DOBROZ (WARNING) */
+.profile-alert.warning { 
+    border-left: 4px solid var(--eth-warning); 
+    color: var(--eth-warning); 
+    background: rgba(234, 179, 8, 0.1); 
+    padding: 1.2rem 1.5rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-weight: 600;
+}
+.profile-alert.error {
+    border-left: 4px solid var(--eth-danger); 
+    color: var(--eth-danger); 
+    background: rgba(239, 68, 68, 0.1); 
+    padding: 1.2rem 1.5rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-weight: 600;
 }
 
 /* Ticket Lista (Grid) */
@@ -287,6 +305,19 @@
     border: 1px solid var(--border-glass);
     color: var(--text-main);
     border-top-left-radius: 4px; 
+}
+
+/* AZ ÚJ RENDSZER-BOT ÜZENET DIZÁJNJA */
+.system-msg .chat-text {
+    background: rgba(168, 85, 247, 0.15); /* Lila üveg */
+    border: 1px solid var(--eth-primary);
+    color: #f8fafc;
+    font-style: italic;
+    border-top-left-radius: 4px;
+}
+.system-msg .admin-badge {
+    background: var(--eth-primary);
+    box-shadow: 0 0 10px var(--eth-primary-glow);
 }
 
 .chat-meta {

@@ -21,10 +21,20 @@ require_once __DIR__ . '/database.php';
 
 function h($str) { return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8'); }
 
+// EGYEDI TICKET ID FORMÁZÓ (pl. #000-001)
+function formatTicketId($id) {
+    return sprintf("#%03d-%03d", floor($id / 1000), $id % 1000);
+}
+
 $user_id = $_SESSION['user_id'];
 $currentUser = $_SESSION['user_username'];
 $action = $_GET['action'] ?? 'list';
 $msg = '';
+
+// AKTÍV TICKET ELLENŐRZÉS (Maximum 1 nyitott jegy / user)
+$activeCheck = $pdo->prepare("SELECT COUNT(*) FROM tickets WHERE user_id = ? AND status != 'closed'");
+$activeCheck->execute([$user_id]);
+$hasActiveTicket = $activeCheck->fetchColumn() > 0;
 
 function uploadImage($fileArray) {
     if (isset($fileArray) && $fileArray['error'] === UPLOAD_ERR_OK) {
@@ -42,33 +52,46 @@ function uploadImage($fileArray) {
     return null;
 }
 
+// ÚJ TICKET LÉTREHOZÁSA
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
-    $subject = trim($_POST['subject'] ?? '');
-    $category = trim($_POST['category'] ?? '');
-    $message = trim($_POST['message'] ?? '');
-    
-    if ($subject && $category && $message) {
-        $pdo->beginTransaction();
-        try {
-            $stmt = $pdo->prepare("INSERT INTO tickets (user_id, subject, category) VALUES (?, ?, ?)");
-            $stmt->execute([$user_id, $subject, $category]);
-            $ticket_id = $pdo->lastInsertId();
-
-            $stmt2 = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, NULL)");
-            $stmt2->execute([$ticket_id, $user_id, $message]);
-
-            $pdo->commit();
-            header("Location: /support.php?action=view&id=" . $ticket_id);
-            exit;
-        } catch (Exception $e) {
-            $pdo->rollBack();
-            $msg = "Hiba történt a küldés során!";
-        }
+    if ($hasActiveTicket) {
+        $msg = "Már van egy folyamatban lévő hibajegyed! Újat csak annak lezárása után nyithatsz.";
     } else {
-        $msg = "Kérlek, tölts ki minden kötelező mezőt!";
+        $subject = trim($_POST['subject'] ?? '');
+        $category = trim($_POST['category'] ?? '');
+        $message = trim($_POST['message'] ?? '');
+        
+        if ($subject && $category && $message) {
+            $pdo->beginTransaction();
+            try {
+                // 1. Létrehozzuk a Ticketet
+                $stmt = $pdo->prepare("INSERT INTO tickets (user_id, subject, category) VALUES (?, ?, ?)");
+                $stmt->execute([$user_id, $subject, $category]);
+                $ticket_id = $pdo->lastInsertId();
+
+                // 2. Beküldjük a Játékos üzenetét
+                $stmt2 = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, NULL)");
+                $stmt2->execute([$ticket_id, $user_id, $message]);
+
+                // 3. BEKÜLDJÜK A BOT ÜZENETÉT (A [SYSTEM] tagből tudja a UI, hogy ez bot!)
+                $botMessage = "[SYSTEM] Sikeresen létrehoztál egy hibajegyet a(z) **" . $category . "** kategóriában. Kérjük várj türelmesen, és egy csapattagunk hamarosan elkezdi intézni az ügyedet.";
+                $stmt3 = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, NULL)");
+                $stmt3->execute([$ticket_id, $user_id, $botMessage]);
+
+                $pdo->commit();
+                header("Location: /support.php?action=view&id=" . $ticket_id);
+                exit;
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                $msg = "Hiba történt a küldés során!";
+            }
+        } else {
+            $msg = "Kérlek, tölts ki minden kötelező mezőt!";
+        }
     }
 }
 
+// VÁLASZ KÜLDÉSE
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET['id'])) {
     $ticket_id = (int)$_GET['id'];
     $message = trim($_POST['message'] ?? '');
@@ -122,9 +145,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
         $stmt->execute([$user_id]);
         $tickets = $stmt->fetchAll();
         ?>
-        <div class="support-toolbar">
-            <a href="/support.php?action=new" class="btn btn-auth" style="margin-bottom: 2rem;">ÚJ HIBAJEGY NYITÁSA</a>
-        </div>
+        
+        <?php if ($hasActiveTicket): ?>
+            <div class="profile-alert warning glass" style="margin-bottom: 2rem;">
+                <span class="material-symbols-rounded">info</span>
+                Már van egy folyamatban lévő hibajegyed! Újat csak annak lezárása után nyithatsz.
+            </div>
+        <?php else: ?>
+            <div class="support-toolbar">
+                <a href="/support.php?action=new" class="btn btn-auth" style="margin-bottom: 2rem;">ÚJ HIBAJEGY NYITÁSA</a>
+            </div>
+        <?php endif; ?>
 
         <?php if (empty($tickets)): ?>
             <div class="empty-state glass">
@@ -143,14 +174,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                             <span class="ticket-cat"><?= h($t['category']) ?></span>
                             <span class="ticket-status <?= $statusClass ?>"><?= $statusText ?></span>
                         </div>
-                        <h3 class="ticket-subject"><?= h($t['subject']) ?></h3>
+                        <h3 class="ticket-subject"><span style="color: var(--text-muted); font-size: 0.9rem; margin-right: 0.5rem;"><?= formatTicketId($t['id']) ?></span> <?= h($t['subject']) ?></h3>
                         <div class="ticket-date">Utolsó frissítés: <?= date('Y. m. d. H:i', strtotime($t['updated_at'])) ?></div>
                     </a>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
 
-    <?php elseif ($action === 'new'): ?>
+    <?php elseif ($action === 'new' && !$hasActiveTicket): ?>
         <div class="glass support-form-container" style="position: relative;">
             
             <a href="/support.php" class="modal-close" aria-label="Bezárás" style="top: 1.5rem; right: 1.5rem; position: absolute;">
@@ -209,6 +240,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
             </form>
         </div>
 
+    <?php elseif ($action === 'new' && $hasActiveTicket): ?>
+        <div class="profile-alert warning glass">Már van egy folyamatban lévő hibajegyed! Újat csak annak lezárása után nyithatsz. <a href="/support.php" style="text-decoration: underline;">Vissza</a></div>
+
     <?php elseif ($action === 'view' && isset($_GET['id'])): ?>
         <?php
         $ticket_id = (int)$_GET['id'];
@@ -237,7 +271,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                 
                 <div class="chat-header">
                     <div class="chat-title-area">
-                        <h2>#<?= $ticket['id'] ?> - <?= h($ticket['subject']) ?></h2>
+                        <h2><span style="color: var(--text-muted); font-size: 1rem; margin-right: 0.5rem;"><?= formatTicketId($ticket['id']) ?></span> <?= h($ticket['subject']) ?></h2>
                         <span class="badge tag-default"><?= h($ticket['category']) ?></span>
                     </div>
                     
@@ -251,16 +285,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
 
                 <div class="chat-messages" id="chat-messages">
                     <?php foreach ($messages as $m): ?>
-                        <?php $isMine = ($m['sender_id'] == $user_id); ?>
-                        <div class="chat-bubble-wrapper <?= $isMine ? 'mine' : 'admin' ?>">
-                            <img src="https://minotar.net/helm/<?= h($m['username']) ?>/32.png" alt="Skin" class="chat-avatar">
+                        <?php 
+                            // BOT ÜZENET DETEKTÁLÁSA ÉS KISZŰRÉSE
+                            $isSystem = (strpos($m['message'], '[SYSTEM]') === 0);
+                            $isMine = (!$isSystem && $m['sender_id'] == $user_id); 
+                            $wrapperClass = $isSystem ? 'admin system-msg' : ($isMine ? 'mine' : 'admin');
+                            
+                            if ($isSystem) {
+                                $avatarUrl = '/assets/img/etherniareborn.png';
+                                $authorName = 'ETHERNIA BOT';
+                                $badge = 'SYSTEM';
+                                $cleanMessage = trim(substr($m['message'], 8)); // Levágjuk a [SYSTEM] tag-et
+                            } else {
+                                $avatarUrl = 'https://minotar.net/helm/' . h($m['username']) . '/32.png';
+                                $authorName = h($m['username']);
+                                $badge = $m['is_admin'] ? 'STAFF' : '';
+                                $cleanMessage = h($m['message']);
+                            }
+                        ?>
+                        <div class="chat-bubble-wrapper <?= $wrapperClass ?>">
+                            <img src="<?= $avatarUrl ?>" alt="Avatar" class="chat-avatar" <?= $isSystem ? 'style="object-fit: contain; background: rgba(0,0,0,0.5); border: 1px solid var(--eth-primary);"' : '' ?>>
                             <div class="chat-content">
                                 <div class="chat-meta">
-                                    <span class="chat-author"><?= h($m['username']) ?> <?= $m['is_admin'] ? '<span class="admin-badge">STAFF</span>' : '' ?></span>
+                                    <span class="chat-author"><?= $authorName ?> <?= $badge ? '<span class="admin-badge">'.$badge.'</span>' : '' ?></span>
                                     <span class="chat-time"><?= date('H:i - m. d.', strtotime($m['created_at'])) ?></span>
                                 </div>
                                 <div class="chat-text">
-                                    <?= nl2br(h($m['message'])) ?>
+                                    <?= nl2br($cleanMessage) ?>
                                 </div>
                                 <?php if ($m['attachment']): ?>
                                     <div class="chat-attachment">
