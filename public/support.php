@@ -105,7 +105,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
     }
 }
 
-// JAVÍTVA: Elfogadja a választ, ha van szöveg VAGY van csatolmány
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET['id'])) {
     $ticket_id = (int)$_GET['id'];
     $message = trim($_POST['message'] ?? '');
@@ -117,7 +116,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
     if ($ticket && $ticket['status'] !== 'closed') {
         $attachment = uploadImageAsBase64($_FILES['attachment'] ?? null);
         
-        // Csak akkor mentjük, ha a játékos írt valamit, VAGY küldött képet!
         if ($message !== '' || $attachment !== null) {
             $stmt = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, ?)");
             $stmt->execute([$ticket_id, $user_id, $message, $attachment]);
@@ -128,6 +126,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
         }
     }
 }
+
+// APP MÓD KAPCSOLÓ! (Igaz, ha épp egy ticketet nézünk)
+$isAppMode = ($action === 'view' && isset($_GET['id']));
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -141,17 +142,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
     <link rel="stylesheet" href="/assets/css/index.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/assets/css/support.css?v=<?= time(); ?>">
 </head>
-<body>
+<body class="<?= $isAppMode ? 'chat-app-mode' : '' ?>">
 
 <?php $current_page = 'support'; ?>
 <?php require_once __DIR__ . '/includes/navbar.php'; ?>
 
-<main class="container" style="padding-top: 8rem; min-height: 80vh;">
-    <div class="section-header">
-        <h1 class="section-title">Ügyfélszolgálat</h1>
-        <div class="title-line"></div>
-        <p class="section-subtitle">Hibabejelentés, csalók jelentése vagy egyéb problémák.</p>
-    </div>
+<main class="container" <?= !$isAppMode ? 'style="padding-top: 8rem; min-height: 80vh;"' : '' ?>>
+    
+    <?php if (!$isAppMode): ?>
+        <div class="section-header">
+            <h1 class="section-title">Ügyfélszolgálat</h1>
+            <div class="title-line"></div>
+            <p class="section-subtitle">Hibabejelentés, csalók jelentése vagy egyéb problémák.</p>
+        </div>
+    <?php endif; ?>
 
     <?php if ($msg): ?>
         <div class="profile-alert error glass"><span class="material-symbols-rounded">error</span><?= h($msg) ?></div>

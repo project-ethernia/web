@@ -239,13 +239,13 @@
 .status-closed { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
 
 /* ==========================================================================
-   MESSENGER CHAT FELÜLET
+   MESSENGER CHAT FELÜLET (ALAP BEÁLLÍTÁSOK)
    ========================================================================== */
 .chat-container {
     border-radius: var(--radius-md);
     display: flex;
     flex-direction: column;
-    height: 70vh;
+    height: 70vh; /* Ez a normál nézet magassága */
     overflow: hidden;
 }
 
@@ -365,9 +365,6 @@
     border-top: 1px solid var(--border-glass);
 }
 
-/* ==========================================================================
-   ÚJ: KÉP ELŐNÉZET KONTÉNER (PREVIEW)
-   ========================================================================== */
 .image-preview-container {
     position: relative;
     display: inline-block;
@@ -481,4 +478,34 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+}
+
+/* ==========================================================================
+   ÚJ: WEB-APP MÓD (TELJES KÉPERNYŐS CHAT NÉZET)
+   ========================================================================== */
+body.chat-app-mode {
+    overflow: hidden; /* Letiltja a főoldal görgetését */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body.chat-app-mode main.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-top: 6rem !important; /* Pont a navbar alá cuppan */
+    padding-bottom: 2rem !important;
+    min-height: 0; /* Kötelező flexbox szabály, hogy ne nyúljon túl a képernyőn */
+}
+
+body.chat-app-mode .footer {
+    display: none; /* Eltünteti a láblécet */
+}
+
+body.chat-app-mode .chat-container {
+    flex: 1;
+    height: auto; /* Felülírja a korábbi 70vh fix értéket */
+    min-height: 0; 
+    margin-bottom: 0;
 }
