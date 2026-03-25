@@ -1,4 +1,4 @@
-ű/* ==========================================================================
+/* ==========================================================================
    ETHERNIA ADMIN - SIDEBAR (OLDALMENÜ)
    ========================================================================== */
 
@@ -13,7 +13,7 @@
     z-index: 100;
     border-right: 1px solid rgba(239, 68, 68, 0.15);
     background: rgba(15, 10, 20, 0.8);
-    overflow: hidden; /* Ha összecsukjuk, levágja a szöveget */
+    overflow: hidden; 
 }
 
 /* ÖSSZECSUKOTT ÁLLAPOT */
@@ -67,27 +67,27 @@
     transition: 0.2s;
     flex-shrink: 0;
 }
+
 .toggle-btn:hover {
     color: #fff;
     background: rgba(255,255,255,0.1);
 }
 
-/* Ha a sidebar összecsukott, a szöveget elrejtjük */
 .admin-sidebar.collapsed .logo-text { opacity: 0; pointer-events: none; }
 .admin-sidebar.collapsed .nav-text { opacity: 0; pointer-events: none; }
 .admin-sidebar.collapsed .nav-section { opacity: 0; height: 0; margin: 0; padding: 0; }
 
 /* MENÜ PONTOK */
 .sidebar-nav {
-    flex: 1;
+    flex: 1; /* Kitölti a rendelkezésre álló helyet */
     padding: 1.5rem 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
     overflow-y: auto;
-    scrollbar-width: none; /* Firefox: rejtett görgető */
+    scrollbar-width: none; 
 }
-.sidebar-nav::-webkit-scrollbar { display: none; } /* Chrome: rejtett görgető */
+.sidebar-nav::-webkit-scrollbar { display: none; } 
 
 .nav-section {
     font-size: 0.7rem;
@@ -104,15 +104,16 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 0.8rem 1rem;
+    /* A border-left miatt a bal oldali paddinget picit visszavesszük, hogy ne ugorjon a szöveg */
+    padding: 0.8rem 1rem 0.8rem 0.75rem; 
     color: var(--text-muted);
     text-decoration: none;
-    border-radius: var(--radius-sm);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     font-weight: 600;
     font-size: 0.95rem;
     transition: all 0.2s;
     white-space: nowrap;
-    border: 1px solid transparent;
+    border-left: 4px solid transparent; /* Előkészítjük a helyet a piros csíknak */
 }
 
 .nav-item .material-symbols-rounded {
@@ -126,26 +127,31 @@
     color: #fff;
 }
 
-/* AKTÍV MENÜPONT */
+/* ÚJ: KŐKEMÉNY AKTÍV JELÖLÉS */
 .nav-item.active {
-    background: rgba(239, 68, 68, 0.1);
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, transparent 100%);
     color: #fff;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    box-shadow: inset 4px 0 0 var(--admin-red);
-}
-.nav-item.active .material-symbols-rounded {
-    color: var(--admin-red);
-    filter: drop-shadow(0 0 8px var(--admin-red-glow));
+    border-left: 4px solid var(--admin-red); /* Erős piros vonal a bal szélen */
 }
 
-/* LÁBLÉC */
+.nav-item.active .material-symbols-rounded {
+    color: var(--admin-red);
+    filter: drop-shadow(0 0 10px var(--admin-red-glow)); /* Izzó piros ikon */
+}
+
+/* ÚJ: LÁBLÉC LEHORGONYZÁSA A LEGALJÁRA */
 .sidebar-footer {
     padding: 1rem;
     border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: auto; /* Ez a varázsszó: feltolja a menüt, és letolja magát a pokolba! */
+    background: rgba(15, 10, 20, 0.9); /* Pici extra sötétítés */
 }
+
 .logout-btn {
+    border-radius: var(--radius-sm);
     color: #f87171;
 }
+
 .logout-btn:hover {
     background: rgba(239, 68, 68, 0.15);
     color: #fca5a5;
