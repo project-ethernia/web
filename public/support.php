@@ -39,9 +39,14 @@ $currentUser = $_SESSION['user_username'];
 $action = $_GET['action'] ?? 'list';
 $msg = '';
 
-$activeCheck = $pdo->prepare("SELECT COUNT(*) FROM tickets WHERE user_id = ? AND status != 'closed'");
-$activeCheck->execute([$user_id]);
-$hasActiveTicket = $activeCheck->fetchColumn() > 0;
+// --- ÚJ LOGIKA: KATEGÓRIÁNKÉNTI LIMIT ---
+// Lekérdezzük, hogy melyik kategóriákban van már nyitott jegye a játékosnak
+$stmtActive = $pdo->prepare("SELECT category FROM tickets WHERE user_id = ? AND status != 'closed'");
+$stmtActive->execute([$user_id]);
+$activeCategories = $stmtActive->fetchAll(PDO::FETCH_COLUMN);
+
+// Ha a tömb hossza 4 (azaz mind a 4 kategória foglalt), akkor teltház van
+$allCategoriesFull = (count($activeCategories) >= 4);
 
 function uploadImage($fileArray) {
     if (isset($fileArray) && $fileArray['error'] === UPLOAD_ERR_OK) {
@@ -60,37 +65,36 @@ function uploadImage($fileArray) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
-    if ($hasActiveTicket) {
-        $msg = "Már van egy folyamatban lévő hibajegyed! Újat csak annak lezárása után nyithatsz.";
-    } else {
-        $subject = trim($_POST['subject'] ?? '');
-        $category = trim($_POST['category'] ?? '');
-        $message = trim($_POST['message'] ?? '');
-        
-        if ($subject && $category && $message) {
-            $pdo->beginTransaction();
-            try {
-                $stmt = $pdo->prepare("INSERT INTO tickets (user_id, subject, category) VALUES (?, ?, ?)");
-                $stmt->execute([$user_id, $subject, $category]);
-                $ticket_id = $pdo->lastInsertId();
+    $subject = trim($_POST['subject'] ?? '');
+    $category = trim($_POST['category'] ?? '');
+    $message = trim($_POST['message'] ?? '');
+    
+    // Biztonsági backend védelem: hiába trükközne a HTML-ben, a PHP nem engedi át
+    if (in_array($category, $activeCategories)) {
+        $msg = "Ebben a kategóriában már van egy folyamatban lévő hibajegyed!";
+    } elseif ($subject && $category && $message) {
+        $pdo->beginTransaction();
+        try {
+            $stmt = $pdo->prepare("INSERT INTO tickets (user_id, subject, category) VALUES (?, ?, ?)");
+            $stmt->execute([$user_id, $subject, $category]);
+            $ticket_id = $pdo->lastInsertId();
 
-                $stmt2 = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, NULL)");
-                $stmt2->execute([$ticket_id, $user_id, $message]);
+            $stmt2 = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, NULL)");
+            $stmt2->execute([$ticket_id, $user_id, $message]);
 
-                $botMessage = "[SYSTEM] Sikeresen létrehoztál egy hibajegyet a(z) **" . $category . "** kategóriában. Kérjük várj türelmesen, és egy csapattagunk hamarosan elkezdi intézni az ügyedet.";
-                $stmt3 = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, NULL)");
-                $stmt3->execute([$ticket_id, $user_id, $botMessage]);
+            $botMessage = "[SYSTEM] Sikeresen létrehoztál egy hibajegyet a(z) **" . $category . "** kategóriában. Kérjük várj türelmesen, és egy csapattagunk hamarosan elkezdi intézni az ügyedet.";
+            $stmt3 = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, NULL)");
+            $stmt3->execute([$ticket_id, $user_id, $botMessage]);
 
-                $pdo->commit();
-                header("Location: /support.php?action=view&id=" . $ticket_id);
-                exit;
-            } catch (Exception $e) {
-                $pdo->rollBack();
-                $msg = "Hiba történt a küldés során!";
-            }
-        } else {
-            $msg = "Kérlek, tölts ki minden kötelező mezőt!";
+            $pdo->commit();
+            header("Location: /support.php?action=view&id=" . $ticket_id);
+            exit;
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            $msg = "Hiba történt a küldés során!";
         }
+    } else {
+        $msg = "Kérlek, tölts ki minden kötelező mezőt!";
     }
 }
 
@@ -148,10 +152,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
         $tickets = $stmt->fetchAll();
         ?>
         
-        <?php if ($hasActiveTicket): ?>
+        <?php if ($allCategoriesFull): ?>
             <div class="profile-alert warning glass" style="margin-bottom: 2rem;">
                 <span class="material-symbols-rounded">info</span>
-                Már van egy folyamatban lévő hibajegyed! Újat csak annak lezárása után nyithatsz.
+                Minden kategóriában van már egy nyitott hibajegyed! Újat csak valamelyik lezárása után nyithatsz.
             </div>
         <?php else: ?>
             <div class="support-toolbar">
@@ -183,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
             </div>
         <?php endif; ?>
 
-    <?php elseif ($action === 'new' && !$hasActiveTicket): ?>
+    <?php elseif ($action === 'new' && !$allCategoriesFull): ?>
         <div class="glass support-form-container" style="position: relative;">
             <a href="/support.php" class="modal-close" aria-label="Bezárás" style="top: 1.5rem; right: 1.5rem; position: absolute;">
                 <span class="material-symbols-rounded">close</span>
@@ -191,34 +195,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
             
             <form method="POST" action="/support.php?action=create" class="password-form" style="padding-top: 1rem;">
                 <div class="input-group" style="grid-column: 1 / -1;">
-                    <label>Válassz Kategóriát</label>
+                    <label>Válassz Kategóriát (Kategóriánként max. 1 nyitott jegy)</label>
                     <div class="category-grid">
-                        <label class="cat-card cat-bug">
-                            <input type="radio" name="category" value="Hibabejelentés" required>
+                        
+                        <?php 
+                        // Segédváltozók, amik megmondják, hogy nyitva van-e az adott kategória
+                        $catBugOpen = in_array('Hibabejelentés', $activeCategories);
+                        $catReportOpen = in_array('Játékos Jelentése', $activeCategories);
+                        $catShopOpen = in_array('Vásárlási Probléma', $activeCategories);
+                        $catOtherOpen = in_array('Egyéb Kérdés', $activeCategories);
+                        ?>
+
+                        <label class="cat-card cat-bug <?= $catBugOpen ? 'disabled-cat' : '' ?>">
+                            <input type="radio" name="category" value="Hibabejelentés" <?= $catBugOpen ? 'disabled' : 'required' ?>>
                             <div class="cat-content">
-                                <span class="material-symbols-rounded">bug_report</span>
+                                <span class="material-symbols-rounded"><?= $catBugOpen ? 'lock' : 'bug_report' ?></span>
                                 <span>Hiba (Bug)</span>
+                                <?php if($catBugOpen): ?><span class="cat-locked-text">Nyitva</span><?php endif; ?>
                             </div>
                         </label>
-                        <label class="cat-card cat-report">
-                            <input type="radio" name="category" value="Játékos Jelentése" required>
+                        
+                        <label class="cat-card cat-report <?= $catReportOpen ? 'disabled-cat' : '' ?>">
+                            <input type="radio" name="category" value="Játékos Jelentése" <?= $catReportOpen ? 'disabled' : 'required' ?>>
                             <div class="cat-content">
-                                <span class="material-symbols-rounded">person_alert</span>
+                                <span class="material-symbols-rounded"><?= $catReportOpen ? 'lock' : 'person_alert' ?></span>
                                 <span>Csaló / Toxikus</span>
+                                <?php if($catReportOpen): ?><span class="cat-locked-text">Nyitva</span><?php endif; ?>
                             </div>
                         </label>
-                        <label class="cat-card cat-shop">
-                            <input type="radio" name="category" value="Vásárlási Probléma" required>
+                        
+                        <label class="cat-card cat-shop <?= $catShopOpen ? 'disabled-cat' : '' ?>">
+                            <input type="radio" name="category" value="Vásárlási Probléma" <?= $catShopOpen ? 'disabled' : 'required' ?>>
                             <div class="cat-content">
-                                <span class="material-symbols-rounded">shopping_cart</span>
+                                <span class="material-symbols-rounded"><?= $catShopOpen ? 'lock' : 'shopping_cart' ?></span>
                                 <span>Webshop</span>
+                                <?php if($catShopOpen): ?><span class="cat-locked-text">Nyitva</span><?php endif; ?>
                             </div>
                         </label>
-                        <label class="cat-card cat-other">
-                            <input type="radio" name="category" value="Egyéb Kérdés" required>
+                        
+                        <label class="cat-card cat-other <?= $catOtherOpen ? 'disabled-cat' : '' ?>">
+                            <input type="radio" name="category" value="Egyéb Kérdés" <?= $catOtherOpen ? 'disabled' : 'required' ?>>
                             <div class="cat-content">
-                                <span class="material-symbols-rounded">help</span>
+                                <span class="material-symbols-rounded"><?= $catOtherOpen ? 'lock' : 'help' ?></span>
                                 <span>Egyéb</span>
+                                <?php if($catOtherOpen): ?><span class="cat-locked-text">Nyitva</span><?php endif; ?>
                             </div>
                         </label>
                     </div>
@@ -240,8 +260,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
             </form>
         </div>
 
-    <?php elseif ($action === 'new' && $hasActiveTicket): ?>
-        <div class="profile-alert warning glass">Már van egy folyamatban lévő hibajegyed! Újat csak annak lezárása után nyithatsz. <a href="/support.php" style="text-decoration: underline;">Vissza</a></div>
+    <?php elseif ($action === 'new' && $allCategoriesFull): ?>
+        <div class="profile-alert warning glass">Minden kategóriában van már egy nyitott hibajegyed! Újat csak valamelyik lezárása után nyithatsz. <a href="/support.php" style="text-decoration: underline;">Vissza</a></div>
 
     <?php elseif ($action === 'view' && isset($_GET['id'])): ?>
         <?php

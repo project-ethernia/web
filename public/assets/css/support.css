@@ -118,6 +118,31 @@
 }
 .cat-other input:checked + .cat-content .material-symbols-rounded { color: var(--eth-primary); }
 
+/* --- ÚJ: LELAKATOLT, FOGLALT KATEGÓRIA --- */
+.disabled-cat {
+    cursor: not-allowed;
+    pointer-events: none; /* Teljesen letiltja a kattintást */
+}
+
+.disabled-cat .cat-content {
+    opacity: 0.3 !important; /* Szürke és átlátszó marad, ha rávisszük az egeret, akkor is */
+    background: rgba(0, 0, 0, 0.6);
+    border-color: rgba(255, 255, 255, 0.05);
+    filter: grayscale(100%);
+}
+
+.cat-locked-text {
+    font-size: 0.7rem;
+    color: var(--eth-danger);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.2rem;
+    background: rgba(239, 68, 68, 0.2);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+}
+
 .btn-auth {
     background: transparent;
     color: var(--text-main);
@@ -277,11 +302,9 @@
 .chat-content {
     display: flex;
     flex-direction: column;
-    /* JAVÍTÁS: Rászűkítjük a flex oszlopot a szövegre! */
     max-width: 100%;
 }
 
-/* JAVÍTÁS: Rácuppantjuk a szövegbuborékokat az oldalukra! */
 .mine .chat-content { align-items: flex-end; }
 .admin .chat-content { align-items: flex-start; }
 
@@ -309,7 +332,6 @@
     margin-bottom: 0.4rem;
     font-size: 0.8rem;
 }
-/* A meta automatikusan jó helyen lesz az align-items miatt, de a mine-nél megfordítjuk az elemek sorrendjét */
 .mine .chat-meta { flex-direction: row-reverse; }
 
 .chat-author { font-weight: 700; color: var(--text-muted); }
