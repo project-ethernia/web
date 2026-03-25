@@ -2,7 +2,7 @@
 // === ETHERNIA ADMIN - SZEREPKÖRÖK ÉS JOGOSULTSÁGOK ===
 
 $ADMIN_ROLES = [
-    'superadmin' => [
+    'owner' => [
         'name' => 'Tulajdonos',
         'color' => '#ef4444', // Piros
         'permissions' => ['all'] // Mindent is csinálhat
@@ -12,13 +12,13 @@ $ADMIN_ROLES = [
         'color' => '#f59e0b', // Narancs
         'permissions' => ['manage_users', 'manage_tickets', 'manage_news']
     ],
-    'moderator' => [
+    'mod' => [
         'name' => 'Moderátor',
         'color' => '#3b82f6', // Kék
         'permissions' => ['manage_tickets', 'manage_news']
     ],
     'support' => [
-        'name' => 'Ügyfélszolgálat',
+        'name' => 'Support',
         'color' => '#22c55e', // Zöld
         'permissions' => ['manage_tickets']
     ]
