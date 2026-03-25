@@ -118,10 +118,11 @@ body {
 }
 
 .btn-admin {
+    position: relative; /* Ez a kulcs az ikon kiszakításához */
     background: transparent;
     color: #fff;
     border: 2px solid var(--admin-red);
-    padding: 1rem;
+    padding: 1rem 1.5rem 1rem 3.5rem; /* Bal oldalon extra hely az ikonnak */
     text-transform: uppercase;
     letter-spacing: 0.2em;
     font-weight: 700;
@@ -133,7 +134,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 0.5rem;
+}
+
+.btn-admin .material-symbols-rounded {
+    position: absolute;
+    left: 1.5rem; /* Fixen a bal szélre tapad */
+    font-size: 1.5rem;
 }
 
 .btn-admin:hover {

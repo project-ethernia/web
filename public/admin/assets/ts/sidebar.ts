@@ -1,27 +1,28 @@
 /// <reference lib="dom" />
 
 document.addEventListener("DOMContentLoaded", () => {
-  const rippleButtons = document.querySelectorAll<HTMLElement>(".ripple-btn");
+    const sidebar = document.getElementById('admin-sidebar');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const toggleIcon = toggleBtn?.querySelector('.material-symbols-rounded');
 
-  rippleButtons.forEach((button) => {
-    button.addEventListener("click", function (e: MouseEvent) {
-      const rect = button.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+    if (sidebar && toggleBtn && toggleIcon) {
+        // Oldaltöltéskor megnézzük, mi volt az utolsó állapot
+        const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+        
+        if (isCollapsed) {
+            sidebar.classList.add('collapsed');
+            toggleIcon.textContent = 'menu'; // Hamburger ikon, ha csukva van
+        }
 
-      const circle = document.createElement("span");
-      circle.classList.add("ripple");
-      circle.style.left = `${x}px`;
-      circle.style.top = `${y}px`;
-
-      const diameter = Math.max(rect.width, rect.height);
-      circle.style.width = circle.style.height = `${diameter}px`;
-
-      button.appendChild(circle);
-
-      setTimeout(() => {
-        circle.remove();
-      }, 600);
-    });
-  });
+        // Gombnyomás esemény
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            
+            const currentlyCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebar_collapsed', currentlyCollapsed ? 'true' : 'false');
+            
+            // Ikon cseréje
+            toggleIcon.textContent = currentlyCollapsed ? 'menu' : 'menu_open';
+        });
+    }
 });
