@@ -148,38 +148,52 @@ body.admin-body {
 .admin-ticket-layout { display: flex; gap: 2rem; align-items: flex-start; height: 75vh; }
 
 /* Bal Oldal: Chat */
-.chat-container { display: flex; flex-direction: column; flex: 1; height: 100%; overflow: hidden; position: relative; }
+.chat-container { 
+    display: flex; 
+    flex-direction: column; 
+    flex: 1; 
+    height: 100%; 
+    overflow: hidden; 
+    position: relative; 
+    min-width: 0; /* NUKLEÁRIS OPCIÓ: Engedi a chat doboz összenyomását */
+}
 .chat-header { padding: 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); }
 .chat-title-area h2 { font-size: 1.4rem; margin: 0 0 0.5rem 0; }
 
 .chat-messages { flex: 1; padding: 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; scrollbar-width: thin; scrollbar-color: var(--admin-red) transparent; }
 
-.chat-bubble-wrapper { display: flex; gap: 1rem; max-width: 80%; }
+.chat-bubble-wrapper { 
+    display: flex; 
+    gap: 1rem; 
+    max-width: 80%; 
+    min-width: 0; /* NUKLEÁRIS OPCIÓ: Engedi a buborék összenyomását */
+}
 .chat-bubble-wrapper.mine { align-self: flex-end; flex-direction: row-reverse; } 
 .chat-bubble-wrapper.player { align-self: flex-start; } 
 
-.chat-avatar { width: 40px; height: 40px; border-radius: 8px; image-rendering: pixelated; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+.chat-avatar { width: 40px; height: 40px; border-radius: 8px; image-rendering: pixelated; box-shadow: 0 4px 10px rgba(0,0,0,0.5); flex-shrink: 0; }
 
-/* JAVÍTÁS: A tartalom mehet min-width: 0-ra a sortörés miatt */
 .chat-content { 
     display: flex; 
     flex-direction: column; 
     max-width: 100%; 
-    min-width: 0; 
+    min-width: 0; /* NUKLEÁRIS OPCIÓ: Engedi a tartalom összenyomását */
 }
 .mine .chat-content { align-items: flex-end; }
 .player .chat-content { align-items: flex-start; }
 
-/* JAVÍTÁS: overflow-wrap a hosszú szövegeknél */
 .chat-text { 
     padding: 1rem 1.2rem; 
     border-radius: 18px; 
     font-size: 0.95rem; 
     line-height: 1.6; 
     box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
-    overflow-wrap: break-word;
+    
+    /* NUKLEÁRIS OPCIÓ: A tökéletes sortöréshez */
+    overflow-wrap: anywhere;
     word-wrap: break-word;
-    word-break: normal;
+    word-break: break-word;
+    white-space: pre-wrap;
 }
 .mine .chat-text { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--admin-red); color: #fff; border-top-right-radius: 4px; }
 .player .chat-text { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-glass); color: #e2e8f0; border-top-left-radius: 4px; }
@@ -193,7 +207,7 @@ body.admin-body {
 .role-STAFF { background: var(--admin-red); color: #fff; box-shadow: 0 0 10px var(--admin-red-glow); }
 .role-JÁTÉKOS { background: rgba(255,255,255,0.1); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.2); }
 
-.chat-attachment { margin-top: 0.8rem; }
+.chat-attachment { margin-top: 0.8rem; max-width: 100%; }
 .chat-attachment img { max-width: 100%; max-height: 300px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
 .chat-attachment img:hover { filter: brightness(1.2); }
 
