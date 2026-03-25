@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/../database.php';
+require_once __DIR__ . '/../../database.php';
 
 // Ha már be van lépve, irány az index
 if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
@@ -11,7 +11,7 @@ if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
 // Feloldás Discord gombbal
 if (isset($_GET['force_check'])) {
     unset($_SESSION['lockout_end']);
-    header("Location: /admin/login.php");
+    header("Location: /admin/auth/login.php");
     exit;
 }
 
@@ -20,6 +20,13 @@ $maxFailedAttempts = 3;
 $lockoutMinutes = 15;
 
 $error = '';
+
+// Core.php-ből érkező hibaüzenetek lekezelése
+if (isset($_GET['error'])) {
+    if ($_GET['error'] === 'timeout') $error = "Biztonsági okokból inaktivitás miatt kijelentkeztettünk.";
+    if ($_GET['error'] === 'security_breach') $error = "Biztonsági riasztás: Az IP címed vagy böngésződ megváltozott!";
+}
+
 $step = isset($_SESSION['pending_2fa_admin_id']) ? 2 : 1;
 $clientIp = $_SERVER['REMOTE_ADDR'] ?? 'Ismeretlen';
 $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Ismeretlen';
@@ -36,7 +43,6 @@ if (isset($_SESSION['lockout_end'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
-    // --- 1. LÉPÉS: NÉV ÉS JELSZÓ ---
     if (isset($_POST['action']) && $_POST['action'] === 'login_step_1') {
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
@@ -46,13 +52,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
         $admin = $stmt->fetch();
 
         if ($admin) {
-            // Ellenőrizzük az adatbázis szintű tiltást
             if ($admin['lockout_time'] && strtotime($admin['lockout_time']) > time()) {
                 $_SESSION['lockout_end'] = strtotime($admin['lockout_time']);
                 $lockoutEnd = $_SESSION['lockout_end'];
                 $error = "Túl sok hibás próbálkozás! A védelem aktiválódott.";
             } 
-            // JAVÍTÁS: ITT MÁR A 'password_hash' OSZLOPOT NÉZZÜK!
             elseif (password_verify($password, $admin['password_hash'])) {
                 $code = sprintf("%06d", mt_rand(1, 999999));
                 $expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
@@ -87,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
 
                     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
                     $domain = $_SERVER['HTTP_HOST'];
-                    $unlockUrl = "{$protocol}://{$domain}/admin/unlock.php?token={$unlockToken}";
+                    $unlockUrl = "{$protocol}://{$domain}/admin/auth/unlock.php?token={$unlockToken}";
 
                     $msg = "🚨 **VIGYÁZAT: FIÓK ZÁROLVA!** 🚨\nValaki túl sokszor rontotta el a jelszót!\n👤 **Fiók:** `{$admin['username']}`\n🌍 **IP cím:** `{$clientIp}`\n\n🔓 **Kattints ide a zárolás feloldásához:**\n{$unlockUrl}";
                     $json_data = json_encode(["content" => $msg]);
@@ -109,7 +113,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
             $error = "Hibás felhasználónév vagy jelszó!";
         }
     }
-    // --- 2. LÉPÉS: 2FA KÓD ---
     elseif (isset($_POST['action']) && $_POST['action'] === 'login_step_2') {
         $code = trim($_POST['twofa_code'] ?? '');
         $adminId = $_SESSION['pending_2fa_admin_id'] ?? 0;
@@ -125,9 +128,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
             $_SESSION['admin_role'] = $admin['role'] ?? 'admin';
             $_SESSION['admin_ip'] = $clientIp;
             $_SESSION['admin_user_agent'] = $userAgent;
+            $_SESSION['admin_last_activity'] = time();
 
-            $clear = $pdo->prepare("UPDATE admins SET two_factor_code = NULL, two_factor_expires = NULL, failed_logins = 0, lockout_time = NULL, unlock_token = NULL WHERE id = ?");
-            $clear->execute([$admin['id']]);
+            $clear = $pdo->prepare("UPDATE admins SET two_factor_code = NULL, two_factor_expires = NULL, failed_logins = 0, lockout_time = NULL, unlock_token = NULL, last_ip = ? WHERE id = ?");
+            $clear->execute([$clientIp, $admin['id']]);
 
             unset($_SESSION['pending_2fa_admin_id']);
             header('Location: /admin/index.php');
@@ -147,177 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300..700&display=block">
     <link rel="stylesheet" href="/assets/css/globals.css?v=<?= time(); ?>">
-    
-    <style>
-        /* ADMIN PIROS GLASSMORPHISM DIZÁJN */
-        :root {
-            --admin-red: #ef4444;
-            --admin-red-glow: rgba(239, 68, 68, 0.5);
-            --admin-bg: #0f0a15;
-        }
-        
-        body {
-            background-color: var(--admin-bg);
-            background-image: radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.1) 0%, transparent 60%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            font-family: var(--font-body);
-            color: #fff;
-        }
-
-        .auth-container {
-            width: 100%;
-            max-width: 450px;
-            padding: 3rem;
-            background: rgba(15, 10, 20, 0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-top: 1px solid rgba(239, 68, 68, 0.5);
-            border-radius: var(--radius-lg);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(239, 68, 68, 0.05);
-            text-align: center;
-        }
-
-        .admin-logo {
-            font-size: 3rem;
-            color: var(--admin-red);
-            filter: drop-shadow(0 0 15px var(--admin-red-glow));
-            margin-bottom: 1rem;
-        }
-
-        .auth-title {
-            font-family: var(--font-heading);
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-        }
-
-        .auth-subtitle {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-bottom: 2rem;
-        }
-
-        .alert-error {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--admin-red);
-            border-left: 4px solid var(--admin-red);
-            padding: 1rem;
-            border-radius: 4px;
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            justify-content: center;
-        }
-
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-            gap: 0.5rem;
-        }
-
-        .input-group label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-        }
-
-        .auth-input {
-            width: 100%;
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-sm);
-            color: #fff;
-            font-size: 1rem;
-            outline: none;
-            transition: var(--transition);
-            font-family: var(--font-body);
-        }
-
-        .auth-input:focus {
-            border-color: var(--admin-red);
-            background: rgba(0, 0, 0, 0.5);
-            box-shadow: 0 0 15px var(--admin-red-glow);
-        }
-
-        .code-input {
-            text-align: center;
-            font-size: 1.5rem;
-            letter-spacing: 0.5em;
-            font-weight: 700;
-        }
-
-        .btn-admin {
-            background: transparent;
-            color: #fff;
-            border: 2px solid var(--admin-red);
-            padding: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            font-weight: 700;
-            border-radius: var(--radius-pill);
-            cursor: pointer;
-            transition: var(--transition);
-            margin-top: 1rem;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-admin:hover {
-            background: rgba(239, 68, 68, 0.2);
-            box-shadow: 0 0 20px var(--admin-red-glow), inset 0 0 15px rgba(239, 68, 68, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border-glass);
-            color: var(--text-muted);
-            padding: 0.8rem;
-            border-radius: var(--radius-pill);
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            transition: var(--transition);
-        }
-
-        .btn-outline:hover {
-            color: #fff;
-            border-color: var(--text-muted);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .lockout-timer {
-            font-size: 3rem;
-            font-weight: 900;
-            color: var(--admin-red);
-            font-family: var(--font-heading);
-            margin: 1.5rem 0;
-            text-shadow: 0 0 20px var(--admin-red-glow);
-        }
-    </style>
+    <link rel="stylesheet" href="/admin/assets/css/login.css?v=<?= time(); ?>">
 </head>
 <body>
 
@@ -331,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
         <div class="lockout-timer" id="countdown" data-end="<?= $lockoutEnd ?>">--:--</div>
         <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 2rem;">perc múlva újrapróbálhatod.</p>
         
-        <a href="/admin/login.php?force_check=1" class="btn-outline" style="display: block;">Már feloldottam Discordról</a>
+        <a href="/admin/auth/login.php?force_check=1" class="btn-outline" style="display: block;">Már feloldottam Discordról</a>
 
     <?php elseif ($step === 1): ?>
         <span class="material-symbols-rounded admin-logo">admin_panel_settings</span>
@@ -379,8 +213,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
             <button type="submit" class="btn-admin" style="border-color: #f59e0b; color: #f59e0b;">
                 Hitelesítés <span class="material-symbols-rounded">verified</span>
             </button>
-            <a href="/admin/login.php?cancel=1" class="btn-outline" style="display: block; margin-top: 0.5rem; text-align: center;">Mégse</a>
-            <?php if(isset($_GET['cancel'])) { unset($_SESSION['pending_2fa_admin_id']); header("Location: /admin/login.php"); exit; } ?>
+            <a href="/admin/auth/login.php?cancel=1" class="btn-outline" style="display: block; margin-top: 0.5rem; text-align: center;">Mégse</a>
+            <?php if(isset($_GET['cancel'])) { unset($_SESSION['pending_2fa_admin_id']); header("Location: /admin/auth/login.php"); exit; } ?>
         </form>
     <?php endif; ?>
 
@@ -396,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
         const diff = endTime - now;
 
         if (diff <= 0) {
-            window.location.href = '/admin/login.php';
+            window.location.href = '/admin/auth/login.php';
             return;
         }
 
