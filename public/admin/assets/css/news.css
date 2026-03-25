@@ -42,86 +42,80 @@ body.admin-body {
 .admin-header .subtitle { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
 .admin-user-info { font-size: 0.95rem; background: rgba(0,0,0,0.3); padding: 0.5rem 1rem; border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.05); }
 
+/* --- SPLIT LAYOUT --- */
 .admin-content { display: flex; flex-direction: column; gap: 2rem; }
-
-/* --- ALAP TÁBLÁZAT --- */
-.admin-panel { border-radius: var(--radius-md); overflow: hidden; padding: 1px; }
-.admin-table { width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.2); }
-.admin-table th { text-align: left; padding: 1.2rem 1.5rem; background: rgba(239, 68, 68, 0.1); color: #f8fafc; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid var(--admin-red); }
-.admin-table td { padding: 1.2rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
-.hover-row:hover { background: rgba(255, 255, 255, 0.03); }
-
-.td-id { color: var(--text-muted); font-family: monospace; font-size: 1.1rem; }
-.player-cell { display: flex; align-items: center; gap: 0.8rem; font-weight: 500; }
-.player-head { width: 28px; height: 28px; border-radius: 6px; image-rendering: pixelated; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-.btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-radius: var(--radius-pill); text-decoration: none; transition: var(--transition); display: inline-flex; align-items: center; justify-content: center;}
-
-/* ==========================================================================
-   HÍR SPECIFIKUS DIZÁJN (SPLIT LAYOUT)
-   ========================================================================== */
-
 .split-layout { display: flex; gap: 2rem; align-items: flex-start; }
 .list-panel { flex: 2; }
-.form-panel { flex: 1; min-width: 320px; position: sticky; top: 2rem; } /* A form követi a görgetést! */
+.form-panel { flex: 1; min-width: 320px; }
 
 .panel-header { padding: 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.3); }
 .panel-header h2 { margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; }
 .panel-header h2 .material-symbols-rounded { color: var(--admin-red); }
 .panel-body { padding: 2rem; }
 
-/* TÁBLÁZAT SPECIFIKUS */
-.td-cat { font-size: 0.75rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.3rem;}
-.td-subject { font-weight: 600; font-size: 1.1rem; color: #fff; }
-.td-muted { color: var(--text-muted); font-size: 0.9rem; }
+/* --- TÁBLÁZAT --- */
+.admin-panel { border-radius: var(--radius-md); overflow: hidden; padding: 1px; }
+.admin-table { width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.2); }
+.admin-table th { text-align: left; padding: 1.2rem 1.5rem; background: rgba(239, 68, 68, 0.1); color: #f8fafc; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid var(--admin-red); }
+.admin-table td { padding: 1.2rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
+.hover-row:hover { background: rgba(255, 255, 255, 0.03); }
 
-.btn-danger { background: transparent; border: 1px solid var(--admin-red); color: var(--admin-red); }
+/* --- HÍREK LISTA SPECIFIKUS --- */
+.news-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 0.3rem; color: #fff; }
+.news-snippet { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+.cat-badge { padding: 0.3rem 0.8rem; border-radius: var(--radius-pill); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; }
+.td-muted { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
+
+.toggle-visibility { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; text-decoration: none; transition: 0.3s; border: 1px solid transparent; }
+.toggle-visibility.active { color: #22c55e; background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.3); }
+.toggle-visibility.inactive { color: #ef4444; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); }
+.toggle-visibility:hover { filter: brightness(1.2); transform: scale(1.05); }
+
+.empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
+.empty-state .material-symbols-rounded { font-size: 4rem; color: rgba(255,255,255,0.1); margin-bottom: 1rem; }
+
+/* Gombok */
+.btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-radius: var(--radius-pill); text-decoration: none; transition: var(--transition); display: inline-block; }
+.btn-danger { background: transparent; border: 1px solid var(--admin-red); color: var(--admin-red); padding: 0.4rem 0.6rem; }
 .btn-danger:hover { background: var(--admin-red); color: #fff; box-shadow: 0 0 10px var(--admin-red-glow); }
 
-/* FORM SPECIFIKUS */
-.news-form { display: flex; flex-direction: column; gap: 1.5rem; }
+/* --- FORM SPECIFIKUS --- */
+.add-news-form { display: flex; flex-direction: column; gap: 1.5rem; }
 .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
 .input-group label { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
 
-.admin-input, .admin-textarea {
-    width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-glass);
-    border-radius: var(--radius-sm); color: #fff; font-size: 0.95rem; outline: none; transition: var(--transition);
-    font-family: var(--font-body);
-}
-.admin-textarea { resize: vertical; min-height: 150px; }
-.admin-input:focus, .admin-textarea:focus { border-color: var(--admin-red); box-shadow: 0 0 15px var(--admin-red-glow); }
+.admin-input { width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); color: #fff; font-size: 0.95rem; outline: none; transition: var(--transition); font-family: var(--font-body); resize: vertical;}
+.admin-input:focus { border-color: var(--admin-red); box-shadow: 0 0 15px var(--admin-red-glow); }
 
-/* KÁRTYÁS KATEGÓRIA VÁLASZTÓ */
-.role-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 0.5rem; }
+/* Radio Kártyák Kategóriákhoz */
+.role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin-top: 0.5rem; }
 .role-card { cursor: pointer; display: block; }
 .role-card input[type="radio"] { display: none; }
-.role-content {
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
-    padding: 1rem; background: rgba(0, 0, 0, 0.3); border: 2px solid var(--border-glass); border-radius: var(--radius-sm);
-    color: var(--text-muted); transition: var(--transition); opacity: 0.6; text-align: center; font-weight: 600; font-size: 0.85rem;
-}
-.role-content .material-symbols-rounded { font-size: 1.8rem; transition: var(--transition); }
+.role-content { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem; background: rgba(0, 0, 0, 0.3); border: 2px solid var(--border-glass); border-radius: var(--radius-sm); color: var(--text-muted); transition: var(--transition); opacity: 0.6; text-align: center; font-weight: 600; font-size: 0.8rem; }
+.role-content .material-symbols-rounded { font-size: 1.5rem; transition: var(--transition); }
 .role-card:hover .role-content { opacity: 0.8; background: rgba(0, 0, 0, 0.5); }
-.role-card input:checked + .role-content {
-    opacity: 1; border-color: var(--role-color); background: rgba(0, 0, 0, 0.6); color: #fff;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 0 15px var(--role-color);
-}
+.role-card input:checked + .role-content { opacity: 1; border-color: var(--role-color); background: rgba(0, 0, 0, 0.6); color: #fff; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 0 15px var(--role-color); }
 .role-card input:checked + .role-content .material-symbols-rounded { color: var(--role-color); filter: drop-shadow(0 0 5px var(--role-color)); }
 
-/* GOMB */
-.btn-action { 
-    position: relative; display: flex; align-items: center; justify-content: center; 
-    padding: 1rem 1.5rem 1rem 3rem; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; 
-    text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem; background: rgba(0,0,0,0.3); 
-    transition: 0.2s; text-decoration: none; border: 1px solid transparent; 
-}
-.btn-action .material-symbols-rounded { position: absolute; left: 1.2rem; font-size: 1.3rem; }
-.btn-claim:hover { background: rgba(59, 130, 246, 0.15); box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); color: #fff !important; }
+/* Custom Checkbox */
+.row-group { flex-direction: row; align-items: center; }
+.checkbox-container { display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-size: 0.95rem; font-weight: 500; color: #e2e8f0; user-select: none; }
+.checkbox-container input { display: none; }
+.checkmark { width: 24px; height: 24px; background: rgba(0,0,0,0.4); border: 2px solid var(--border-glass); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+.checkbox-container input:checked ~ .checkmark { background: var(--admin-red); border-color: var(--admin-red); box-shadow: 0 0 10px var(--admin-red-glow); }
+.checkbox-container input:checked ~ .checkmark::after { content: "✓"; color: #fff; font-weight: 900; }
 
-/* ÜZENET DOBOZOK */
+.btn-action { position: relative; display: flex; align-items: center; justify-content: center; padding: 1rem 1.5rem 1rem 3rem; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem; background: rgba(0,0,0,0.3); transition: 0.2s; text-decoration: none; border: 1px solid transparent; }
+.btn-action .material-symbols-rounded { position: absolute; left: 1.2rem; font-size: 1.3rem; }
+.btn-claim { border-color: #22c55e; color: #22c55e; }
+.btn-claim:hover { background: rgba(34, 197, 94, 0.15); box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); color: #fff; }
+
 .alert-box { padding: 1rem 1.5rem; border-radius: var(--radius-sm); font-weight: 600; display: flex; align-items: center; gap: 0.8rem; margin-bottom: 2rem; animation: fadeIn 0.3s ease-out; }
 .alert-box.success { background: rgba(34, 197, 94, 0.1); border-left: 4px solid #22c55e; color: #22c55e; }
 .alert-box.error { background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--admin-red); color: var(--admin-red); }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Reszponzív */
-@media (max-width: 1100px) { .split-layout { flex-direction: column; } .list-panel, .form-panel { width: 100%; position: static;} }
+@media (max-width: 1100px) {
+    .split-layout { flex-direction: column; }
+    .list-panel, .form-panel { width: 100%; }
+}

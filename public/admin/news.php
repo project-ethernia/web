@@ -3,7 +3,7 @@ $current_page = 'news';
 require_once __DIR__ . '/includes/core.php';
 
 // JOGOSULTSÁG ELLENŐRZÉS
-if (!hasPermission($admin_role, 'manage_news')) {
+if (!hasPermission($admin_role, 'manage_news') && !hasPermission($admin_role, 'all')) {
     header('Location: /admin/index.php?error=no_permission');
     exit;
 }
@@ -11,63 +11,61 @@ if (!hasPermission($admin_role, 'manage_news')) {
 $msg = '';
 $msgType = '';
 
-// Hír Kategóriák (Ezt akár a configba is kiteheted később)
 $NEWS_CATEGORIES = [
-    'update' => ['name' => 'Frissítés', 'icon' => 'update', 'color' => '#3b82f6'],
-    'event' => ['name' => 'Esemény', 'icon' => 'event_star', 'color' => '#f59e0b'],
-    'maintenance' => ['name' => 'Karbantartás', 'icon' => 'build', 'color' => '#ef4444'],
-    'info' => ['name' => 'Információ', 'icon' => 'info', 'color' => '#22c55e']
+    'INFO' => ['name' => 'Információ', 'color' => '#3b82f6', 'icon' => 'info'],
+    'UPDATE' => ['name' => 'Frissítés', 'color' => '#22c55e', 'icon' => 'update'],
+    'EVENT' => ['name' => 'Esemény', 'color' => '#f59e0b', 'icon' => 'event']
 ];
 
-// --- MŰVELET: Új Hír közzététele ---
+// --- HÍR HOZZÁADÁSA ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_news') {
     $title = trim($_POST['title'] ?? '');
-    $category = trim($_POST['category'] ?? 'info');
-    $image_url = trim($_POST['image_url'] ?? '');
-    $content = trim($_POST['content'] ?? '');
+    $category = $_POST['category'] ?? 'INFO';
+    $short_text = trim($_POST['short_text'] ?? '');
+    $full_text = trim($_POST['full_text'] ?? '');
+    $image_url = trim($_POST['image_url'] ?? ''); // Opcionális
+    $is_visible = isset($_POST['is_visible']) ? 1 : 0;
 
-    if ($title && $content && isset($NEWS_CATEGORIES[$category])) {
+    if ($title && $short_text && $full_text) {
         try {
-            // Feltételezzük, hogy van author_id és image_url oszlopod. Ha nincs, a try-catch megfogja a hibát!
-            $insert = $pdo->prepare("INSERT INTO news (title, category, content, image_url, author_id) VALUES (?, ?, ?, ?, ?)");
-            // Ha a te adatbázisodban nincs author_id vagy image_url, cseréld le a fenti sort erre:
-            // $insert = $pdo->prepare("INSERT INTO news (title, category, content) VALUES (?, ?, ?)"); és vedd ki az utolsó 2 paramétert az execute-ból!
-            $insert->execute([$title, $category, $content, $image_url, $admin_id]);
+            // Automatikus mezők generálása
+            $tag = ucfirst(strtolower($category));
+            $date_display = date('Y. m. d.');
+            $author = $admin_name;
+
+            // JAVÍTOTT, ATOMBIZTOS SQL LEKÉRDEZÉS!
+            $stmt = $pdo->prepare("INSERT INTO news (title, category, tag, date_display, short_text, full_text, is_visible, author, image_url, order_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
+            $stmt->execute([$title, $category, $tag, $date_display, $short_text, $full_text, $is_visible, $author, $image_url ?: null]);
             
-            $msg = "A cikk sikeresen publikálva lett!";
+            $msg = "A hír sikeresen közzétéve!";
             $msgType = "success";
         } catch (PDOException $e) {
-            $msg = "Adatbázis hiba (Lehet, hogy hiányzik az 'image_url' vagy 'author_id' oszlop a news táblából): " . $e->getMessage();
+            $msg = "Adatbázis hiba: " . $e->getMessage();
             $msgType = "error";
         }
     } else {
-        $msg = "A Cím és a Tartalom kitöltése kötelező!";
+        $msg = "Kérlek töltsd ki a kötelező mezőket (Cím, Rövid leírás, Teljes tartalom)!";
         $msgType = "error";
     }
 }
 
-// --- MŰVELET: Hír törlése ---
+// --- HÍR TÖRLÉSE ---
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $target_id = (int)$_GET['delete'];
-    try {
-        $pdo->prepare("DELETE FROM news WHERE id = ?")->execute([$target_id]);
-        $msg = "Cikk sikeresen eltávolítva.";
-        $msgType = "success";
-    } catch (PDOException $e) {
-        $msg = "Hiba a törlés során: " . $e->getMessage();
-        $msgType = "error";
-    }
+    $pdo->prepare("DELETE FROM news WHERE id = ?")->execute([(int)$_GET['delete']]);
+    $msg = "A hír sikeresen törölve a rendszerből.";
+    $msgType = "success";
 }
 
-// Hírek lekérdezése (próbáljuk meg lekérni az író nevét is, ha van author_id)
-try {
-    $stmt = $pdo->query("SELECT n.*, a.username as author_name FROM news n LEFT JOIN admins a ON n.author_id = a.id ORDER BY n.created_at DESC");
-    $news_items = $stmt->fetchAll();
-} catch (PDOException $e) {
-    // Ha nincs author_id a táblában, sima lekérdezés:
-    $stmt = $pdo->query("SELECT * FROM news ORDER BY created_at DESC");
-    $news_items = $stmt->fetchAll();
+// --- LÁTHATÓSÁG (VISIBLE) VÁLTÁSA ---
+if (isset($_GET['toggle']) && is_numeric($_GET['toggle'])) {
+    $pdo->prepare("UPDATE news SET is_visible = NOT is_visible WHERE id = ?")->execute([(int)$_GET['toggle']]);
+    header('Location: /admin/news.php');
+    exit;
 }
+
+// Kilistázzuk a meglévő híreket
+$stmt = $pdo->query("SELECT * FROM news ORDER BY created_at DESC");
+$newsList = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="hu">
@@ -91,8 +89,8 @@ try {
             <div class="header-left">
                 <span class="material-symbols-rounded header-icon">newspaper</span>
                 <div>
-                    <h1>Hírek és Közlemények</h1>
-                    <p class="subtitle">Szerver hírek, események és frissítések publikálása</p>
+                    <h1>Hírek & Bejelentések</h1>
+                    <p class="subtitle">A Főoldalon megjelenő bejegyzések kezelése</p>
                 </div>
             </div>
             <div class="admin-user-info">
@@ -113,68 +111,70 @@ try {
                 
                 <div class="admin-panel glass list-panel">
                     <div class="panel-header">
-                        <h2><span class="material-symbols-rounded">article</span> Publikált Cikkek</h2>
+                        <h2><span class="material-symbols-rounded">list_alt</span> Közzétett Hírek</h2>
                     </div>
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Kategória & Cím</th>
-                                <th>Szerző</th>
-                                <th>Dátum</th>
-                                <th>Művelet</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($news_items)): ?>
-                                <tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Még nincsenek publikált hírek.</td></tr>
-                            <?php else: ?>
-                                <?php foreach ($news_items as $item): ?>
+                    
+                    <?php if(empty($newsList)): ?>
+                        <div class="empty-state">
+                            <span class="material-symbols-rounded">article</span>
+                            <p>Még nem hoztál létre egyetlen hírt sem.</p>
+                        </div>
+                    <?php else: ?>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Cím és Részlet</th>
+                                    <th>Kategória</th>
+                                    <th>Láthatóság</th>
+                                    <th>Dátum</th>
+                                    <th>Műveletek</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($newsList as $n): ?>
                                     <?php 
-                                        $cat_key = $item['category'] ?? 'info';
-                                        $cat = $NEWS_CATEGORIES[$cat_key] ?? $NEWS_CATEGORIES['info'];
-                                        $author = $item['author_name'] ?? 'Rendszer';
-                                        $date = date('Y.m.d. H:i', strtotime($item['created_at']));
+                                        $catInfo = $NEWS_CATEGORIES[$n['category']] ?? ['name' => $n['category'], 'color' => '#64748b'];
+                                        $isVisible = (int)$n['is_visible'] === 1;
                                     ?>
                                     <tr class="hover-row">
-                                        <td class="td-id"><strong>#<?= $item['id'] ?></strong></td>
                                         <td>
-                                            <div class="td-cat" style="color: <?= $cat['color'] ?>;">
-                                                <span class="material-symbols-rounded" style="font-size: 1rem; vertical-align: middle;"><?= $cat['icon'] ?></span>
-                                                <?= h($cat['name']) ?>
-                                            </div>
-                                            <div class="td-subject" style="margin-top: 4px;"><?= h($item['title']) ?></div>
+                                            <div class="news-title"><?= h($n['title']) ?></div>
+                                            <div class="news-snippet"><?= h(mb_strimwidth(strip_tags($n['short_text']), 0, 50, '...')) ?></div>
                                         </td>
                                         <td>
-                                            <div class="player-cell">
-                                                <img src="https://minotar.net/helm/<?= h($author) ?>/24.png" class="player-head">
-                                                <?= h($author) ?>
-                                            </div>
+                                            <span class="cat-badge" style="color: <?= $catInfo['color'] ?>; background: <?= $catInfo['color'] ?>20; border: 1px solid <?= $catInfo['color'] ?>50;">
+                                                <?= h($catInfo['name']) ?>
+                                            </span>
                                         </td>
-                                        <td class="td-muted"><?= $date ?></td>
                                         <td>
-                                            <a href="?delete=<?= $item['id'] ?>" class="btn-sm btn-danger" onclick="return confirm('Biztosan törlöd ezt a cikket?');" title="Törlés">
+                                            <a href="?toggle=<?= $n['id'] ?>" class="toggle-visibility <?= $isVisible ? 'active' : 'inactive' ?>" title="Láthatóság átváltása">
+                                                <span class="material-symbols-rounded"><?= $isVisible ? 'visibility' : 'visibility_off' ?></span>
+                                            </a>
+                                        </td>
+                                        <td class="td-muted"><?= h($n['date_display']) ?></td>
+                                        <td>
+                                            <a href="?delete=<?= $n['id'] ?>" class="btn-sm btn-danger" onclick="ethConfirm(event, 'Biztosan véglegesen törlöd ezt a hírt?', this.href);">
                                                 <span class="material-symbols-rounded">delete</span>
                                             </a>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
                 </div>
 
                 <div class="admin-panel glass form-panel">
                     <div class="panel-header">
-                        <h2><span class="material-symbols-rounded">edit_document</span> Új Cikk Írása</h2>
+                        <h2><span class="material-symbols-rounded">post_add</span> Új Hír Írása</h2>
                     </div>
                     <div class="panel-body">
-                        <form method="POST" action="/admin/news.php" class="news-form">
+                        <form method="POST" action="/admin/news.php" class="add-news-form">
                             <input type="hidden" name="action" value="add_news">
                             
                             <div class="input-group">
-                                <label>Cikk Címe</label>
-                                <input type="text" name="title" class="admin-input" required autocomplete="off" placeholder="Pl.: Érkezik a 2.0-ás Frissítés!">
+                                <label>Hír Címe</label>
+                                <input type="text" name="title" class="admin-input" required autocomplete="off" placeholder="Pl.: Megjelent a legújabb frissítés!">
                             </div>
 
                             <div class="input-group">
@@ -182,7 +182,7 @@ try {
                                 <div class="role-grid">
                                     <?php foreach ($NEWS_CATEGORIES as $key => $data): ?>
                                         <label class="role-card" style="--role-color: <?= $data['color'] ?>;">
-                                            <input type="radio" name="category" value="<?= $key ?>" required <?= $key === 'info' ? 'checked' : '' ?>>
+                                            <input type="radio" name="category" value="<?= $key ?>" required <?= $key === 'INFO' ? 'checked' : '' ?>>
                                             <div class="role-content">
                                                 <span class="material-symbols-rounded"><?= $data['icon'] ?></span>
                                                 <span><?= h($data['name']) ?></span>
@@ -191,21 +191,33 @@ try {
                                     <?php endforeach; ?>
                                 </div>
                             </div>
-
+                            
                             <div class="input-group">
-                                <label>Borítókép (Opcionális URL)</label>
-                                <input type="url" name="image_url" id="news-img-input" class="admin-input" placeholder="https://imgur.com/kep.png">
-                                <img id="news-img-preview" src="" alt="Előnézet" style="display: none; width: 100%; border-radius: 8px; margin-top: 0.5rem; border: 1px solid var(--border-glass);">
+                                <label>Kép URL (Opcionális)</label>
+                                <input type="text" name="image_url" class="admin-input" placeholder="https://.../kep.png">
                             </div>
 
                             <div class="input-group">
-                                <label>Cikk Tartalma (HTML / Szöveg)</label>
-                                <textarea name="content" class="admin-textarea" id="news-textarea" required placeholder="Írd le a részleteket..."></textarea>
+                                <label>Rövid Leírás (Bevezető)</label>
+                                <textarea name="short_text" class="admin-input" rows="2" required placeholder="Néhány mondatos összefoglaló a kártyákhoz..."></textarea>
                             </div>
 
-                            <button type="submit" class="btn-action btn-claim" style="width: 100%; margin-top: 1rem; border-color: #3b82f6; color: #3b82f6;">
-                                <span class="material-symbols-rounded">publish</span>
-                                Publikálás
+                            <div class="input-group">
+                                <label>Teljes Tartalom (HTML engedélyezett)</label>
+                                <textarea name="full_text" class="admin-input" rows="6" required placeholder="Itt fejtheted ki a részleteket..."></textarea>
+                            </div>
+
+                            <div class="input-group row-group">
+                                <label class="checkbox-container">
+                                    <input type="checkbox" name="is_visible" checked>
+                                    <span class="checkmark"></span>
+                                    Azonnal publikálva (Látható)
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn-action btn-claim" style="width: 100%; margin-top: 1rem;">
+                                <span class="material-symbols-rounded">send</span>
+                                Hír Közzététele
                             </button>
                         </form>
                     </div>
@@ -217,6 +229,5 @@ try {
 </div>
 
 <script src="/admin/assets/js/sidebar.js?v=<?= time(); ?>"></script>
-<script src="/admin/assets/js/news.js?v=<?= time(); ?>"></script>
 </body>
 </html>
