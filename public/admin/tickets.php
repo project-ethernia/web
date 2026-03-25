@@ -4,18 +4,15 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Admin jogosultság ellenőrzése (igazítsd a saját rendszeredhez, ha máshogy van!)
-// require_once __DIR__ . '/_auth.php'; 
-if (empty($_SESSION['is_user'])) {
-    header('Location: /auth/login.php');
+if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
+    header('Location: /admin/login.php');
     exit;
 }
-// Itt egy extra ellenőrzés kéne, hogy tényleg admin-e, de egyelőre feltételezzük, hogy az admin mappát csak ők érik el.
 
 require_once __DIR__ . '/../database.php';
 
-$admin_id = $_SESSION['user_id'];
-$admin_name = $_SESSION['user_username'];
+$admin_id = $_SESSION['admin_id'];
+$admin_name = $_SESSION['admin_username'];
 $action = $_GET['action'] ?? 'list';
 $msg = '';
 
@@ -27,9 +24,7 @@ function formatHungarianDate($datetime) {
     return date('Y.', $ts) . ' ' . $months[(int)date('n', $ts)] . ' ' . date('d - H:i', $ts);
 }
 
-// ====================================================================================
-// ADMIN TICKET MŰVELETEK
-// ====================================================================================
+// ADMIN TICKET MŰVELETEK (Lefoglalás, Szünet, Lezárás)
 if (isset($_GET['do']) && isset($_GET['id'])) {
     $do = $_GET['do'];
     $ticket_id = (int)$_GET['id'];
@@ -65,9 +60,7 @@ if (isset($_GET['do']) && isset($_GET['id'])) {
     exit;
 }
 
-// ====================================================================================
-// ADMIN VÁLASZ KÜLDÉSE (Base64)
-// ====================================================================================
+// VÁLASZ KÜLDÉSE (Base64)
 function uploadImageAsBase64($fileArray) {
     if (isset($fileArray) && $fileArray['error'] === UPLOAD_ERR_OK) {
         $tmpName = $fileArray['tmp_name'];
@@ -88,10 +81,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
     $attachment = uploadImageAsBase64($_FILES['attachment'] ?? null);
     
     if ($message !== '' || $attachment !== null) {
-        // AZ IS_ADMIN = 1 KRITIKUS! ETTŐL LESZ STAFF JELVÉNYE A PUBLIKUS OLDALON!
         $stmt = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment, is_admin) VALUES (?, ?, ?, ?, 1)");
         $stmt->execute([$ticket_id, $admin_id, $message, $attachment]);
-        // Átállítjuk a státuszt, hogy a játékos lássa: válaszoltak!
         $pdo->prepare("UPDATE tickets SET status = 'answered', updated_at = NOW() WHERE id = ?")->execute([$ticket_id]);
         header("Location: /admin/tickets.php?action=view&id=" . $ticket_id);
         exit;
@@ -103,30 +94,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
 <head>
     <meta charset="UTF-8">
     <title>Ticket Kezelő | Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300..700&display=block">
-    <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
+    <link rel="stylesheet" href="/assets/css/globals.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/tickets.css?v=<?= time(); ?>">
 </head>
-<body>
+<body class="admin-body">
 
 <div class="admin-layout">
+    
     <main class="admin-main">
-        <header class="admin-header">
-            <h1>Ügyfélszolgálat (Tickets)</h1>
-            <div class="admin-user-info">Bejelentkezve mint: <strong><?= h($admin_name) ?></strong></div>
+        <header class="admin-header glass">
+            <div class="header-left">
+                <span class="material-symbols-rounded header-icon">support_agent</span>
+                <div>
+                    <h1>Ügyfélszolgálat (Tickets)</h1>
+                    <p class="subtitle">Hibajegyek kezelése és játékos támogatás</p>
+                </div>
+            </div>
+            <div class="admin-user-info">
+                Bejelentkezve mint: <strong class="text-red"><?= h($admin_name) ?></strong>
+            </div>
         </header>
 
         <div class="admin-content">
             
             <?php if ($action === 'list'): ?>
                 <?php
-                // Lekérjük az összes ticketet, a készítő nevével és az admin nevével (aki lefoglalta)
                 $stmt = $pdo->query("
                     SELECT t.*, u.username as creator_name, a.username as admin_name 
                     FROM tickets t 
                     LEFT JOIN users u ON t.user_id = u.id 
-                    LEFT JOIN users a ON t.claimed_by = a.id 
+                    LEFT JOIN admins a ON t.claimed_by = a.id 
                     ORDER BY 
                         CASE t.status WHEN 'open' THEN 1 WHEN 'answered' THEN 2 WHEN 'paused' THEN 3 ELSE 4 END, 
                         t.updated_at DESC
@@ -152,28 +152,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                                     $statusClass = 'status-' . $t['status'];
                                     $statusTexts = ['open' => 'NYITOTT', 'answered' => 'VÁLASZOLTUNK', 'paused' => 'SZÜNETELTETVE', 'closed' => 'LEZÁRVA'];
                                 ?>
-                                <tr>
-                                    <td><strong><?= formatTicketId($t['id']) ?></strong></td>
+                                <tr class="hover-row">
+                                    <td class="td-id"><strong><?= formatTicketId($t['id']) ?></strong></td>
                                     <td>
-                                        <div style="font-size: 0.8rem; color: #a855f7; text-transform: uppercase; font-weight: 700;"><?= h($t['category']) ?></div>
-                                        <div style="font-weight: 600;"><?= h($t['subject']) ?></div>
+                                        <div class="td-cat"><?= h($t['category']) ?></div>
+                                        <div class="td-subject"><?= h($t['subject']) ?></div>
                                     </td>
                                     <td>
-                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                            <img src="https://minotar.net/helm/<?= h($t['creator_name']) ?>/24.png" style="border-radius: 4px;">
+                                        <div class="player-cell">
+                                            <img src="https://minotar.net/helm/<?= h($t['creator_name']) ?>/24.png" class="player-head">
                                             <?= h($t['creator_name']) ?>
                                         </div>
                                     </td>
                                     <td>
                                         <?php if($t['claimed_by']): ?>
-                                            <span class="badge badge-claimed"><?= h($t['admin_name']) ?></span>
+                                            <span class="badge badge-claimed"><span class="material-symbols-rounded">person</span> <?= h($t['admin_name']) ?></span>
                                         <?php else: ?>
                                             <span class="badge badge-unclaimed">Nincs felelős</span>
                                         <?php endif; ?>
                                     </td>
                                     <td><span class="ticket-status <?= $statusClass ?>"><?= $statusTexts[$t['status']] ?></span></td>
-                                    <td style="font-size: 0.85rem; color: #94a3b8;"><?= formatHungarianDate($t['updated_at']) ?></td>
-                                    <td><a href="?action=view&id=<?= $t['id'] ?>" class="btn btn-sm btn-primary">Megnyitás</a></td>
+                                    <td class="td-date"><?= formatHungarianDate($t['updated_at']) ?></td>
+                                    <td><a href="?action=view&id=<?= $t['id'] ?>" class="btn-sm btn-open">Megnyitás</a></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -187,9 +187,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                 $stmt->execute([$ticket_id]);
                 $ticket = $stmt->fetch();
 
-                if (!$ticket) die('Ticket nem található!');
+                if (!$ticket) die('<div class="admin-panel glass"><h2>Hiba!</h2><p>Ticket nem található.</p></div>');
 
-                $msgStmt = $pdo->prepare("SELECT tm.*, u.username FROM ticket_messages tm JOIN users u ON tm.sender_id = u.id WHERE tm.ticket_id = ? ORDER BY tm.created_at ASC");
+                $msgStmt = $pdo->prepare("SELECT tm.*, u.username, a.username as admin_username FROM ticket_messages tm LEFT JOIN users u ON tm.sender_id = u.id LEFT JOIN admins a ON tm.sender_id = a.id WHERE tm.ticket_id = ? ORDER BY tm.created_at ASC");
                 $msgStmt->execute([$ticket_id]);
                 $messages = $msgStmt->fetchAll();
 
@@ -199,11 +199,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
 
                 <div class="admin-ticket-layout">
                     
-                    <div class="chat-container glass" style="flex: 1;">
+                    <div class="chat-container glass">
                         <div class="chat-header">
                             <div class="chat-title-area">
-                                <h2><span style="color: #94a3b8;"><?= formatTicketId($ticket['id']) ?></span> <?= h($ticket['subject']) ?></h2>
-                                <span class="badge" style="background: rgba(168,85,247,0.2); color: #c084fc;"><?= h($ticket['category']) ?></span>
+                                <h2><span class="text-muted"><?= formatTicketId($ticket['id']) ?></span> <?= h($ticket['subject']) ?></h2>
+                                <span class="badge tag-category"><?= h($ticket['category']) ?></span>
                             </div>
                             <span class="ticket-status <?= $statusClass ?>"><?= $statusTexts[$ticket['status']] ?></span>
                         </div>
@@ -212,19 +212,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                             <?php foreach ($messages as $m): ?>
                                 <?php 
                                     $isSystem = (strpos($m['message'], '[SYSTEM]') === 0);
-                                    // ADMIN NÉZET: A mi üzenetünk kerül jobb oldalra (mine)!
-                                    $isMine = (!$isSystem && $m['sender_id'] == $admin_id); 
-                                    $wrapperClass = $isSystem ? 'admin system-msg' : ($isMine ? 'mine' : 'admin');
+                                    $isMine = (!$isSystem && $m['is_admin'] == 1 && $m['sender_id'] == $admin_id); 
+                                    $wrapperClass = $isSystem ? 'system-msg' : ($isMine ? 'mine' : 'player');
                                     
                                     if ($isSystem) {
                                         $avatarUrl = '/assets/img/etherniareborn.png';
                                         $authorName = 'ETHERNIA BOT';
                                         $badge = 'SYSTEM';
                                         $cleanMessage = trim(substr($m['message'], 8));
+                                    } elseif ($m['is_admin'] == 1) {
+                                        $avatarUrl = 'https://minotar.net/helm/' . h($m['admin_username'] ?? 'Admin') . '/32.png';
+                                        $authorName = h($m['admin_username'] ?? 'Admin');
+                                        $badge = 'STAFF';
+                                        $cleanMessage = h($m['message']);
                                     } else {
                                         $avatarUrl = 'https://minotar.net/helm/' . h($m['username']) . '/32.png';
                                         $authorName = h($m['username']);
-                                        $badge = $m['is_admin'] ? 'STAFF' : ($m['sender_id'] == $ticket['user_id'] ? 'JÁTÉKOS' : '');
+                                        $badge = 'JÁTÉKOS';
                                         $cleanMessage = h($m['message']);
                                     }
                                 ?>
@@ -232,14 +236,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                                     <img src="<?= $avatarUrl ?>" alt="Avatar" class="chat-avatar" <?= $isSystem ? 'style="object-fit: contain; background: rgba(0,0,0,0.5);"' : '' ?>>
                                     <div class="chat-content">
                                         <div class="chat-meta">
-                                            <span class="chat-author"><?= $authorName ?> <?= $badge ? '<span class="admin-badge">'.$badge.'</span>' : '' ?></span>
+                                            <span class="chat-author"><?= $authorName ?> <?= $badge ? '<span class="role-badge role-'.$badge.'">'.$badge.'</span>' : '' ?></span>
                                             <span class="chat-time"><?= formatHungarianDate($m['created_at']) ?></span>
                                         </div>
                                         <?php if ($cleanMessage !== ''): ?>
                                             <div class="chat-text"><?= nl2br($cleanMessage) ?></div>
                                         <?php endif; ?>
                                         <?php if ($m['attachment']): ?>
-                                            <div class="chat-attachment">
+                                            <div class="chat-attachment" <?= $cleanMessage === '' ? 'style="margin-top: 0;"' : '' ?>>
                                                 <a href="<?= $m['attachment'] ?>" target="_blank"><img src="<?= $m['attachment'] ?>"></a>
                                             </div>
                                         <?php endif; ?>
@@ -264,39 +268,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                                 </form>
                             </div>
                         <?php else: ?>
-                            <div class="chat-closed-alert">Ez a hibajegy le lett zárva. Csak újranyitás után lehet válaszolni.</div>
+                            <div class="chat-closed-alert">
+                                <span class="material-symbols-rounded">lock</span> Ez a hibajegy le lett zárva. Csak újranyitás után lehet válaszolni.
+                            </div>
                         <?php endif; ?>
                     </div>
 
-                    <div class="admin-controls glass" style="width: 320px;">
+                    <div class="admin-controls glass">
                         <h3>Műveletek</h3>
-                        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Játékos: <strong><?= h($ticket['creator_name']) ?></strong></p>
+                        <p class="control-player">Játékos: <strong><?= h($ticket['creator_name']) ?></strong></p>
 
                         <div class="control-actions">
                             <?php if ($ticket['claimed_by'] === null): ?>
-                                <a href="?do=claim&id=<?= $ticket_id ?>" class="btn btn-action btn-claim"><span class="material-symbols-rounded">pan_tool</span> Magamra vállalom</a>
+                                <a href="?do=claim&id=<?= $ticket_id ?>" class="btn-action btn-claim"><span class="material-symbols-rounded">pan_tool</span> Magamra vállalom</a>
                             <?php elseif ($ticket['claimed_by'] == $admin_id): ?>
-                                <a href="?do=unclaim&id=<?= $ticket_id ?>" class="btn btn-action btn-warning"><span class="material-symbols-rounded">waving_hand</span> Lemondok róla</a>
+                                <a href="?do=unclaim&id=<?= $ticket_id ?>" class="btn-action btn-warning"><span class="material-symbols-rounded">waving_hand</span> Lemondok róla</a>
                             <?php else: ?>
-                                <div class="profile-alert warning" style="padding: 0.8rem; font-size: 0.8rem;">Ezt a jegyet már egy másik admin lefoglalta.</div>
+                                <div class="alert-box warning">Ezt a jegyet már egy másik admin lefoglalta.</div>
                             <?php endif; ?>
 
                             <hr class="control-divider">
 
                             <?php if ($ticket['status'] !== 'paused' && $ticket['status'] !== 'closed'): ?>
-                                <a href="?do=pause&id=<?= $ticket_id ?>" class="btn btn-action btn-warning"><span class="material-symbols-rounded">pause_circle</span> Szüneteltetés</a>
+                                <a href="?do=pause&id=<?= $ticket_id ?>" class="btn-action btn-warning"><span class="material-symbols-rounded">pause_circle</span> Szüneteltetés</a>
                             <?php elseif ($ticket['status'] === 'paused'): ?>
-                                <a href="?do=unpause&id=<?= $ticket_id ?>" class="btn btn-action btn-claim"><span class="material-symbols-rounded">play_circle</span> Folytatás (Feloldás)</a>
+                                <a href="?do=unpause&id=<?= $ticket_id ?>" class="btn-action btn-claim"><span class="material-symbols-rounded">play_circle</span> Folytatás (Feloldás)</a>
                             <?php endif; ?>
 
                             <?php if ($ticket['status'] !== 'closed'): ?>
-                                <a href="?do=close&id=<?= $ticket_id ?>" class="btn btn-action btn-danger"><span class="material-symbols-rounded">lock</span> Jegy Lezárása</a>
+                                <a href="?do=close&id=<?= $ticket_id ?>" class="btn-action btn-danger"><span class="material-symbols-rounded">lock</span> Jegy Lezárása</a>
                             <?php else: ?>
-                                <a href="?do=unpause&id=<?= $ticket_id ?>" class="btn btn-action btn-claim"><span class="material-symbols-rounded">lock_open</span> Jegy Újranyitása</a>
+                                <a href="?do=unpause&id=<?= $ticket_id ?>" class="btn-action btn-claim"><span class="material-symbols-rounded">lock_open</span> Jegy Újranyitása</a>
                             <?php endif; ?>
                             
                             <hr class="control-divider">
-                            <a href="/admin/tickets.php" class="btn btn-action" style="border-color: #64748b; color: #cbd5e1;"><span class="material-symbols-rounded">arrow_back</span> Vissza a listához</a>
+                            <a href="/admin/tickets.php" class="btn-action btn-back"><span class="material-symbols-rounded">arrow_back</span> Vissza a listához</a>
                         </div>
                     </div>
 
@@ -306,6 +312,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
     </main>
 </div>
 
-<script src="/assets/js/support.js?v=<?= time(); ?>"></script>
+<script src="/admin/assets/js/tickets.js?v=<?= time(); ?>"></script>
 </body>
 </html>
