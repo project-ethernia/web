@@ -8,8 +8,11 @@ if (!hasPermission($admin_role, 'manage_news') && !hasPermission($admin_role, 'a
     exit;
 }
 
-$msg = '';
-$msgType = '';
+// === PRG MINTA: FLASH ÜZENETEK KEZELÉSE ===
+// Kiveszszük az üzenetet a sessionből (ha van), majd azonnal töröljük, hogy F5-re eltűnjön!
+$msg = $_SESSION['flash_msg'] ?? '';
+$msgType = $_SESSION['flash_type'] ?? '';
+unset($_SESSION['flash_msg'], $_SESSION['flash_type']);
 
 $NEWS_CATEGORIES = [
     'INFO' => ['name' => 'Információ', 'color' => '#3b82f6', 'icon' => 'info'],
@@ -17,7 +20,7 @@ $NEWS_CATEGORIES = [
     'EVENT' => ['name' => 'Esemény', 'color' => '#f59e0b', 'icon' => 'event']
 ];
 
-// --- HÍR HOZZÁADÁSA ---
+// --- HÍR HOZZÁADÁSA (POST) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_news') {
     $title = trim($_POST['title'] ?? '');
     $category = $_POST['category'] ?? 'INFO';
@@ -35,13 +38,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmt = $pdo->prepare("INSERT INTO news (title, category, tag, date_display, short_text, full_text, is_visible, author, image_url, order_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
             $stmt->execute([$title, $category, $tag, $date_display, $short_text, $full_text, $is_visible, $author, $image_url ?: null]);
             
-            $msg = "A hír sikeresen közzétéve!";
-            $msgType = "success";
+            // NAPLÓZÁS:
             log_admin_action($pdo, $admin_id, $admin_name, "Új hír közzétéve: " . $title);
 
-            if ($is_visible) {
-    send_discord_news($title, $short_text, $category, $admin_name, $image_url);
-}
+            // DISCORD WEBHOOK KILÖVÉSE (Ha a core.php-ben behúztad a discord.php-t)
+            if ($is_visible && function_exists('send_discord_news')) {
+                send_discord_news($title, $short_text, $category, $admin_name, $image_url);
+            }
+            
+            // PRG ÁTIRÁNYÍTÁS SIKER ESETÉN
+            $_SESSION['flash_msg'] = "A hír sikeresen közzétéve!";
+            $_SESSION['flash_type'] = "success";
+            header('Location: /admin/news.php');
+            exit;
+
         } catch (PDOException $e) {
             $msg = "Adatbázis hiba: " . $e->getMessage();
             $msgType = "error";
@@ -69,9 +79,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmt = $pdo->prepare("UPDATE news SET title=?, category=?, tag=?, short_text=?, full_text=?, is_visible=?, image_url=? WHERE id=?");
             $stmt->execute([$title, $category, $tag, $short_text, $full_text, $is_visible, $image_url ?: null, $id]);
             
-            $msg = "A hír sikeresen frissítve!";
-            $msgType = "success";
-            log_admin_action($pdo, $admin_id, $admin_name, "Hír szerkesztve. ID: " . $id);        } catch (PDOException $e) {
+            // NAPLÓZÁS:
+            log_admin_action($pdo, $admin_id, $admin_name, "Hír szerkesztve. ID: " . $id);
+            
+            // PRG ÁTIRÁNYÍTÁS SIKER ESETÉN
+            $_SESSION['flash_msg'] = "A hír sikeresen frissítve!";
+            $_SESSION['flash_type'] = "success";
+            header('Location: /admin/news.php');
+            exit;
+
+        } catch (PDOException $e) {
             $msg = "Adatbázis hiba: " . $e->getMessage();
             $msgType = "error";
         }
@@ -84,9 +101,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // --- HÍR TÖRLÉSE ---
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $pdo->prepare("DELETE FROM news WHERE id = ?")->execute([(int)$_GET['delete']]);
-    $msg = "A hír sikeresen törölve a rendszerből.";
-    $msgType = "success";
-    log_admin_action($pdo, $admin_id, $admin_name, "Hír véglegesen törölve. ID: " . (int)$_GET['delete']);}
+    
+    // NAPLÓZÁS:
+    log_admin_action($pdo, $admin_id, $admin_name, "Hír véglegesen törölve. ID: " . (int)$_GET['delete']);
+
+    // PRG ÁTIRÁNYÍTÁS
+    $_SESSION['flash_msg'] = "A hír sikeresen törölve a rendszerből.";
+    $_SESSION['flash_type'] = "success";
+    header('Location: /admin/news.php');
+    exit;
+}
 
 // --- LÁTHATÓSÁG (VISIBLE) VÁLTÁSA ---
 if (isset($_GET['toggle']) && is_numeric($_GET['toggle'])) {
