@@ -9,7 +9,7 @@ function send_discord_news($title, $short_text, $category, $author, $image_url =
     $webhook_url = DISCORD_NEWS_WEBHOOK;
     
     // Ha még nem állítottad be, vagy üres, kilép (nem okoz hibát az oldalon)
-    if (empty($webhook_url) || strpos($webhook_url, 'TE_WEBHOOKOD_IDE_JON') !== false) {
+    if (empty($webhook_url) || strpos($webhook_url, 'https://discord.com/api/webhooks/1486496168878936295/E7xdTM_sWcLldeDEDd7DGaA1N5aw_6atx_M95DfsM5BB2Lv2QtKTcjorqwGHVotaq8Ez') !== false) {
         return false; 
     }
 
