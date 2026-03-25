@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
     // --- 1. LÉPÉS: NÉV ÉS JELSZÓ ---
     if (isset($_POST['action']) && $_POST['action'] === 'login_step_1') {
         $username = trim($_POST['username'] ?? '');
-        $password = $_POST['password_hash'] ?? '';
+        $password = $_POST['password'] ?? '';
 
         $stmt = $pdo->prepare("SELECT * FROM admins WHERE username = ? LIMIT 1");
         $stmt->execute([$username]);
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
                 $lockoutEnd = $_SESSION['lockout_end'];
                 $error = "Túl sok hibás próbálkozás! A védelem aktiválódott.";
             } 
-            // JELSZÓ ELLENŐRZÉS (Itt bukik el, ha a hash csonkolt a DB-ben!)
+            // JAVÍTÁS: ITT MÁR A 'password_hash' OSZLOPOT NÉZZÜK!
             elseif (password_verify($password, $admin['password_hash'])) {
                 $code = sprintf("%06d", mt_rand(1, 999999));
                 $expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
@@ -126,8 +126,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
             $_SESSION['admin_ip'] = $clientIp;
             $_SESSION['admin_user_agent'] = $userAgent;
 
-            $clear = $pdo->prepare("UPDATE admins SET two_factor_code = NULL, two_factor_expires = NULL, failed_logins = 0, last_ip = ? WHERE id = ?");
-            $clear->execute([$clientIp, $admin['id']]);
+            $clear = $pdo->prepare("UPDATE admins SET two_factor_code = NULL, two_factor_expires = NULL, failed_logins = 0, lockout_time = NULL, unlock_token = NULL WHERE id = ?");
+            $clear->execute([$admin['id']]);
 
             unset($_SESSION['pending_2fa_admin_id']);
             header('Location: /admin/index.php');
