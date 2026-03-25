@@ -39,37 +39,57 @@ $currentUser = $_SESSION['user_username'];
 $action = $_GET['action'] ?? 'list';
 $msg = '';
 
-// --- ÚJ LOGIKA: KATEGÓRIÁNKÉNTI LIMIT ---
-// Lekérdezzük, hogy melyik kategóriákban van már nyitott jegye a játékosnak
+$activeCheck = $pdo->prepare("SELECT COUNT(*) FROM tickets WHERE user_id = ? AND status != 'closed'");
+$activeCheck->execute([$user_id]);
+$hasActiveTicket = $activeCheck->fetchColumn() > 0;
+
 $stmtActive = $pdo->prepare("SELECT category FROM tickets WHERE user_id = ? AND status != 'closed'");
 $stmtActive->execute([$user_id]);
 $activeCategories = $stmtActive->fetchAll(PDO::FETCH_COLUMN);
-
-// Ha a tömb hossza 4 (azaz mind a 4 kategória foglalt), akkor teltház van
 $allCategoriesFull = (count($activeCategories) >= 4);
 
-function uploadImage($fileArray) {
+// ==============================================================================
+// ÚJ: BASE64 KÉPFELTÖLTŐ, 3-SZOROS BIZTONSÁGI ELLENŐRZÉSSEL
+// ==============================================================================
+function uploadImageAsBase64($fileArray) {
     if (isset($fileArray) && $fileArray['error'] === UPLOAD_ERR_OK) {
-        $ext = pathinfo($fileArray['name'], PATHINFO_EXTENSION);
-        $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
-        if (in_array(strtolower($ext), $allowedExts)) {
-            $uploadDir = __DIR__ . '/uploads/tickets/';
-            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-            $filename = uniqid('img_', true) . '.' . $ext;
-            if (move_uploaded_file($fileArray['tmp_name'], $uploadDir . $filename)) {
-                return '/uploads/tickets/' . $filename;
+        $tmpName = $fileArray['tmp_name'];
+        $fileSize = $fileArray['size'];
+
+        // 1. Biztonsági méretkorlát (pl. max 5MB, hogy ne robbanjon fel a DB)
+        if ($fileSize > 5 * 1024 * 1024) {
+            return null; // Túl nagy fájl
+        }
+
+        // 2. Kőkemény MIME (fájltípus) ellenőrzés a fájl tartalma alapján
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $tmpName);
+        finfo_close($finfo);
+
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        
+        if (in_array($mimeType, $allowedMimeTypes)) {
+            // 3. Biztonság: Tényleg egy vizuális kép? (Kiszűri az álcázott PHP scripteket)
+            if (getimagesize($tmpName) !== false) {
+                
+                // Beolvassuk a képet, és Base64 kódoljuk!
+                $imageData = file_get_contents($tmpName);
+                $base64 = base64_encode($imageData);
+                
+                // Ezt a stringet egyből megeszi a HTML <img> tag src attribútuma!
+                return 'data:' . $mimeType . ';base64,' . $base64;
             }
         }
     }
     return null;
 }
+// ==============================================================================
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
     $subject = trim($_POST['subject'] ?? '');
     $category = trim($_POST['category'] ?? '');
     $message = trim($_POST['message'] ?? '');
     
-    // Biztonsági backend védelem: hiába trükközne a HTML-ben, a PHP nem engedi át
     if (in_array($category, $activeCategories)) {
         $msg = "Ebben a kategóriában már van egy folyamatban lévő hibajegyed!";
     } elseif ($subject && $category && $message) {
@@ -98,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
     }
 }
 
+// ITT HASZNÁLJUK AZ ÚJ FUNKCIÓT VÁLASZADÁSKOR!
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET['id'])) {
     $ticket_id = (int)$_GET['id'];
     $message = trim($_POST['message'] ?? '');
@@ -107,7 +128,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
     $ticket = $check->fetch();
 
     if ($ticket && $ticket['status'] !== 'closed' && $message) {
-        $attachment = uploadImage($_FILES['attachment'] ?? null);
+        
+        // Hívjuk az új Base64 mentőt!
+        $attachment = uploadImageAsBase64($_FILES['attachment'] ?? null);
+        
         $stmt = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, ?)");
         $stmt->execute([$ticket_id, $user_id, $message, $attachment]);
         $pdo->prepare("UPDATE tickets SET status = 'open', updated_at = NOW() WHERE id = ?")->execute([$ticket_id]);
@@ -199,7 +223,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                     <div class="category-grid">
                         
                         <?php 
-                        // Segédváltozók, amik megmondják, hogy nyitva van-e az adott kategória
                         $catBugOpen = in_array('Hibabejelentés', $activeCategories);
                         $catReportOpen = in_array('Játékos Jelentése', $activeCategories);
                         $catShopOpen = in_array('Vásárlási Probléma', $activeCategories);
@@ -334,8 +357,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                                 </div>
                                 <?php if ($m['attachment']): ?>
                                     <div class="chat-attachment">
-                                        <a href="<?= h($m['attachment']) ?>" target="_blank">
-                                            <img src="<?= h($m['attachment']) ?>" alt="Csatolmány">
+                                        <a href="<?= $m['attachment'] ?>" target="_blank">
+                                            <img src="<?= $m['attachment'] ?>" alt="Csatolmány">
                                         </a>
                                     </div>
                                 <?php endif; ?>
