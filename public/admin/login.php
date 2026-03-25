@@ -7,6 +7,13 @@ if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
     exit;
 }
 
+// ÚJ: Kényszerített frissítés, ha feloldottad másik eszközön/böngészőben!
+if (isset($_GET['force_check'])) {
+    unset($_SESSION['lockout_end']);
+    header("Location: /admin/login.php");
+    exit;
+}
+
 $discordWebhookUrl = "https://discord.com/api/webhooks/1486000917999386738/HvV8ve01gurjCAna3mb7sZEG9BzomI546ZEwgH1t7NbWMzvso--jGFhz49OnmkLxHMFJ";
 $maxFailedAttempts = 3;
 $lockoutMinutes = 15;
@@ -37,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
         $admin = $stmt->fetch();
 
         if ($admin) {
+            // BACKEND VÉDELEM: Ha a DB szerint tiltva vagy, visszadob a várakozóba!
             if ($admin['lockout_time'] && strtotime($admin['lockout_time']) > time()) {
                 $_SESSION['lockout_end'] = strtotime($admin['lockout_time']);
                 $lockoutEnd = $_SESSION['lockout_end'];
@@ -151,6 +159,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
             <div id="countdown" class="timer-display" data-end="<?= $lockoutEnd ?>">--:--</div>
             <p style="color: var(--text-muted); font-size: 0.85rem;">perc múlva újrapróbálhatod.</p>
         </div>
+        
+        <a href="/admin/login.php?force_check=1" class="btn btn-outline" style="text-decoration:none; display:inline-block; margin-top:1.5rem; width: 100%; text-align: center; border: 1px solid var(--border-glass); color: var(--text-muted);">Már feloldottam Discordról</a>
 
     <?php elseif ($step === 1): ?>
         <h1 class="login-title">Vezérlőpult</h1>

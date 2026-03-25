@@ -5,7 +5,9 @@ require_once __DIR__ . '/../database.php';
 $token = $_GET['token'] ?? '';
 $success = false;
 
-if (!empty($token) && strlen($token) === 32) {
+// JAVÍTÁS: Kivettük a szigorú && strlen($token) === 32 ellenőrzést,
+// hogy ha az adatbázisod esetleg csonkolta a kódot, akkor is működjön!
+if (!empty($token)) {
     // Megkeressük, kié ez a kód
     $stmt = $pdo->prepare("SELECT id FROM admins WHERE unlock_token = ? LIMIT 1");
     $stmt->execute([$token]);
