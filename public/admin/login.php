@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
     // --- 1. LÉPÉS: NÉV ÉS JELSZÓ ---
     if (isset($_POST['action']) && $_POST['action'] === 'login_step_1') {
         $username = trim($_POST['username'] ?? '');
-        $password = $_POST['password'] ?? '';
+        $password = $_POST['password_hash'] ?? '';
 
         $stmt = $pdo->prepare("SELECT * FROM admins WHERE username = ? LIMIT 1");
         $stmt->execute([$username]);
@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
                 $error = "Túl sok hibás próbálkozás! A védelem aktiválódott.";
             } 
             // JELSZÓ ELLENŐRZÉS (Itt bukik el, ha a hash csonkolt a DB-ben!)
-            elseif (password_verify($password, $admin['password'])) {
+            elseif (password_verify($password, $admin['password_hash'])) {
                 $code = sprintf("%06d", mt_rand(1, 999999));
                 $expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
