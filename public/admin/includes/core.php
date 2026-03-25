@@ -7,14 +7,16 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../../database.php';
+// ÚJ: SZEREPKÖRÖK BEHÚZÁSA!
+require_once __DIR__ . '/../config/roles.php'; 
 
 // 1. Valódi IP cím megszerzése (Cloudflare / Proxy támogatás)
 function getRealIp() {
     if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
-        return $_SERVER['HTTP_CF_CONNECTING_IP']; // Cloudflare
+        return $_SERVER['HTTP_CF_CONNECTING_IP']; 
     } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
         $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-        return trim($ips[0]); // Standard Proxy
+        return trim($ips[0]); 
     }
     return $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
 }
@@ -29,7 +31,6 @@ if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
 $current_ip = getRealIp();
 $current_ua = $_SERVER['HTTP_USER_AGENT'] ?? 'UNKNOWN';
 
-// Ellenőrizzük, hogy léteznek-e a session változók, és egyeznek-e
 if (!isset($_SESSION['admin_ip']) || !isset($_SESSION['admin_user_agent']) || 
     $_SESSION['admin_ip'] !== $current_ip || $_SESSION['admin_user_agent'] !== $current_ua) {
     
@@ -57,5 +58,5 @@ function h($str) { return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8'); }
 
 $admin_id = $_SESSION['admin_id'];
 $admin_name = $_SESSION['admin_username'];
-$admin_role = $_SESSION['admin_role'] ?? 'admin';
+$admin_role = $_SESSION['admin_role'] ?? 'support'; // Alap rang, ha nincs
 ?>

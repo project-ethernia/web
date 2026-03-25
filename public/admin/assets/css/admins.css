@@ -1,220 +1,170 @@
-/* --- Fejléc és panelek --- */
-.admin-header {
+/* ==========================================================================
+   ETHERNIA ADMIN - ADMINISZTRÁTOROK KEZELÉSE
+   ========================================================================== */
+
+.split-layout {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.list-panel {
+    flex: 2; /* Szélesebb bal oldal a táblázatnak */
+}
+
+.form-panel {
+    flex: 1; /* Kisebb jobb oldal a formnak */
+    min-width: 320px;
+}
+
+.panel-header {
     padding: 1.5rem 2rem;
-    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    background: rgba(0,0,0,0.3);
 }
 
-.admin-title {
-    margin: 0 0 0.5rem;
-    font-size: 1.8rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    background: linear-gradient(135deg, #fff 0%, #fca5a5 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.admin-subtitle {
+.panel-header h2 {
     margin: 0;
-    color: var(--text-muted);
-    font-size: 0.95rem;
-}
-
-.admin-content {
-    padding: 1.5rem;
-}
-
-/* --- Táblázat dizájn --- */
-.table-container {
-    overflow-x: auto;
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-}
-
-.data-table th, .data-table td {
-    padding: 1rem 1.2rem;
-    border-bottom: 1px solid var(--glass-border);
-    vertical-align: middle;
-}
-
-.data-table th {
-    color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #fff;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    font-weight: 600;
 }
 
-.data-table tbody tr {
-    transition: var(--transition);
+.panel-header h2 .material-symbols-rounded {
+    color: var(--admin-red);
 }
 
-.data-table tbody tr:hover {
-    background: rgba(220, 38, 38, 0.08);
+.panel-body {
+    padding: 2rem;
 }
 
-.data-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.cell-order { color: var(--text-muted); font-weight: 600; }
-.cell-title { color: #fff; font-weight: 600; display: flex; align-items: center; }
-.cell-date { color: var(--text-muted); font-size: 0.85rem; }
-.cell-actions { white-space: nowrap; }
-.text-right { text-align: right; }
-
-/* Jelvények fallback stílusa */
-.badge {
+/* TÁBLÁZAT SPECIFIKUS */
+.role-badge {
     padding: 0.3rem 0.8rem;
     border-radius: var(--radius-pill);
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 800;
     text-transform: uppercase;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     letter-spacing: 0.05em;
+    display: inline-block;
 }
 
-/* --- Aktív/Inaktív Kapcsoló Gomb (Toggle) --- */
-.toggle-btn {
-    width: 44px;
-    height: 24px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 999px;
-    position: relative;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    padding: 0;
+.td-muted {
+    color: var(--text-muted);
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.status-badge {
     display: inline-flex;
     align-items: center;
-    outline: none;
-}
-
-.toggle-circle {
-    width: 18px;
-    height: 18px;
-    background: #9ca3af;
-    border-radius: 50%;
-    position: absolute;
-    left: 2px;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.toggle-btn.active {
-    background: rgba(34, 197, 94, 0.2);
-    border-color: rgba(34, 197, 94, 0.4);
-}
-
-.toggle-btn.active .toggle-circle {
-    background: #22c55e;
-    left: calc(100% - 20px);
-    box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
-}
-
-/* --- Üres állapot (ha nincs admin) --- */
-.empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-}
-
-.empty-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    opacity: 0.8;
-}
-
-.empty-state h3 {
-    color: var(--text-muted);
-    margin-bottom: 1.5rem;
-    font-weight: 500;
-}
-
-/* --- Felugró Ablak (Modal) --- */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    opacity: 0;
-    pointer-events: none;
-    transition: var(--transition);
-}
-
-.modal-overlay.open {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.modal-container {
-    width: 90%;
-    max-width: 500px;
-    padding: 2.5rem 2rem 2rem;
-    position: relative;
-    transform: translateY(30px);
-    transition: var(--transition);
-}
-
-.modal-overlay.open .modal-container {
-    transform: translateY(0);
-}
-
-.modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    font-size: 2rem;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.modal-close:hover { color: #fff; }
-
-.modal-title {
-    margin: 0 0 1.5rem;
-    font-size: 1.4rem;
-    color: #fff;
-    font-weight: 700;
-}
-
-.modal-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 2.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--glass-border);
-}
-
-.meta-info {
+    gap: 0.3rem;
     font-size: 0.75rem;
-    color: var(--text-muted);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+.status-badge.success { color: #22c55e; }
+.status-badge.error { color: var(--admin-red); }
+.status-badge .material-symbols-rounded { font-size: 1rem; }
+
+.btn-danger {
+    background: transparent;
+    border: 1px solid var(--admin-red);
+    color: var(--admin-red);
+    padding: 0.4rem 0.6rem;
+}
+.btn-danger:hover {
+    background: var(--admin-red);
+    color: #fff;
+    box-shadow: 0 0 10px var(--admin-red-glow);
 }
 
-.action-buttons {
+/* FORM SPECIFIKUS */
+.add-admin-form {
     display: flex;
-    gap: 1rem;
-    align-items: center;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
-.error-text {
-    color: var(--danger);
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input-group label {
     font-size: 0.85rem;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.admin-input {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    color: #fff;
+    font-size: 0.95rem;
+    outline: none;
+    transition: var(--transition);
+    font-family: var(--font-body);
+}
+
+.admin-input:focus {
+    border-color: var(--admin-red);
+    box-shadow: 0 0 15px var(--admin-red-glow);
+}
+
+.admin-input option {
+    background: #0f0a15;
+    color: #fff;
+    padding: 0.5rem;
+}
+
+.input-hint {
+    font-size: 0.75rem;
+    color: #f59e0b;
+    font-style: italic;
+}
+
+/* ÜZENET DOBOZOK */
+.alert-box {
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+    animation: fadeIn 0.3s ease-out;
+}
+.alert-box.success {
+    background: rgba(34, 197, 94, 0.1);
+    border-left: 4px solid #22c55e;
+    color: #22c55e;
+}
+.alert-box.error {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid var(--admin-red);
+    color: var(--admin-red);
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Reszponzív (Mobilon a form lekerül alulra) */
+@media (max-width: 1100px) {
+    .split-layout {
+        flex-direction: column;
+    }
+    .list-panel, .form-panel {
+        width: 100%;
+    }
 }
