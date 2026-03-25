@@ -2,13 +2,11 @@
 session_start();
 require_once __DIR__ . '/../../database.php';
 
-// Ha már be van lépve, irány az index
 if (!empty($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
     header('Location: /admin/index.php');
     exit;
 }
 
-// Feloldás Discord gombbal
 if (isset($_GET['force_check'])) {
     unset($_SESSION['lockout_end']);
     header("Location: /admin/auth/login.php");
@@ -21,15 +19,25 @@ $lockoutMinutes = 15;
 
 $error = '';
 
-// Core.php-ből érkező hibaüzenetek lekezelése
 if (isset($_GET['error'])) {
     if ($_GET['error'] === 'timeout') $error = "Biztonsági okokból inaktivitás miatt kijelentkeztettünk.";
     if ($_GET['error'] === 'security_breach') $error = "Biztonsági riasztás: Az IP címed vagy böngésződ megváltozott!";
 }
 
+// ÚJ: Valódi IP cím megszerzése (Cloudflare / Proxy támogatás)
+function getRealIp() {
+    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+        return $_SERVER['HTTP_CF_CONNECTING_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        return trim($ips[0]);
+    }
+    return $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+}
+
 $step = isset($_SESSION['pending_2fa_admin_id']) ? 2 : 1;
-$clientIp = $_SERVER['REMOTE_ADDR'] ?? 'Ismeretlen';
-$userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Ismeretlen';
+$clientIp = getRealIp();
+$userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'UNKNOWN';
 
 $lockoutEnd = 0;
 
@@ -126,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
             $_SESSION['admin_id'] = $admin['id'];
             $_SESSION['admin_username'] = $admin['username'];
             $_SESSION['admin_role'] = $admin['role'] ?? 'admin';
-            $_SESSION['admin_ip'] = $clientIp;
+            $_SESSION['admin_ip'] = $clientIp; // A kőkemény igazi IP mentődik el!
             $_SESSION['admin_user_agent'] = $userAgent;
             $_SESSION['admin_last_activity'] = time();
 
@@ -189,7 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
                 <input type="password" name="password" class="auth-input" required>
             </div>
             <button type="submit" class="btn-admin">
-                Bejelentkezés <span class="material-symbols-rounded">login</span>
+                <span class="material-symbols-rounded">login</span> Bejelentkezés
             </button>
         </form>
 
@@ -211,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutEnd === 0) {
                 <input type="text" name="twofa_code" class="auth-input code-input" maxlength="6" required autocomplete="off" autofocus placeholder="------">
             </div>
             <button type="submit" class="btn-admin" style="border-color: #f59e0b; color: #f59e0b;">
-                Hitelesítés <span class="material-symbols-rounded">verified</span>
+                <span class="material-symbols-rounded">verified</span> Hitelesítés
             </button>
             <a href="/admin/auth/login.php?cancel=1" class="btn-outline" style="display: block; margin-top: 0.5rem; text-align: center;">Mégse</a>
             <?php if(isset($_GET['cancel'])) { unset($_SESSION['pending_2fa_admin_id']); header("Location: /admin/auth/login.php"); exit; } ?>
