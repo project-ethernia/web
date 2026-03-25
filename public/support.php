@@ -25,13 +25,12 @@ function formatTicketId($id) {
     return sprintf("#%03d-%03d", floor($id / 1000), $id % 1000);
 }
 
-// ÚJ: MAGYAR DÁTUM FORMÁZÓ
 function formatHungarianDate($datetime) {
     $months = ['', 'Január', 'Február', 'Március', 'Április', 'Május', 'Június', 'Július', 'Augusztus', 'Szeptember', 'Október', 'November', 'December'];
     $ts = strtotime($datetime);
     $year = date('Y.', $ts);
     $month = $months[(int)date('n', $ts)];
-    $dayTime = date('d - H:i', $ts); // pl. 25 - 15:21
+    $dayTime = date('d - H:i', $ts); 
     return "$year $month $dayTime";
 }
 
@@ -363,6 +362,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
 
                     const chatTextarea = document.querySelector(".chat-textarea");
                     if (chatTextarea) {
+                        // ÚJ: DINAMIKUS MAGASSÁG ÁLLÍTÁS ÍRÁS KÖZBEN
+                        chatTextarea.addEventListener("input", function() {
+                            this.style.height = "24px"; // Alaphelyzetbe állítás a méréshez
+                            this.style.height = (this.scrollHeight) + "px"; // Igazítás a tartalomhoz
+                        });
+
                         chatTextarea.addEventListener("keydown", function(e) {
                             if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault(); 

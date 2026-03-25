@@ -279,7 +279,6 @@
     flex-direction: column;
 }
 
-/* KÖZÖS LILA ÜVEG DIZÁJN MINDEN SZÖVEGBUBORÉKNAK! */
 .chat-text {
     padding: 1rem 1.2rem;
     border-radius: 18px;
@@ -287,30 +286,15 @@
     line-height: 1.5;
     position: relative;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    
-    /* Az a bizonyos fehér szöveg, lila keret és halványlila háttér */
     background: rgba(168, 85, 247, 0.15); 
     border: 1px solid var(--eth-primary);
     color: #fff;
 }
 
-/* Csak a sarkok lekerekítése tér el, aszerint ki írta */
-.mine .chat-text {
-    border-top-right-radius: 4px; 
-}
-
-.admin .chat-text {
-    border-top-left-radius: 4px; 
-}
-
-/* A rendszerüzenetnél dőlt betűvel jelezzük a különbséget */
-.system-msg .chat-text {
-    font-style: italic;
-}
-.system-msg .admin-badge {
-    background: var(--eth-primary);
-    box-shadow: 0 0 10px var(--eth-primary-glow);
-}
+.mine .chat-text { border-top-right-radius: 4px; }
+.admin .chat-text { border-top-left-radius: 4px; }
+.system-msg .chat-text { font-style: italic; }
+.system-msg .admin-badge { background: var(--eth-primary); box-shadow: 0 0 10px var(--eth-primary-glow); }
 
 .chat-meta {
     display: flex;
@@ -353,13 +337,14 @@
     border-top: 1px solid var(--border-glass);
 }
 
+/* JAVÍTÁS: flex-end igazítás, hogy a gombok a lenyíló textarea alján maradjanak */
 .chat-form {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 1rem;
     background: rgba(0,0,0,0.4);
     border: 1px solid var(--border-glass);
-    border-radius: var(--radius-pill);
+    border-radius: 24px;
     padding: 0.5rem 1rem;
 }
 .chat-form:focus-within {
@@ -375,38 +360,49 @@
     justify-content: center;
     padding: 0.5rem;
     transition: var(--transition);
+    margin-bottom: 2px; /* Vizuális igazítás a form aljához */
 }
 .chat-upload-btn:hover { color: var(--eth-primary); }
 
+/* JAVÍTÁS: Auto-resize-hoz igazított textarea dizájn */
 .chat-textarea {
     flex: 1;
     background: transparent;
     border: none;
     color: #fff;
     resize: none;
-    height: 24px;
+    height: 24px; /* Fix kezdőmagasság (1 sor) */
+    max-height: 150px; /* Ennél nagyobbra nem nő, görgethető lesz */
+    overflow-y: auto;
     outline: none;
     font-family: var(--font-body);
     font-size: 0.95rem;
     padding: 0;
+    margin: 10px 0; /* Padding helyett margin a flex-end miatt */
+    line-height: 24px;
 }
 
+/* JAVÍTÁS: Átlátszó, lila-keretes dizájn a küldés gombnak */
 .chat-send-btn {
-    background: var(--eth-primary);
-    border: none;
+    background: transparent;
+    border: 2px solid var(--eth-primary);
     width: 40px;
     height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    color: var(--eth-primary);
     cursor: pointer;
     transition: var(--transition);
+    margin-bottom: 2px; /* Vizuális igazítás a form aljához */
 }
 .chat-send-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 15px var(--eth-primary-glow);
+    background: rgba(168, 85, 247, 0.2); 
+    border-color: #c084fc; 
+    color: #fff;
+    box-shadow: 0 0 20px var(--eth-primary-glow), inset 0 0 15px rgba(168, 85, 247, 0.2);
+    transform: translateY(-2px);
 }
 
 .chat-closed-alert {
