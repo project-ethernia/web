@@ -9,6 +9,7 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/../../database.php';
 require_once __DIR__ . '/../config/roles.php'; 
 require_once __DIR__ . '/logger.php';
+require_once __DIR__ . '/discord.php';
 
 function getRealIp() {
     if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {

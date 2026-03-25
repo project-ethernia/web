@@ -38,6 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $msg = "A hír sikeresen közzétéve!";
             $msgType = "success";
             log_admin_action($pdo, $admin_id, $admin_name, "Új hír közzétéve: " . $title);
+
+            if ($is_visible) {
+    send_discord_news($title, $short_text, $category, $admin_name, $image_url);
+}
         } catch (PDOException $e) {
             $msg = "Adatbázis hiba: " . $e->getMessage();
             $msgType = "error";
