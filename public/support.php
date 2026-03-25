@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$timeout_duration = 3600; // 1 óra
+$timeout_duration = 3600;
 if (empty($_SESSION['is_user']) || $_SESSION['is_user'] !== true) {
     header('Location: /auth/login.php');
     exit;
@@ -15,29 +15,84 @@ $elapsed_time = time() - $_SESSION['login_time'];
 if ($elapsed_time >= $timeout_duration) {
     session_unset(); session_destroy(); header('Location: /auth/login.php?error=timeout'); exit;
 }
-$remaining_time = $timeout_duration - $elapsed_time;
 
 require_once __DIR__ . '/database.php';
 
 function h($str) { return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8'); }
-
-function formatTicketId($id) {
-    return sprintf("#%03d-%03d", floor($id / 1000), $id % 1000);
-}
-
+function formatTicketId($id) { return sprintf("#%03d-%03d", floor($id / 1000), $id % 1000); }
 function formatHungarianDate($datetime) {
     $months = ['', 'Január', 'Február', 'Március', 'Április', 'Május', 'Június', 'Július', 'Augusztus', 'Szeptember', 'Október', 'November', 'December'];
     $ts = strtotime($datetime);
-    $year = date('Y.', $ts);
-    $month = $months[(int)date('n', $ts)];
-    $dayTime = date('d - H:i', $ts); 
-    return "$year $month $dayTime";
+    return date('Y.', $ts) . ' ' . $months[(int)date('n', $ts)] . ' ' . date('d - H:i', $ts);
 }
 
 $user_id = $_SESSION['user_id'];
 $currentUser = $_SESSION['user_username'];
 $action = $_GET['action'] ?? 'list';
 $msg = '';
+
+// ==================================================================================
+// ÚJ: REAL-TIME AJAX SZINKRONIZÁLÓ (Háttérben fut a JS által)
+// ==================================================================================
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'sync' && isset($_GET['id'])) {
+    header('Content-Type: application/json');
+    $ticket_id = (int)$_GET['id'];
+    $last_id = (int)($_GET['last_id'] ?? 0);
+    $typing = (int)($_GET['typing'] ?? 0);
+
+    // 1. Frissítjük, hogy mi épp gépelünk-e
+    if ($typing) {
+        $pdo->prepare("UPDATE tickets SET user_typing_at = NOW() WHERE id = ?")->execute([$ticket_id]);
+    }
+
+    // 2. Ellenőrizzük, hogy az admin gépel-e (az elmúlt 3 másodpercben)
+    $stmt = $pdo->prepare("SELECT admin_typing_at FROM tickets WHERE id = ?");
+    $stmt->execute([$ticket_id]);
+    $admin_typing_at = $stmt->fetchColumn();
+    $is_admin_typing = ($admin_typing_at && strtotime($admin_typing_at) >= time() - 3);
+
+    // 3. Lekérjük az ÚJ üzeneteket
+    $msgStmt = $pdo->prepare("SELECT tm.*, u.username, a.username as admin_username FROM ticket_messages tm LEFT JOIN users u ON tm.sender_id = u.id LEFT JOIN admins a ON tm.sender_id = a.id WHERE tm.ticket_id = ? AND tm.id > ? ORDER BY tm.id ASC");
+    $msgStmt->execute([$ticket_id, $last_id]);
+    $messages = $msgStmt->fetchAll();
+
+    $html = '';
+    $new_last_id = $last_id;
+
+    foreach ($messages as $m) {
+        $new_last_id = $m['id'];
+        $isSystem = (strpos($m['message'], '[SYSTEM]') === 0);
+        $isMine = (!$isSystem && $m['is_admin'] == 0 && $m['sender_id'] == $user_id);
+
+        if ($isSystem) {
+            $cleanMessage = h(trim(substr($m['message'], 8)));
+            $html .= '<div class="system-msg-simple" data-id="'.$m['id'].'"><span class="material-symbols-rounded">info</span>' . nl2br($cleanMessage) . '</div>';
+        } else {
+            $wrapperClass = $isMine ? 'mine' : 'admin';
+            $avatarUrl = 'https://minotar.net/helm/' . h($m['is_admin'] == 1 ? ($m['admin_username'] ?? 'Admin') : $m['username']) . '/32.png';
+            $authorName = h($m['is_admin'] == 1 ? ($m['admin_username'] ?? 'Admin') : $m['username']);
+            $badge = $m['is_admin'] ? 'STAFF' : '';
+            $cleanMessage = h($m['message']);
+            $dateStr = formatHungarianDate($m['created_at']);
+
+            $html .= '<div class="chat-bubble-wrapper ' . $wrapperClass . '" data-id="'.$m['id'].'">';
+            $html .= '<img src="' . $avatarUrl . '" alt="Avatar" class="chat-avatar">';
+            $html .= '<div class="chat-content">';
+            $html .= '<div class="chat-meta"><span class="chat-author">' . $authorName;
+            if ($badge) $html .= ' <span class="admin-badge">' . $badge . '</span>';
+            $html .= '</span><span class="chat-time">' . $dateStr . '</span></div>';
+            if ($cleanMessage !== '') $html .= '<div class="chat-text">' . nl2br($cleanMessage) . '</div>';
+            if ($m['attachment']) {
+                $html .= '<div class="chat-attachment" ' . ($cleanMessage === '' ? 'style="margin-top: 0;"' : '') . '><a href="' . h($m['attachment']) . '" target="_blank"><img src="' . h($m['attachment']) . '"></a></div>';
+            }
+            $html .= '</div></div>';
+        }
+    }
+
+    echo json_encode(['html' => $html, 'last_id' => $new_last_id, 'other_typing' => $is_admin_typing]);
+    exit;
+}
+// ==================================================================================
 
 $activeCheck = $pdo->prepare("SELECT COUNT(*) FROM tickets WHERE user_id = ? AND status != 'closed'");
 $activeCheck->execute([$user_id]);
@@ -51,22 +106,12 @@ $allCategoriesFull = (count($activeCategories) >= 4);
 function uploadImageAsBase64($fileArray) {
     if (isset($fileArray) && $fileArray['error'] === UPLOAD_ERR_OK) {
         $tmpName = $fileArray['tmp_name'];
-        $fileSize = $fileArray['size'];
-
-        if ($fileSize > 5 * 1024 * 1024) return null; 
-
+        if ($fileArray['size'] > 5 * 1024 * 1024) return null; 
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mimeType = finfo_file($finfo, $tmpName);
         finfo_close($finfo);
-
-        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        
-        if (in_array($mimeType, $allowedMimeTypes)) {
-            if (getimagesize($tmpName) !== false) {
-                $imageData = file_get_contents($tmpName);
-                $base64 = base64_encode($imageData);
-                return 'data:' . $mimeType . ';base64,' . $base64;
-            }
+        if (in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif', 'image/webp']) && getimagesize($tmpName) !== false) {
+            return 'data:' . $mimeType . ';base64,' . base64_encode(file_get_contents($tmpName));
         }
     }
     return null;
@@ -113,21 +158,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
     $check->execute([$ticket_id, $user_id]);
     $ticket = $check->fetch();
 
-    if ($ticket && $ticket['status'] !== 'closed') {
+    if ($ticket && ($ticket['status'] === 'open' || $ticket['status'] === 'answered')) {
         $attachment = uploadImageAsBase64($_FILES['attachment'] ?? null);
-        
         if ($message !== '' || $attachment !== null) {
             $stmt = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, ?)");
             $stmt->execute([$ticket_id, $user_id, $message, $attachment]);
             $pdo->prepare("UPDATE tickets SET status = 'open', updated_at = NOW() WHERE id = ?")->execute([$ticket_id]);
-            
             header("Location: /support.php?action=view&id=" . $ticket_id);
             exit;
         }
     }
 }
 
-// APP MÓD KAPCSOLÓ! (Igaz, ha épp egy ticketet nézünk)
 $isAppMode = ($action === 'view' && isset($_GET['id']));
 ?>
 <!DOCTYPE html>
@@ -167,7 +209,6 @@ $isAppMode = ($action === 'view' && isset($_GET['id']));
         $stmt->execute([$user_id]);
         $tickets = $stmt->fetchAll();
         ?>
-        
         <?php if ($allCategoriesFull): ?>
             <div class="profile-alert warning glass" style="margin-bottom: 2rem;">
                 <span class="material-symbols-rounded">info</span>
@@ -188,13 +229,13 @@ $isAppMode = ($action === 'view' && isset($_GET['id']));
             <div class="ticket-list">
                 <?php foreach ($tickets as $t): ?>
                     <?php 
-                        $statusClass = $t['status'] === 'closed' ? 'status-closed' : ($t['status'] === 'answered' ? 'status-answered' : 'status-open');
-                        $statusText = $t['status'] === 'closed' ? 'LEZÁRVA' : ($t['status'] === 'answered' ? 'MEGVÁLASZOLVA' : 'NYITOTT');
+                        $statusClass = 'status-' . $t['status'];
+                        $statusTexts = ['open' => 'NYITOTT', 'answered' => 'VÁLASZOLTUNK', 'paused' => 'SZÜNETELTETVE', 'closed' => 'LEZÁRVA'];
                     ?>
                     <a href="/support.php?action=view&id=<?= $t['id'] ?>" class="ticket-card glass hover-lift">
                         <div class="ticket-card-header">
                             <span class="ticket-cat"><?= h($t['category']) ?></span>
-                            <span class="ticket-status <?= $statusClass ?>"><?= $statusText ?></span>
+                            <span class="ticket-status <?= $statusClass ?>"><?= $statusTexts[$t['status']] ?></span>
                         </div>
                         <h3 class="ticket-subject"><span style="color: var(--text-muted); font-size: 0.9rem; margin-right: 0.5rem;"><?= formatTicketId($t['id']) ?></span> <?= h($t['subject']) ?></h3>
                         <div class="ticket-date">Utolsó frissítés: <?= formatHungarianDate($t['updated_at']) ?></div>
@@ -213,14 +254,12 @@ $isAppMode = ($action === 'view' && isset($_GET['id']));
                 <div class="input-group" style="grid-column: 1 / -1;">
                     <label>Válassz Kategóriát (Kategóriánként max. 1 nyitott jegy)</label>
                     <div class="category-grid">
-                        
                         <?php 
                         $catBugOpen = in_array('Hibabejelentés', $activeCategories);
                         $catReportOpen = in_array('Játékos Jelentése', $activeCategories);
                         $catShopOpen = in_array('Vásárlási Probléma', $activeCategories);
                         $catOtherOpen = in_array('Egyéb Kérdés', $activeCategories);
                         ?>
-
                         <label class="cat-card cat-bug <?= $catBugOpen ? 'disabled-cat' : '' ?>">
                             <input type="radio" name="category" value="Hibabejelentés" <?= $catBugOpen ? 'disabled' : 'required' ?>>
                             <div class="cat-content">
@@ -229,7 +268,6 @@ $isAppMode = ($action === 'view' && isset($_GET['id']));
                                 <?php if($catBugOpen): ?><span class="cat-locked-text">Nyitva</span><?php endif; ?>
                             </div>
                         </label>
-                        
                         <label class="cat-card cat-report <?= $catReportOpen ? 'disabled-cat' : '' ?>">
                             <input type="radio" name="category" value="Játékos Jelentése" <?= $catReportOpen ? 'disabled' : 'required' ?>>
                             <div class="cat-content">
@@ -238,7 +276,6 @@ $isAppMode = ($action === 'view' && isset($_GET['id']));
                                 <?php if($catReportOpen): ?><span class="cat-locked-text">Nyitva</span><?php endif; ?>
                             </div>
                         </label>
-                        
                         <label class="cat-card cat-shop <?= $catShopOpen ? 'disabled-cat' : '' ?>">
                             <input type="radio" name="category" value="Vásárlási Probléma" <?= $catShopOpen ? 'disabled' : 'required' ?>>
                             <div class="cat-content">
@@ -247,7 +284,6 @@ $isAppMode = ($action === 'view' && isset($_GET['id']));
                                 <?php if($catShopOpen): ?><span class="cat-locked-text">Nyitva</span><?php endif; ?>
                             </div>
                         </label>
-                        
                         <label class="cat-card cat-other <?= $catOtherOpen ? 'disabled-cat' : '' ?>">
                             <input type="radio" name="category" value="Egyéb Kérdés" <?= $catOtherOpen ? 'disabled' : 'required' ?>>
                             <div class="cat-content">
@@ -275,9 +311,6 @@ $isAppMode = ($action === 'view' && isset($_GET['id']));
             </form>
         </div>
 
-    <?php elseif ($action === 'new' && $allCategoriesFull): ?>
-        <div class="profile-alert warning glass">Minden kategóriában van már egy nyitott hibajegyed! Újat csak valamelyik lezárása után nyithatsz. <a href="/support.php" style="text-decoration: underline;">Vissza</a></div>
-
     <?php elseif ($action === 'view' && isset($_GET['id'])): ?>
         <?php
         $ticket_id = (int)$_GET['id'];
@@ -288,18 +321,12 @@ $isAppMode = ($action === 'view' && isset($_GET['id']));
         if (!$ticket) {
             echo "<div class='profile-alert error glass'>Hibajegy nem található, vagy nincs hozzá jogosultságod!</div>";
         } else {
-            $msgStmt = $pdo->prepare("
-                SELECT tm.*, u.username 
-                FROM ticket_messages tm 
-                JOIN users u ON tm.sender_id = u.id 
-                WHERE tm.ticket_id = ? 
-                ORDER BY tm.created_at ASC
-            ");
+            $msgStmt = $pdo->prepare("SELECT tm.*, u.username, a.username as admin_username FROM ticket_messages tm LEFT JOIN users u ON tm.sender_id = u.id LEFT JOIN admins a ON tm.sender_id = a.id WHERE tm.ticket_id = ? ORDER BY tm.created_at ASC");
             $msgStmt->execute([$ticket_id]);
             $messages = $msgStmt->fetchAll();
             
-            $statusClass = $ticket['status'] === 'closed' ? 'status-closed' : ($ticket['status'] === 'answered' ? 'status-answered' : 'status-open');
-            $statusText = $ticket['status'] === 'closed' ? 'LEZÁRVA' : ($ticket['status'] === 'answered' ? 'MEGVÁLASZOLVA' : 'NYITOTT');
+            $statusClass = 'status-' . $ticket['status'];
+            $statusTexts = ['open' => 'NYITOTT', 'answered' => 'VÁLASZOLTUNK', 'paused' => 'SZÜNETELTETVE', 'closed' => 'LEZÁRVA'];
         ?>
 
             <div class="chat-container glass" style="position: relative;">
@@ -311,7 +338,7 @@ $isAppMode = ($action === 'view' && isset($_GET['id']));
                     </div>
                     
                     <div style="display: flex; align-items: center; gap: 1rem;">
-                        <span class="ticket-status <?= $statusClass ?>" style="font-size: 0.8rem;"><?= $statusText ?></span>
+                        <span class="ticket-status <?= $statusClass ?>" style="font-size: 0.8rem;"><?= $statusTexts[$ticket['status']] ?></span>
                         <a href="/support.php" class="modal-close" style="position: static; color: var(--text-muted); transition: var(--transition);">
                             <span class="material-symbols-rounded">close</span>
                         </a>
@@ -322,49 +349,53 @@ $isAppMode = ($action === 'view' && isset($_GET['id']));
                     <?php foreach ($messages as $m): ?>
                         <?php 
                             $isSystem = (strpos($m['message'], '[SYSTEM]') === 0);
-                            $isMine = (!$isSystem && $m['sender_id'] == $user_id); 
-                            $wrapperClass = $isSystem ? 'admin system-msg' : ($isMine ? 'mine' : 'admin');
+                            $isMine = (!$isSystem && $m['is_admin'] == 0 && $m['sender_id'] == $user_id); 
                             
-                            if ($isSystem) {
-                                $avatarUrl = '/assets/img/etherniareborn.png';
-                                $authorName = 'ETHERNIA BOT';
-                                $badge = 'SYSTEM';
+                            // JAVÍTÁS: A rendszerüzenet egy egyszerű középre zárt doboz
+                            if ($isSystem): 
                                 $cleanMessage = trim(substr($m['message'], 8));
-                            } else {
-                                $avatarUrl = 'https://minotar.net/helm/' . h($m['username']) . '/32.png';
-                                $authorName = h($m['username']);
+                        ?>
+                            <div class="system-msg-simple" data-id="<?= $m['id'] ?>">
+                                <span class="material-symbols-rounded">info</span>
+                                <?= nl2br(h($cleanMessage)) ?>
+                            </div>
+                        <?php else: 
+                                $wrapperClass = $isMine ? 'mine' : 'admin';
+                                $avatarUrl = 'https://minotar.net/helm/' . h($m['is_admin'] == 1 ? ($m['admin_username'] ?? 'Admin') : $m['username']) . '/32.png';
+                                $authorName = h($m['is_admin'] == 1 ? ($m['admin_username'] ?? 'Admin') : $m['username']);
                                 $badge = $m['is_admin'] ? 'STAFF' : '';
                                 $cleanMessage = h($m['message']);
-                            }
                         ?>
-                        <div class="chat-bubble-wrapper <?= $wrapperClass ?>">
-                            <img src="<?= $avatarUrl ?>" alt="Avatar" class="chat-avatar" <?= $isSystem ? 'style="object-fit: contain; background: rgba(0,0,0,0.5); border: 1px solid var(--eth-primary);"' : '' ?>>
-                            <div class="chat-content">
-                                <div class="chat-meta">
-                                    <span class="chat-author"><?= $authorName ?> <?= $badge ? '<span class="admin-badge">'.$badge.'</span>' : '' ?></span>
-                                    <span class="chat-time"><?= formatHungarianDate($m['created_at']) ?></span>
+                            <div class="chat-bubble-wrapper <?= $wrapperClass ?>" data-id="<?= $m['id'] ?>">
+                                <img src="<?= $avatarUrl ?>" alt="Avatar" class="chat-avatar">
+                                <div class="chat-content">
+                                    <div class="chat-meta">
+                                        <span class="chat-author"><?= $authorName ?> <?= $badge ? '<span class="admin-badge">'.$badge.'</span>' : '' ?></span>
+                                        <span class="chat-time"><?= formatHungarianDate($m['created_at']) ?></span>
+                                    </div>
+                                    <?php if ($cleanMessage !== ''): ?>
+                                        <div class="chat-text"><?= nl2br($cleanMessage) ?></div>
+                                    <?php endif; ?>
+                                    <?php if ($m['attachment']): ?>
+                                        <div class="chat-attachment" <?= $cleanMessage === '' ? 'style="margin-top: 0;"' : '' ?>>
+                                            <a href="<?= $m['attachment'] ?>" target="_blank"><img src="<?= $m['attachment'] ?>"></a>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
-                                <?php if ($cleanMessage !== ''): ?>
-                                    <div class="chat-text">
-                                        <?= nl2br($cleanMessage) ?>
-                                    </div>
-                                <?php endif; ?>
-                                <?php if ($m['attachment']): ?>
-                                    <div class="chat-attachment" <?= $cleanMessage === '' ? 'style="margin-top: 0;"' : '' ?>>
-                                        <a href="<?= $m['attachment'] ?>" target="_blank">
-                                            <img src="<?= $m['attachment'] ?>" alt="Csatolmány">
-                                        </a>
-                                    </div>
-                                <?php endif; ?>
                             </div>
-                        </div>
+                        <?php endif; ?>
                     <?php endforeach; ?>
+                    
+                    <div class="typing-indicator" id="typing-indicator">
+                        <span class="typing-text">Egy Staff tag éppen ír</span>
+                        <div class="typing-dots"><span></span><span></span><span></span></div>
+                    </div>
                 </div>
 
-                <?php if ($ticket['status'] !== 'closed'): ?>
+                <?php if ($ticket['status'] === 'open' || $ticket['status'] === 'answered'): ?>
                     <div class="chat-input-area">
                         <div id="image-preview-container" class="image-preview-container" style="display: none;">
-                            <img id="image-preview" src="" alt="Előnézet">
+                            <img id="image-preview" src="">
                             <button type="button" id="remove-image-btn" class="remove-image-btn"><span class="material-symbols-rounded">close</span></button>
                         </div>
 
@@ -379,7 +410,7 @@ $isAppMode = ($action === 'view' && isset($_GET['id']));
                     </div>
                 <?php else: ?>
                     <div class="chat-closed-alert">
-                        <span class="material-symbols-rounded">lock</span> Ez a hibajegy le lett zárva. Nem küldhetsz több üzenetet.
+                        <span class="material-symbols-rounded">lock</span> Ez a hibajegy szüneteltetve van, vagy le lett zárva.
                     </div>
                 <?php endif; ?>
             </div>

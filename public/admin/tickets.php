@@ -24,7 +24,66 @@ function formatHungarianDate($datetime) {
     return date('Y.', $ts) . ' ' . $months[(int)date('n', $ts)] . ' ' . date('d - H:i', $ts);
 }
 
-// ADMIN TICKET MŰVELETEK (Lefoglalás, Szünet, Lezárás)
+// ==================================================================================
+// ÚJ: ADMIN REAL-TIME AJAX SZINKRONIZÁLÓ
+// ==================================================================================
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'sync' && isset($_GET['id'])) {
+    header('Content-Type: application/json');
+    $ticket_id = (int)$_GET['id'];
+    $last_id = (int)($_GET['last_id'] ?? 0);
+    $typing = (int)($_GET['typing'] ?? 0);
+
+    if ($typing) {
+        $pdo->prepare("UPDATE tickets SET admin_typing_at = NOW() WHERE id = ?")->execute([$ticket_id]);
+    }
+
+    $stmt = $pdo->prepare("SELECT user_typing_at FROM tickets WHERE id = ?");
+    $stmt->execute([$ticket_id]);
+    $user_typing_at = $stmt->fetchColumn();
+    $is_user_typing = ($user_typing_at && strtotime($user_typing_at) >= time() - 3);
+
+    $msgStmt = $pdo->prepare("SELECT tm.*, u.username, a.username as admin_username FROM ticket_messages tm LEFT JOIN users u ON tm.sender_id = u.id LEFT JOIN admins a ON tm.sender_id = a.id WHERE tm.ticket_id = ? AND tm.id > ? ORDER BY tm.id ASC");
+    $msgStmt->execute([$ticket_id, $last_id]);
+    $messages = $msgStmt->fetchAll();
+
+    $html = '';
+    $new_last_id = $last_id;
+
+    foreach ($messages as $m) {
+        $new_last_id = $m['id'];
+        $isSystem = (strpos($m['message'], '[SYSTEM]') === 0);
+        $isMine = (!$isSystem && $m['is_admin'] == 1 && $m['sender_id'] == $admin_id);
+
+        if ($isSystem) {
+            $cleanMessage = h(trim(substr($m['message'], 8)));
+            $html .= '<div class="system-msg-simple" data-id="'.$m['id'].'"><span class="material-symbols-rounded">info</span>' . nl2br($cleanMessage) . '</div>';
+        } else {
+            $wrapperClass = $isMine ? 'mine' : 'player';
+            $avatarUrl = 'https://minotar.net/helm/' . h($m['is_admin'] == 1 ? ($m['admin_username'] ?? 'Admin') : $m['username']) . '/32.png';
+            $authorName = h($m['is_admin'] == 1 ? ($m['admin_username'] ?? 'Admin') : $m['username']);
+            $badge = $m['is_admin'] ? 'STAFF' : 'JÁTÉKOS';
+            $cleanMessage = h($m['message']);
+            $dateStr = formatHungarianDate($m['created_at']);
+
+            $html .= '<div class="chat-bubble-wrapper ' . $wrapperClass . '" data-id="'.$m['id'].'">';
+            $html .= '<img src="' . $avatarUrl . '" alt="Avatar" class="chat-avatar">';
+            $html .= '<div class="chat-content">';
+            $html .= '<div class="chat-meta"><span class="chat-author">' . $authorName;
+            if ($badge) $html .= ' <span class="role-badge role-'.$badge.'">' . $badge . '</span>';
+            $html .= '</span><span class="chat-time">' . $dateStr . '</span></div>';
+            if ($cleanMessage !== '') $html .= '<div class="chat-text">' . nl2br($cleanMessage) . '</div>';
+            if ($m['attachment']) {
+                $html .= '<div class="chat-attachment" ' . ($cleanMessage === '' ? 'style="margin-top: 0;"' : '') . '><a href="' . h($m['attachment']) . '" target="_blank"><img src="' . h($m['attachment']) . '"></a></div>';
+            }
+            $html .= '</div></div>';
+        }
+    }
+
+    echo json_encode(['html' => $html, 'last_id' => $new_last_id, 'other_typing' => $is_user_typing]);
+    exit;
+}
+// ==================================================================================
+
 if (isset($_GET['do']) && isset($_GET['id'])) {
     $do = $_GET['do'];
     $ticket_id = (int)$_GET['id'];
@@ -60,7 +119,6 @@ if (isset($_GET['do']) && isset($_GET['id'])) {
     exit;
 }
 
-// VÁLASZ KÜLDÉSE (Base64)
 function uploadImageAsBase64($fileArray) {
     if (isset($fileArray) && $fileArray['error'] === UPLOAD_ERR_OK) {
         $tmpName = $fileArray['tmp_name'];
@@ -212,44 +270,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                             <?php foreach ($messages as $m): ?>
                                 <?php 
                                     $isSystem = (strpos($m['message'], '[SYSTEM]') === 0);
-                                    $isMine = (!$isSystem && $m['is_admin'] == 1 && $m['sender_id'] == $admin_id); 
-                                    $wrapperClass = $isSystem ? 'system-msg' : ($isMine ? 'mine' : 'player');
                                     
-                                    if ($isSystem) {
-                                        $avatarUrl = '/assets/img/etherniareborn.png';
-                                        $authorName = 'ETHERNIA BOT';
-                                        $badge = 'SYSTEM';
+                                    if ($isSystem): 
                                         $cleanMessage = trim(substr($m['message'], 8));
-                                    } elseif ($m['is_admin'] == 1) {
-                                        $avatarUrl = 'https://minotar.net/helm/' . h($m['admin_username'] ?? 'Admin') . '/32.png';
-                                        $authorName = h($m['admin_username'] ?? 'Admin');
-                                        $badge = 'STAFF';
-                                        $cleanMessage = h($m['message']);
-                                    } else {
-                                        $avatarUrl = 'https://minotar.net/helm/' . h($m['username']) . '/32.png';
-                                        $authorName = h($m['username']);
-                                        $badge = 'JÁTÉKOS';
-                                        $cleanMessage = h($m['message']);
-                                    }
                                 ?>
-                                <div class="chat-bubble-wrapper <?= $wrapperClass ?>">
-                                    <img src="<?= $avatarUrl ?>" alt="Avatar" class="chat-avatar" <?= $isSystem ? 'style="object-fit: contain; background: rgba(0,0,0,0.5);"' : '' ?>>
-                                    <div class="chat-content">
-                                        <div class="chat-meta">
-                                            <span class="chat-author"><?= $authorName ?> <?= $badge ? '<span class="role-badge role-'.$badge.'">'.$badge.'</span>' : '' ?></span>
-                                            <span class="chat-time"><?= formatHungarianDate($m['created_at']) ?></span>
-                                        </div>
-                                        <?php if ($cleanMessage !== ''): ?>
-                                            <div class="chat-text"><?= nl2br($cleanMessage) ?></div>
-                                        <?php endif; ?>
-                                        <?php if ($m['attachment']): ?>
-                                            <div class="chat-attachment" <?= $cleanMessage === '' ? 'style="margin-top: 0;"' : '' ?>>
-                                                <a href="<?= $m['attachment'] ?>" target="_blank"><img src="<?= $m['attachment'] ?>"></a>
-                                            </div>
-                                        <?php endif; ?>
+                                    <div class="system-msg-simple" data-id="<?= $m['id'] ?>">
+                                        <span class="material-symbols-rounded">info</span>
+                                        <?= nl2br(h($cleanMessage)) ?>
                                     </div>
-                                </div>
+                                <?php else: 
+                                        $isMine = (!$isSystem && $m['is_admin'] == 1 && $m['sender_id'] == $admin_id); 
+                                        $wrapperClass = $isMine ? 'mine' : 'player';
+                                        $avatarUrl = 'https://minotar.net/helm/' . h($m['is_admin'] == 1 ? ($m['admin_username'] ?? 'Admin') : $m['username']) . '/32.png';
+                                        $authorName = h($m['is_admin'] == 1 ? ($m['admin_username'] ?? 'Admin') : $m['username']);
+                                        $badge = $m['is_admin'] ? 'STAFF' : 'JÁTÉKOS';
+                                        $cleanMessage = h($m['message']);
+                                ?>
+                                    <div class="chat-bubble-wrapper <?= $wrapperClass ?>" data-id="<?= $m['id'] ?>">
+                                        <img src="<?= $avatarUrl ?>" alt="Avatar" class="chat-avatar">
+                                        <div class="chat-content">
+                                            <div class="chat-meta">
+                                                <span class="chat-author"><?= $authorName ?> <?= $badge ? '<span class="role-badge role-'.$badge.'">'.$badge.'</span>' : '' ?></span>
+                                                <span class="chat-time"><?= formatHungarianDate($m['created_at']) ?></span>
+                                            </div>
+                                            <?php if ($cleanMessage !== ''): ?>
+                                                <div class="chat-text"><?= nl2br($cleanMessage) ?></div>
+                                            <?php endif; ?>
+                                            <?php if ($m['attachment']): ?>
+                                                <div class="chat-attachment" <?= $cleanMessage === '' ? 'style="margin-top: 0;"' : '' ?>>
+                                                    <a href="<?= $m['attachment'] ?>" target="_blank"><img src="<?= $m['attachment'] ?>"></a>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
                             <?php endforeach; ?>
+                            
+                            <div class="typing-indicator" id="typing-indicator">
+                                <span class="typing-text">A játékos éppen ír</span>
+                                <div class="typing-dots"><span></span><span></span><span></span></div>
+                            </div>
                         </div>
 
                         <?php if ($ticket['status'] !== 'closed'): ?>
