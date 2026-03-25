@@ -74,12 +74,20 @@ body.admin-body {
 .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
 .empty-state .material-symbols-rounded { font-size: 4rem; color: rgba(255,255,255,0.1); margin-bottom: 1rem; }
 
-/* Gombok */
 .btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-radius: var(--radius-pill); text-decoration: none; transition: var(--transition); display: inline-block; }
 .btn-danger { background: transparent; border: 1px solid var(--admin-red); color: var(--admin-red); padding: 0.4rem 0.6rem; }
 .btn-danger:hover { background: var(--admin-red); color: #fff; box-shadow: 0 0 10px var(--admin-red-glow); }
 
-/* --- FORM SPECIFIKUS --- */
+.action-buttons { display: flex; gap: 0.5rem; align-items: center; }
+
+.btn-edit { background: transparent; border: 1px solid #3b82f6; color: #3b82f6; padding: 0.4rem 0.6rem; }
+.btn-edit:hover { background: #3b82f6; color: #fff; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+
+.btn-edit-submit { border-color: #3b82f6; color: #3b82f6; }
+.btn-edit-submit:hover { background: rgba(59, 130, 246, 0.15); box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); color: #fff; }
+
+.editing-row { background: rgba(59, 130, 246, 0.1) !important; border-left: 3px solid #3b82f6; }
+
 .add-news-form { display: flex; flex-direction: column; gap: 1.5rem; }
 .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
 .input-group label { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
