@@ -29,7 +29,7 @@ $current_page = $current_page ?? '';
             <span class="material-symbols-rounded">group</span>
             <span class="nav-text">Felhasználók</span>
         </a>
-        <a href="/admin/players.php" class="nav-item <?= $current_page === 'players' ? 'active' : '' ?>">
+        <a href="/admin/users.php" class="nav-item <?= $current_page === 'players' ? 'active' : '' ?>">
             <span class="material-symbols-rounded">sports_esports</span>
             <span class="nav-text">Játékos Karakterek</span>
         </a>
