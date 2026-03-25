@@ -37,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             
             $msg = "A hír sikeresen közzétéve!";
             $msgType = "success";
+            log_admin_action($pdo, $admin_id, $admin_name, "Új hír közzétéve: " . $title);
         } catch (PDOException $e) {
             $msg = "Adatbázis hiba: " . $e->getMessage();
             $msgType = "error";
@@ -66,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             
             $msg = "A hír sikeresen frissítve!";
             $msgType = "success";
-        } catch (PDOException $e) {
+            log_admin_action($pdo, $admin_id, $admin_name, "Hír szerkesztve. ID: " . $id);        } catch (PDOException $e) {
             $msg = "Adatbázis hiba: " . $e->getMessage();
             $msgType = "error";
         }
@@ -81,7 +82,7 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $pdo->prepare("DELETE FROM news WHERE id = ?")->execute([(int)$_GET['delete']]);
     $msg = "A hír sikeresen törölve a rendszerből.";
     $msgType = "success";
-}
+    log_admin_action($pdo, $admin_id, $admin_name, "Hír véglegesen törölve. ID: " . (int)$_GET['delete']);}
 
 // --- LÁTHATÓSÁG (VISIBLE) VÁLTÁSA ---
 if (isset($_GET['toggle']) && is_numeric($_GET['toggle'])) {

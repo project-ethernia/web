@@ -1,5 +1,5 @@
 <?php
-// === A Rendszer Lelke (Védelem, Session, DB kapcsolat) ===
+// === A Rendszer Lelke (Védelem, Session, DB kapcsolat, Jogosultságok és Logger) ===
 require_once __DIR__ . '/includes/core.php';
 
 $action = $_GET['action'] ?? 'list';
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'sync' && isset($_GET['i
 }
 
 // ==================================================================================
-// TICKET MŰVELETEK (Claim, Pause, Close)
+// TICKET MŰVELETEK (Claim, Pause, Close) + KÖZPONTI NAPLÓZÁS
 // ==================================================================================
 if (isset($_GET['do']) && isset($_GET['id'])) {
     $do = $_GET['do'];
@@ -80,22 +80,28 @@ if (isset($_GET['do']) && isset($_GET['id'])) {
     
     $botMsg = "";
     $newStatus = null;
+    $logMessage = ""; // A naplózandó üzenet
     
     if ($do === 'claim') {
         $pdo->prepare("UPDATE tickets SET claimed_by = ? WHERE id = ?")->execute([$admin_id, $ticket_id]);
         $botMsg = "[SYSTEM] **" . h($admin_name) . "** adminisztrátor csatlakozott, és megkezdte a hibajegy feldolgozását.";
+        $logMessage = "Magára vállalta a #" . $ticket_id . " azonosítójú hibajegyet.";
     } elseif ($do === 'unclaim') {
         $pdo->prepare("UPDATE tickets SET claimed_by = NULL WHERE id = ?")->execute([$ticket_id]);
         $botMsg = "[SYSTEM] **" . h($admin_name) . "** adminisztrátor lemondott a hibajegyről. Egy másik kolléga hamarosan átveszi.";
+        $logMessage = "Lemondott a #" . $ticket_id . " azonosítójú hibajegyről.";
     } elseif ($do === 'pause') {
         $newStatus = 'paused';
         $botMsg = "[SYSTEM] A hibajegy **szüneteltetve** lett. Kérjük, várj türelemmel a további intézkedésig.";
+        $logMessage = "Szüneteltette a #" . $ticket_id . " azonosítójú hibajegyet.";
     } elseif ($do === 'unpause') {
         $newStatus = 'open';
         $botMsg = "[SYSTEM] A hibajegy szüneteltetése feloldva.";
+        $logMessage = "Feloldotta a #" . $ticket_id . " azonosítójú hibajegy szüneteltetését.";
     } elseif ($do === 'close') {
         $newStatus = 'closed';
         $botMsg = "[SYSTEM] A hibajegyet az adminisztrátor **lezárta**.";
+        $logMessage = "Lezárta a #" . $ticket_id . " azonosítójú hibajegyet.";
     }
 
     if ($newStatus) {
@@ -105,11 +111,17 @@ if (isset($_GET['do']) && isset($_GET['id'])) {
         $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, is_admin) VALUES (?, ?, ?, 1)")
             ->execute([$ticket_id, $admin_id, $botMsg]);
     }
+
+    // NAPLÓZÁS ELSÜTÉSE!
+    if ($logMessage !== "") {
+        log_admin_action($pdo, $admin_id, $admin_name, $logMessage);
+    }
+
     header("Location: /admin/tickets.php?action=view&id=" . $ticket_id);
     exit;
 }
 
-// VÁLASZ KÜLDÉSE KÉPPEL
+// VÁLASZ KÜLDÉSE KÉPPEL + KÖZPONTI NAPLÓZÁS
 function uploadImageAsBase64($fileArray) {
     if (isset($fileArray) && $fileArray['error'] === UPLOAD_ERR_OK) {
         $tmpName = $fileArray['tmp_name'];
@@ -133,6 +145,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
         $stmt = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment, is_admin) VALUES (?, ?, ?, ?, 1)");
         $stmt->execute([$ticket_id, $admin_id, $message, $attachment]);
         $pdo->prepare("UPDATE tickets SET status = 'answered', updated_at = NOW() WHERE id = ?")->execute([$ticket_id]);
+        
+        // NAPLÓZÁS ELSÜTÉSE!
+        log_admin_action($pdo, $admin_id, $admin_name, "Válaszolt a #" . $ticket_id . " azonosítójú hibajegyre.");
+
         header("Location: /admin/tickets.php?action=view&id=" . $ticket_id);
         exit;
     }
@@ -340,7 +356,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                             <?php if ($ticket['claimed_by'] === null): ?>
                                 <a href="?do=claim&id=<?= $ticket_id ?>" class="btn-action btn-claim"><span class="material-symbols-rounded">pan_tool</span> Magamra vállalom</a>
                             <?php elseif ($ticket['claimed_by'] == $admin_id): ?>
-                                <a href="?do=unclaim&id=<?= $ticket_id ?>" class="btn-action btn-warning"><span class="material-symbols-rounded">waving_hand</span> Lemondok róla</a>
+                                <a href="?do=unclaim&id=<?= $ticket_id ?>" class="btn-action btn-warning" onclick="ethConfirm(event, 'Biztosan lemondasz erről a jegyről?', this.href);"><span class="material-symbols-rounded">waving_hand</span> Lemondok róla</a>
                             <?php else: ?>
                                 <div class="alert-box warning">Ezt a jegyet már egy másik admin lefoglalta.</div>
                             <?php endif; ?>
@@ -354,7 +370,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                             <?php endif; ?>
 
                             <?php if ($ticket['status'] !== 'closed'): ?>
-                                <a href="?do=close&id=<?= $ticket_id ?>" class="btn-action btn-danger"><span class="material-symbols-rounded">lock</span> Jegy Lezárása</a>
+                                <a href="?do=close&id=<?= $ticket_id ?>" class="btn-action btn-danger" onclick="ethConfirm(event, 'Biztosan véglegesen lezárod a jegyet?', this.href);"><span class="material-symbols-rounded">lock</span> Jegy Lezárása</a>
                             <?php else: ?>
                                 <a href="?do=unpause&id=<?= $ticket_id ?>" class="btn-action btn-claim"><span class="material-symbols-rounded">lock_open</span> Jegy Újranyitása</a>
                             <?php endif; ?>

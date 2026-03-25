@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 
                 $msg = "Új csapattag sikeresen hozzáadva: " . h($new_user);
                 $msgType = "success";
+                log_admin_action($pdo, $admin_id, $admin_name, "Új adminisztrátor hozzáadva: " . $new_user . " (" . $new_role . ")");
             }
         } catch (PDOException $e) {
             // HA BÁRMI HIBA VAN A DB-VEL, ITT FOGJA KIÍRNI, NEM DOB EL SEHOVA!
@@ -61,6 +62,7 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
         $pdo->prepare("DELETE FROM admins WHERE id = ?")->execute([$target_id]);
         $msg = "Adminisztrátor sikeresen eltávolítva a rendszerből.";
         $msgType = "success";
+        log_admin_action($pdo, $admin_id, $admin_name, "Új adminisztrátor hozzáadva: " . $new_user . " (" . $new_role . ")");
     }
 }
 
