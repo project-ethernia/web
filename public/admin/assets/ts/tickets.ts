@@ -3,9 +3,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     
     const chatMsgs = document.getElementById("chat-messages");
-    if (chatMsgs) {
-        chatMsgs.scrollTop = chatMsgs.scrollHeight;
-    }
+    if (chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
 
     const fileInput = document.getElementById("chat-file-input") as HTMLInputElement | null;
     const previewContainer = document.getElementById("image-preview-container");

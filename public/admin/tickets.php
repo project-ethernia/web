@@ -1,22 +1,10 @@
 <?php
-session_start();
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// === A Rendszer Lelke (Védelem, Session, DB kapcsolat) ===
+require_once __DIR__ . '/includes/core.php';
 
-if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
-    header('Location: /admin/login.php');
-    exit;
-}
-
-require_once __DIR__ . '/../database.php';
-
-$admin_id = $_SESSION['admin_id'];
-$admin_name = $_SESSION['admin_username'];
 $action = $_GET['action'] ?? 'list';
 $msg = '';
 
-function h($str) { return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8'); }
 function formatTicketId($id) { return sprintf("#%03d-%03d", floor($id / 1000), $id % 1000); }
 function formatHungarianDate($datetime) {
     $months = ['', 'Január', 'Február', 'Március', 'Április', 'Május', 'Június', 'Július', 'Augusztus', 'Szeptember', 'Október', 'November', 'December'];
@@ -25,7 +13,7 @@ function formatHungarianDate($datetime) {
 }
 
 // ==================================================================================
-// ÚJ: ADMIN REAL-TIME AJAX SZINKRONIZÁLÓ
+// ADMIN REAL-TIME AJAX SZINKRONIZÁLÓ
 // ==================================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'sync' && isset($_GET['id'])) {
     header('Content-Type: application/json');
@@ -82,8 +70,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'sync' && isset($_GET['i
     echo json_encode(['html' => $html, 'last_id' => $new_last_id, 'other_typing' => $is_user_typing]);
     exit;
 }
-// ==================================================================================
 
+// ==================================================================================
+// TICKET MŰVELETEK (Claim, Pause, Close)
+// ==================================================================================
 if (isset($_GET['do']) && isset($_GET['id'])) {
     $do = $_GET['do'];
     $ticket_id = (int)$_GET['id'];
@@ -119,6 +109,7 @@ if (isset($_GET['do']) && isset($_GET['id'])) {
     exit;
 }
 
+// VÁLASZ KÜLDÉSE KÉPPEL
 function uploadImageAsBase64($fileArray) {
     if (isset($fileArray) && $fileArray['error'] === UPLOAD_ERR_OK) {
         $tmpName = $fileArray['tmp_name'];
@@ -151,16 +142,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <title>Ticket Kezelő | Admin Panel</title>
+    <title>Ügyfélszolgálat | ETHERNIA Admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300..700&display=block">
+    
     <link rel="stylesheet" href="/assets/css/globals.css?v=<?= time(); ?>">
+    <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/tickets.css?v=<?= time(); ?>">
 </head>
 <body class="admin-body">
 
 <div class="admin-layout">
+    
+    <?php 
+    $current_page = 'tickets'; 
+    require_once __DIR__ . '/includes/sidebar.php'; 
+    ?>
     
     <main class="admin-main">
         <header class="admin-header glass">
@@ -372,6 +370,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
     </main>
 </div>
 
+<script src="/admin/assets/js/sidebar.js?v=<?= time(); ?>"></script>
 <script src="/admin/assets/js/tickets.js?v=<?= time(); ?>"></script>
 </body>
 </html>

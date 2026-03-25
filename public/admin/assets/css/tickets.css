@@ -15,6 +15,7 @@ body.admin-body {
     font-family: var(--font-body);
     margin: 0;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 .glass {
@@ -23,6 +24,7 @@ body.admin-body {
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(239, 68, 68, 0.15);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: var(--radius-md);
 }
 
 .text-red { color: var(--admin-red); }
@@ -42,10 +44,10 @@ body.admin-body {
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    overflow-y: auto;
 }
 
 .admin-header {
-    border-radius: var(--radius-md);
     padding: 1.5rem 2rem;
     display: flex;
     justify-content: space-between;
@@ -116,9 +118,7 @@ body.admin-body {
     vertical-align: middle;
 }
 
-.hover-row:hover {
-    background: rgba(255, 255, 255, 0.03);
-}
+.hover-row:hover { background: rgba(255, 255, 255, 0.03); }
 
 .td-id { color: var(--text-muted); font-family: monospace; font-size: 1.1rem; }
 .td-cat { font-size: 0.75rem; color: var(--admin-red); text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 0.2rem;}
@@ -128,7 +128,6 @@ body.admin-body {
 .player-cell { display: flex; align-items: center; gap: 0.8rem; font-weight: 500; }
 .player-head { width: 28px; height: 28px; border-radius: 6px; image-rendering: pixelated; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
-/* Jelvények */
 .badge { padding: 0.3rem 0.8rem; border-radius: var(--radius-pill); font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem; }
 .badge .material-symbols-rounded { font-size: 1rem; }
 .badge-claimed { background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
@@ -141,7 +140,6 @@ body.admin-body {
 .status-paused { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
 .status-closed { background: rgba(239, 68, 68, 0.15); color: var(--admin-red); border: 1px solid rgba(239, 68, 68, 0.3); }
 
-/* Gombok */
 .btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-radius: var(--radius-pill); text-decoration: none; transition: var(--transition); display: inline-block; }
 .btn-open { background: transparent; border: 1px solid var(--border-glass); color: #fff; }
 .btn-open:hover { background: var(--admin-red); border-color: var(--admin-red); box-shadow: 0 0 15px var(--admin-red-glow); }
@@ -150,44 +148,40 @@ body.admin-body {
 .admin-ticket-layout { display: flex; gap: 2rem; align-items: flex-start; height: 75vh; }
 
 /* Bal Oldal: Chat */
-.chat-container { border-radius: var(--radius-md); display: flex; flex-direction: column; flex: 1; height: 100%; overflow: hidden; position: relative; }
+.chat-container { display: flex; flex-direction: column; flex: 1; height: 100%; overflow: hidden; position: relative; }
 .chat-header { padding: 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); }
 .chat-title-area h2 { font-size: 1.4rem; margin: 0 0 0.5rem 0; }
 
 .chat-messages { flex: 1; padding: 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; scrollbar-width: thin; scrollbar-color: var(--admin-red) transparent; }
 
-/* Emberi üzenetek (Admin & Játékos) */
 .chat-bubble-wrapper { display: flex; gap: 1rem; max-width: 80%; }
 .chat-bubble-wrapper.mine { align-self: flex-end; flex-direction: row-reverse; } 
 .chat-bubble-wrapper.player { align-self: flex-start; } 
 
 .chat-avatar { width: 40px; height: 40px; border-radius: 8px; image-rendering: pixelated; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+
+/* JAVÍTÁS: A tartalom mehet min-width: 0-ra a sortörés miatt */
 .chat-content { 
     display: flex; 
     flex-direction: column; 
     max-width: 100%; 
-    min-width: 0; /* JAVÍTÁS: Engedi a Flexboxnak, hogy sort törjön */
+    min-width: 0; 
 }
-
 .mine .chat-content { align-items: flex-end; }
 .player .chat-content { align-items: flex-start; }
 
+/* JAVÍTÁS: overflow-wrap a hosszú szövegeknél */
 .chat-text { 
     padding: 1rem 1.2rem; 
     border-radius: 18px; 
     font-size: 0.95rem; 
     line-height: 1.6; 
     box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
-    
-    /* JAVÍTÁS: TÖKÉLETES SOR-TÖRÉS */
     overflow-wrap: break-word;
     word-wrap: break-word;
-    word-break: break-word;
+    word-break: normal;
 }
-
-/* Admin üzenete (Piros!) */
 .mine .chat-text { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--admin-red); color: #fff; border-top-right-radius: 4px; }
-/* Játékos üzenete (Szürke/Sötétlila jellegű) */
 .player .chat-text { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-glass); color: #e2e8f0; border-top-left-radius: 4px; }
 
 .chat-meta { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.4rem; font-size: 0.8rem; }
@@ -203,81 +197,33 @@ body.admin-body {
 .chat-attachment img { max-width: 100%; max-height: 300px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
 .chat-attachment img:hover { filter: brightness(1.2); }
 
-/* ==========================================================================
-   LETISZTULT RENDSZERÜZENET (SÁRGA, KÖZÉPRE)
-   ========================================================================== */
+/* RENDSZERÜZENET */
 .system-msg-simple {
-    align-self: center;
-    text-align: center;
-    color: #fcd34d;
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    padding: 0.6rem 1.2rem;
-    border-radius: var(--radius-pill);
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin: 0.5rem auto;
-    width: fit-content;
-    max-width: 90%;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    align-self: center; text-align: center; color: #fcd34d; background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.6rem 1.2rem; border-radius: var(--radius-pill);
+    font-size: 0.85rem; font-weight: 600; margin: 0.5rem auto; width: fit-content; max-width: 90%;
+    display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
+.system-msg-simple .material-symbols-rounded { font-size: 1.1rem; color: #f59e0b; }
 
-.system-msg-simple .material-symbols-rounded {
-    font-size: 1.1rem;
-    color: #f59e0b;
-}
-
-/* ==========================================================================
-   TYPING INDICATOR ANIMÁCIÓ
-   ========================================================================== */
+/* TYPING INDICATOR */
 .typing-indicator {
-    display: none; 
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: rgba(255,255,255,0.05);
-    border-radius: var(--radius-pill);
-    width: fit-content;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-top: -0.5rem;
-    margin-bottom: 1rem;
-    align-self: flex-start; 
+    display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.05);
+    border-radius: var(--radius-pill); width: fit-content; font-size: 0.85rem; color: var(--text-muted);
+    margin-top: -0.5rem; margin-bottom: 1rem; align-self: flex-start; 
 }
-
-.typing-indicator.active {
-    display: flex;
-}
-
-.typing-dots span {
-    display: inline-block;
-    width: 4px;
-    height: 4px;
-    background: var(--text-muted);
-    border-radius: 50%;
-    margin: 0 1px;
-    animation: bounce 1.4s infinite ease-in-out both;
-}
-
+.typing-indicator.active { display: flex; }
+.typing-dots span { display: inline-block; width: 4px; height: 4px; background: var(--text-muted); border-radius: 50%; margin: 0 1px; animation: bounce 1.4s infinite ease-in-out both; }
 .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
 .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
 
-@keyframes bounce {
-    0%, 80%, 100% { transform: scale(0); }
-    40% { transform: scale(1); }
-}
-
-/* Chat Input (Írófelület) */
+/* Chat Input */
 .chat-input-area { padding: 1.5rem 2rem; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.05); }
 .chat-form { display: flex; align-items: flex-end; gap: 1rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 0.5rem 1rem; transition: 0.3s;}
 .chat-form:focus-within { border-color: var(--admin-red); box-shadow: 0 0 15px var(--admin-red-glow); }
-
 .chat-upload-btn { cursor: pointer; color: var(--text-muted); padding: 0.5rem; margin-bottom: 2px; transition: 0.2s;}
 .chat-upload-btn:hover { color: var(--admin-red); }
-
 .chat-textarea { flex: 1; background: transparent; border: none; color: #fff; resize: none; height: 24px; max-height: 150px; overflow-y: auto; outline: none; font-family: var(--font-body); font-size: 0.95rem; margin: 10px 0; line-height: 24px; }
 .chat-send-btn { background: transparent; border: 2px solid var(--admin-red); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--admin-red); cursor: pointer; transition: 0.2s; margin-bottom: 2px; }
 .chat-send-btn:hover { background: rgba(239, 68, 68, 0.2); color: #fff; box-shadow: 0 0 20px var(--admin-red-glow); transform: scale(1.05); }
@@ -289,21 +235,20 @@ body.admin-body {
 
 .chat-closed-alert { padding: 1.5rem; text-align: center; color: var(--admin-red); font-weight: 600; background: rgba(239, 68, 68, 0.1); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; gap: 0.5rem;}
 
-/* Jobb Oldal: Kontroll Panel (Gombok) */
-.admin-controls { width: 320px; padding: 2rem; border-radius: var(--radius-md); display: flex; flex-direction: column; }
+/* Jobb Oldal: Kontroll Panel (Gombok balra igazított ikonnal) */
+.admin-controls { width: 320px; padding: 2rem; display: flex; flex-direction: column; }
 .admin-controls h3 { margin: 0 0 0.5rem 0; font-size: 1.3rem; text-transform: uppercase; letter-spacing: 0.05em;}
 .control-player { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 2rem; }
 
 .control-actions { display: flex; flex-direction: column; gap: 1rem; }
 .control-divider { border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 0.5rem 0; }
 
-/* JAVÍTÁS: Gomb újraformázása! Szöveg középen, ikon fixen balra! */
 .btn-action { 
-    position: relative; /* Ez kell az ikon balra húzásához */
+    position: relative; 
     display: flex; 
     align-items: center; 
-    justify-content: center; /* Szöveg kőkeményen középen */
-    padding: 1rem 1.5rem 1rem 3rem; /* Balra több helyet hagyunk az ikonnak, hogy ne csússzon rá a szöveg */
+    justify-content: center; 
+    padding: 1rem 1.5rem 1rem 3rem; 
     border-radius: var(--radius-sm); 
     font-weight: 700; 
     cursor: pointer; 
@@ -315,8 +260,6 @@ body.admin-body {
     text-decoration: none; 
     border: 1px solid transparent; 
 }
-
-/* JAVÍTÁS: Az ikon kiszakítása és bal szélre tapasztása */
 .btn-action .material-symbols-rounded {
     position: absolute;
     left: 1.2rem;
@@ -325,13 +268,10 @@ body.admin-body {
 
 .btn-claim { border-color: #22c55e; color: #22c55e; }
 .btn-claim:hover { background: rgba(34, 197, 94, 0.15); box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); color: #fff; }
-
 .btn-warning { border-color: #f59e0b; color: #f59e0b; }
 .btn-warning:hover { background: rgba(245, 158, 11, 0.15); box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); color: #fff; }
-
 .btn-danger { border-color: var(--admin-red); color: var(--admin-red); }
 .btn-danger:hover { background: rgba(239, 68, 68, 0.15); box-shadow: 0 0 15px var(--admin-red-glow); color: #fff; }
-
 .btn-back { border-color: var(--border-glass); color: var(--text-muted); }
 .btn-back:hover { background: rgba(255,255,255,0.05); color: #fff; }
 

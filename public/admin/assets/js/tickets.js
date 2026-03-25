@@ -2,9 +2,8 @@
 /// <reference lib="dom" />
 document.addEventListener("DOMContentLoaded", function () {
     var chatMsgs = document.getElementById("chat-messages");
-    if (chatMsgs) {
+    if (chatMsgs)
         chatMsgs.scrollTop = chatMsgs.scrollHeight;
-    }
     var fileInput = document.getElementById("chat-file-input");
     var previewContainer = document.getElementById("image-preview-container");
     var previewImg = document.getElementById("image-preview");

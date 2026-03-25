@@ -27,7 +27,10 @@ $totalPlayers = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn(); // Ké
 
 <div class="admin-layout">
     
-    <?php require_once __DIR__ . '/includes/sidebar.php'; ?>
+    <?php 
+    $current_page = 'dashboard';
+    require_once __DIR__ . '/includes/sidebar.php';
+    ?>
     
     <main class="admin-main">
         <header class="admin-header glass">
