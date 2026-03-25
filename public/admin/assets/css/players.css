@@ -1,44 +1,158 @@
-@import url('/admin/assets/css/base.css?v=<?= time(); ?>');
+/* ==========================================================================
+   ETHERNIA ADMIN - SIDEBAR (OLDALMENÜ)
+   ========================================================================== */
 
-.players-table .cell-username {
-  font-weight: 500;
+.admin-sidebar {
+    width: 280px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+    border-right: 1px solid rgba(239, 68, 68, 0.15);
+    background: rgba(15, 10, 20, 0.8);
+    overflow: hidden; 
 }
 
-.players-table .cell-ip {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 0.75rem;
-  opacity: 0.85;
+/* ÖSSZECSUKOTT ÁLLAPOT */
+.admin-sidebar.collapsed {
+    width: 80px;
 }
 
-.players-table .cell-rank {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  opacity: 0.9;
+.sidebar-header {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-/* státusz pill-ek */
-
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.1rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
-.status-ok {
-  background: rgba(34, 197, 94, 0.18);
-  color: #bbf7d0;
+.logo-icon {
+    font-size: 2rem;
+    color: var(--admin-red);
+    filter: drop-shadow(0 0 10px var(--admin-red-glow));
+    flex-shrink: 0;
 }
 
-.status-banned {
-  background: rgba(239, 68, 68, 0.22);
-  color: #fecaca;
+.logo-text {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: #fff;
+    transition: opacity 0.2s;
 }
 
-.status-muted {
-  background: rgba(59, 130, 246, 0.22);
-  color: #bfdbfe;
+.toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: 0.2s;
+    flex-shrink: 0;
+}
+
+.toggle-btn:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+}
+
+.admin-sidebar.collapsed .logo-text { opacity: 0; pointer-events: none; }
+.admin-sidebar.collapsed .nav-text { opacity: 0; pointer-events: none; }
+.admin-sidebar.collapsed .nav-section { opacity: 0; height: 0; margin: 0; padding: 0; }
+
+/* MENÜ PONTOK */
+.sidebar-nav {
+    flex: 1; /* Kitölti a rendelkezésre álló helyet */
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    overflow-y: auto;
+    scrollbar-width: none; 
+}
+.sidebar-nav::-webkit-scrollbar { display: none; } 
+
+.nav-section {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.3);
+    margin: 1rem 0 0.5rem 0.8rem;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    /* A border-left miatt a bal oldali paddinget picit visszavesszük, hogy ne ugorjon a szöveg */
+    padding: 0.8rem 1rem 0.8rem 0.75rem; 
+    color: var(--text-muted);
+    text-decoration: none;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+    border-left: 4px solid transparent; /* Előkészítjük a helyet a piros csíknak */
+}
+
+.nav-item .material-symbols-rounded {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    transition: color 0.2s;
+}
+
+.nav-item:hover {
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+}
+
+/* ÚJ: KŐKEMÉNY AKTÍV JELÖLÉS */
+.nav-item.active {
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, transparent 100%);
+    color: #fff;
+    border-left: 4px solid var(--admin-red); /* Erős piros vonal a bal szélen */
+}
+
+.nav-item.active .material-symbols-rounded {
+    color: var(--admin-red);
+    filter: drop-shadow(0 0 10px var(--admin-red-glow)); /* Izzó piros ikon */
+}
+
+/* ÚJ: LÁBLÉC LEHORGONYZÁSA A LEGALJÁRA */
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: auto; /* Ez a varázsszó: feltolja a menüt, és letolja magát a pokolba! */
+    background: rgba(15, 10, 20, 0.9); /* Pici extra sötétítés */
+}
+
+.logout-btn {
+    border-radius: var(--radius-sm);
+    color: #f87171;
+}
+
+.logout-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
 }
