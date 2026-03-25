@@ -11,7 +11,6 @@ body {
     background-attachment: fixed;
 }
 
-/* KÖZÖS ÜVEG EFFEKT (Glassmorphism) */
 .glass {
     background: var(--bg-glass);
     backdrop-filter: blur(20px);
@@ -100,19 +99,9 @@ body {
 }
 .session-timer .material-symbols-rounded { font-size: 1.1rem; }
 
-@keyframes pulse-danger {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-.danger-pulse {
-    color: var(--eth-danger) !important;
-    border-color: var(--eth-danger) !important;
-    animation: pulse-danger 1.5s infinite;
-}
-
 /* --- HERO SZEKCIÓ --- */
-.hero { position: relative; padding: 6rem 1.5rem 4rem; text-align: center; }
+/* EXTRA MARGIN: Növelt padding, hogy lentebb kerüljön minden */
+.hero { position: relative; padding: 10rem 1.5rem 6rem; text-align: center; }
 .hero-content { position: relative; z-index: 2; max-width: 1300px; margin: 0 auto; }
 
 .hero-top-row {
@@ -141,7 +130,7 @@ body {
     font-size: 1.1rem; 
     letter-spacing: 0.05em; 
     margin: 0; 
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Árnyék, hogy kiemelkedjen a ragyogásból */
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
 }
 
 /* WIDGETEK */
@@ -213,7 +202,11 @@ body {
 
 /* FUNKCIÓK GRID */
 .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
-.feature-card { padding: 2.5rem 2rem; text-align: center; border-radius: var(--radius-md); }
+.feature-card { 
+    padding: 2.5rem 2rem; text-align: center; border-radius: var(--radius-md); 
+    cursor: default; /* KICSERÉLVE A CURSORT, HOGY NE LEGYEN SZÖVEGKIJELÖLŐ */
+    user-select: none; /* A szöveg kijelölésének letiltása a még prémiumabb érzésért */
+}
 
 .feature-icon { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; background: rgba(255,255,255,0.05); font-size: 2rem; transition: var(--transition); }
 .feature-card:hover .feature-icon { transform: scale(1.1); }
@@ -239,15 +232,11 @@ body {
 .modal-close { position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; transition: var(--transition); }
 .modal-close:hover { color: #fff; }
 
-/* =========================================
-   MOBILOS OPTIMALIZÁCIÓ
-   ========================================= */
 @media (max-width: 1100px) {
     .hero-top-row { flex-direction: column; gap: 1.5rem; }
     .hero-center-titles { order: -1; margin-bottom: 1rem; } 
     .stat-widget { width: 100%; max-width: 350px; justify-content: flex-start; }
 }
-
 @media (max-width: 992px) {
     .navbar { padding: 0.5rem; top: 0.5rem; }
     .navbar-inner { flex-direction: column; gap: 1rem; padding: 1rem; border-radius: var(--radius-md); }
@@ -255,8 +244,7 @@ body {
     .nav-links { flex-wrap: wrap; justify-content: center; }
     .hero-title { font-size: 3.5rem; }
 }
-
 @media (max-width: 600px) {
-    .hero { padding: 3rem 1rem; }
+    .hero { padding: 5rem 1rem 3rem; }
     .hero-title { font-size: 2.5rem; }
 }

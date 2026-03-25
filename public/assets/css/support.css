@@ -7,10 +7,10 @@
     padding: 2.5rem;
     border-radius: var(--radius-md);
     max-width: 800px;
-    margin: 0 auto;
+    margin: 3rem auto 0; /* EXTRA MARGIN FELÜLRE! */
 }
 
-.support-select, .support-input, .support-textarea, .support-file {
+.support-input, .support-textarea {
     width: 100%;
     padding: 1rem;
     background: rgba(0,0,0,0.3);
@@ -23,39 +23,104 @@
     font-family: var(--font-body);
 }
 
-.support-select:focus, .support-input:focus, .support-textarea:focus {
+.support-input:focus, .support-textarea:focus {
     border-color: var(--eth-primary);
     background: rgba(0,0,0,0.5);
     box-shadow: 0 0 15px var(--eth-primary-glow);
 }
 
-/* KATEGÓRIA MENÜ EGYEDI DIZÁJNOZÁSA */
-.support-select {
-    appearance: none; /* Eltünteti a Windows gyári csúnya nyilát */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    /* Saját lila nyíl ikon generálása SVG-vel! */
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a855f7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 1rem center;
-    background-size: 1.2em;
-    padding-right: 3rem; /* Helyet hagyunk a nyílnak */
+/* ==========================================================================
+   ÚJ PRÉMIUM KATEGÓRIA VÁLASZTÓ KÁRTYÁK
+   ========================================================================== */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.cat-card {
     cursor: pointer;
+    display: block;
 }
 
-.support-select option {
-    background-color: var(--bg-base); /* Sötét háttér a listának */
+.cat-card input[type="radio"] {
+    display: none;
+}
+
+.cat-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.5rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    transition: var(--transition);
+    opacity: 0.6; /* Alapból elhalványítva */
+    text-align: center;
+    font-weight: 600;
+}
+
+.cat-content .material-symbols-rounded {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    transition: var(--transition);
+}
+
+.cat-card:hover .cat-content {
+    opacity: 0.8;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Egyedi Aktív Állapotok Színekkel */
+.cat-bug input:checked + .cat-content {
+    opacity: 1;
+    border-color: var(--eth-danger);
+    background: rgba(239, 68, 68, 0.1);
     color: #fff;
-    padding: 10px;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
 }
+.cat-bug input:checked + .cat-content .material-symbols-rounded { color: var(--eth-danger); }
 
+.cat-report input:checked + .cat-content {
+    opacity: 1;
+    border-color: var(--eth-warning);
+    background: rgba(234, 179, 8, 0.1);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(234, 179, 8, 0.2);
+}
+.cat-report input:checked + .cat-content .material-symbols-rounded { color: var(--eth-warning); }
+
+.cat-shop input:checked + .cat-content {
+    opacity: 1;
+    border-color: var(--eth-success);
+    background: rgba(34, 197, 94, 0.1);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+}
+.cat-shop input:checked + .cat-content .material-symbols-rounded { color: var(--eth-success); }
+
+.cat-other input:checked + .cat-content {
+    opacity: 1;
+    border-color: var(--eth-primary);
+    background: var(--eth-primary-glow);
+    color: #fff;
+    box-shadow: 0 0 20px var(--eth-primary-glow);
+}
+.cat-other input:checked + .cat-content .material-symbols-rounded { color: var(--eth-primary); }
+
+/* --- GOMB DIZÁJN --- */
 .btn-auth {
     background: transparent;
     color: var(--text-main);
     border: 2px solid var(--eth-primary);
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    font-weight: 800; /* Vagy amire beállítottuk inline! */
+    font-weight: 600; /* Vékonyítva, ahogy kérted */
     box-shadow: 0 0 10px rgba(0,0,0,0);
     width: fit-content;
     display: inline-flex;

@@ -26,7 +26,6 @@ $currentUser = $_SESSION['user_username'];
 $action = $_GET['action'] ?? 'list';
 $msg = '';
 
-// KÉPFELTÖLTŐ FUNKCIÓ (Már csak a chatnél használjuk!)
 function uploadImage($fileArray) {
     if (isset($fileArray) && $fileArray['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($fileArray['name'], PATHINFO_EXTENSION);
@@ -43,7 +42,6 @@ function uploadImage($fileArray) {
     return null;
 }
 
-// ÚJ TICKET LÉTREHOZÁSA (Itt kivettük a képfeltöltést)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
     $subject = trim($_POST['subject'] ?? '');
     $category = trim($_POST['category'] ?? '');
@@ -56,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
             $stmt->execute([$user_id, $subject, $category]);
             $ticket_id = $pdo->lastInsertId();
 
-            // Első üzenetnél nincs csatolmány (NULL)
             $stmt2 = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, NULL)");
             $stmt2->execute([$ticket_id, $user_id, $message]);
 
@@ -72,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
     }
 }
 
-// VÁLASZ KÜLDÉSE (A chatben már van képfeltöltés)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET['id'])) {
     $ticket_id = (int)$_GET['id'];
     $message = trim($_POST['message'] ?? '');
@@ -162,21 +158,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
             </a>
             
             <form method="POST" action="/support.php?action=create" class="password-form" style="padding-top: 1rem;">
-                <div class="form-row">
-                    <div class="input-group">
-                        <label>Kategória</label>
-                        <select name="category" required class="support-select">
-                            <option value="">Válassz kategóriát...</option>
-                            <option value="Hibabejelentés">Hibabejelentés (Bug)</option>
-                            <option value="Játékos Jelentése">Játékos Jelentése (Csaló/Toxikus)</option>
-                            <option value="Vásárlási Probléma">Vásárlási Probléma</option>
-                            <option value="Egyéb Kérdés">Egyéb Kérdés</option>
-                        </select>
+                
+                <div class="input-group" style="grid-column: 1 / -1;">
+                    <label>Válassz Kategóriát</label>
+                    <div class="category-grid">
+                        <label class="cat-card cat-bug">
+                            <input type="radio" name="category" value="Hibabejelentés" required>
+                            <div class="cat-content">
+                                <span class="material-symbols-rounded">bug_report</span>
+                                <span>Hiba (Bug)</span>
+                            </div>
+                        </label>
+                        <label class="cat-card cat-report">
+                            <input type="radio" name="category" value="Játékos Jelentése" required>
+                            <div class="cat-content">
+                                <span class="material-symbols-rounded">person_alert</span>
+                                <span>Csaló / Toxikus</span>
+                            </div>
+                        </label>
+                        <label class="cat-card cat-shop">
+                            <input type="radio" name="category" value="Vásárlási Probléma" required>
+                            <div class="cat-content">
+                                <span class="material-symbols-rounded">shopping_cart</span>
+                                <span>Webshop</span>
+                            </div>
+                        </label>
+                        <label class="cat-card cat-other">
+                            <input type="radio" name="category" value="Egyéb Kérdés" required>
+                            <div class="cat-content">
+                                <span class="material-symbols-rounded">help</span>
+                                <span>Egyéb</span>
+                            </div>
+                        </label>
                     </div>
-                    <div class="input-group">
-                        <label>Tárgy (Röviden)</label>
-                        <input type="text" name="subject" required placeholder="Pl.: Eltűnt az itemem" class="support-input">
-                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Tárgy (Röviden)</label>
+                    <input type="text" name="subject" required placeholder="Pl.: Eltűnt az itemem" class="support-input">
                 </div>
 
                 <div class="input-group">

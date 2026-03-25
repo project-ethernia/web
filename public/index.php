@@ -103,12 +103,6 @@ $currentUser = !empty($_SESSION['user_username']) ? $_SESSION['user_username'] :
 
 <main class="container">
     <section class="section">
-        <div class="section-header">
-            <h2 class="section-title">Hírek & Frissítések</h2>
-            <div class="title-line"></div>
-            <p class="section-subtitle">A legfrissebb információk a szerver életéből.</p>
-        </div>
-
         <?php if (!empty($news)): ?>
             <div class="news-grid">
                 <?php foreach ($news as $row): ?>
