@@ -7,10 +7,9 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../../database.php';
-// ÚJ: SZEREPKÖRÖK BEHÚZÁSA!
 require_once __DIR__ . '/../config/roles.php'; 
+require_once __DIR__ . '/logger.php';
 
-// 1. Valódi IP cím megszerzése (Cloudflare / Proxy támogatás)
 function getRealIp() {
     if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
         return $_SERVER['HTTP_CF_CONNECTING_IP']; 

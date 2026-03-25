@@ -247,6 +247,15 @@ body.admin-body {
     transform: translateX(5px);
 }
 
+/* --- DASHBOARD LOGOK LISTÁJA --- */
+.recent-logs { display: flex; flex-direction: column; }
+.log-item { display: flex; gap: 1rem; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
+.log-item:hover { background: rgba(255,255,255,0.02); }
+.log-item:last-child { border-bottom: none; }
+.log-icon { width: 35px; height: 35px; border-radius: 8px; background: rgba(239, 68, 68, 0.1); color: var(--admin-red); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid rgba(239, 68, 68, 0.3);}
+.log-text { font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; display: flex; flex-direction: column; }
+.log-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+
 /* Reszponzivitás */
 @media (max-width: 1024px) {
     .dashboard-panels {
