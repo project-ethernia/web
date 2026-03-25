@@ -1,403 +1,250 @@
 <?php
-session_start();
+$current_page = 'users';
+require_once __DIR__ . '/includes/core.php';
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-/* --- KÖZÖS DB + LOG --- */
-require_once __DIR__ . '/../database.php';
-require_once __DIR__ . '/log.php';
-
-/* --- jogosultság --- */
-if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
-    header('Location: /admin/login.php');
+// Jogosultság ellenőrzése
+if (!hasPermission($admin_role, 'manage_users') && !hasPermission($admin_role, 'all')) {
+    header('Location: /admin/index.php?error=no_permission');
     exit;
 }
 
-$currentUsername = !empty($_SESSION['admin_username'])
-    ? $_SESSION['admin_username']
-    : 'Ismeretlen';
+$msg = '';
+$msgType = '';
 
-$currentAdminId = !empty($_SESSION['admin_id'])
-    ? (int)$_SESSION['admin_id']
-    : 0;
+// --- MŰVELETEK (BAN & MUTE) ---
+if (isset($_GET['action']) && isset($_GET['id']) && is_numeric($_GET['id'])) {
+    $target_id = (int)$_GET['id'];
+    $action = $_GET['action'];
 
-function h($str) {
-    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
-}
+    // Kikérjük a usert a logoláshoz
+    $stmt = $pdo->prepare("SELECT username, is_banned, is_muted FROM users WHERE id = ?");
+    $stmt->execute([$target_id]);
+    $user = $stmt->fetch();
 
-/* ---------------- AJAX: e‑mail csere / jelszó csere / törlés ---------------- */
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    header('Content-Type: application/json; charset=utf-8');
-
-    try {
-        $pdo    = get_pdo();
-        $action = isset($_POST['action']) ? $_POST['action'] : '';
-
-        if ($action === 'change_email') {
-            $id    = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-            $email = isset($_POST['email']) ? trim($_POST['email']) : '';
-
-            if ($id <= 0 || $email === '') {
-                throw new Exception('Hiányzó felhasználó vagy e‑mail.');
-            }
-
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                throw new Exception('Érvénytelen e‑mail cím.');
-            }
-
-            // meglévő felhasználói adatok a loghoz
-            $stmt = $pdo->prepare("SELECT username, email FROM web_users WHERE id = :id");
-            $stmt->execute([':id' => $id]);
-            $user = $stmt->fetch();
-
-            if (!$user) {
-                throw new Exception('Felhasználó nem található.');
-            }
-
-            // ütközés ellenőrzése
-            $stmt = $pdo->prepare("
-                SELECT id FROM web_users
-                WHERE email = :email AND id <> :id
-                LIMIT 1
-            ");
-            $stmt->execute([
-                ':email' => $email,
-                ':id'    => $id,
-            ]);
-            if ($stmt->fetch()) {
-                throw new Exception('Ezzel az e‑mail címmel már létezik fiók.');
-            }
-
-            $stmt = $pdo->prepare("
-                UPDATE web_users
-                SET email = :email
-                WHERE id = :id
-            ");
-            $stmt->execute([
-                ':email' => $email,
-                ':id'    => $id,
-            ]);
-
-            // LOG
-            try {
-                log_admin_action(
-                    $pdo,
-                    $currentAdminId,
-                    $currentUsername,
-                    "Felhasználói e‑mail módosítása: '{$user['username']}' ({$user['email']} → {$email})",
-                    [
-                        'user_id'      => $id,
-                        'old_email'    => $user['email'],
-                        'new_email'    => $email,
-                    ]
-                );
-            } catch (Throwable $e) {
-                // log hiba ignorálva
-            }
-
-            echo json_encode([
-                'ok'    => true,
-                'id'    => $id,
-                'email' => $email,
-            ]);
-            exit;
+    if ($user) {
+        if ($action === 'toggle_ban') {
+            $new_status = $user['is_banned'] ? 0 : 1;
+            $pdo->prepare("UPDATE users SET is_banned = ? WHERE id = ?")->execute([$new_status, $target_id]);
+            
+            $logAction = $new_status ? "Kitiltotta (Ban) a weboldalról: " : "Feloldotta a kitiltást (Unban): ";
+            log_admin_action($pdo, $admin_id, $admin_name, $logAction . $user['username']);
+            
+            $msg = $new_status ? "Játékos kitiltva!" : "Tiltás feloldva!";
+            $msgType = "success";
+        } 
+        elseif ($action === 'toggle_mute') {
+            $new_status = $user['is_muted'] ? 0 : 1;
+            $pdo->prepare("UPDATE users SET is_muted = ? WHERE id = ?")->execute([$new_status, $target_id]);
+            
+            $logAction = $new_status ? "Némította a Ticket rendszerből: " : "Feloldotta a némítást: ";
+            log_admin_action($pdo, $admin_id, $admin_name, $logAction . $user['username']);
+            
+            $msg = $new_status ? "Játékos némítva a hibajegyeknél!" : "Némítás feloldva!";
+            $msgType = "success";
         }
-
-        if ($action === 'change_password') {
-            $id       = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-            $password = isset($_POST['password']) ? $_POST['password'] : '';
-
-            if ($id <= 0 || $password === '') {
-                throw new Exception('Hiányzó felhasználó vagy jelszó.');
-            }
-
-            if (strlen($password) < 6) {
-                throw new Exception('A jelszó legyen legalább 6 karakter hosszú.');
-            }
-
-            $stmt = $pdo->prepare("SELECT username FROM web_users WHERE id = :id");
-            $stmt->execute([':id' => $id]);
-            $user = $stmt->fetch();
-            if (!$user) {
-                throw new Exception('Felhasználó nem található.');
-            }
-
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-
-            $stmt = $pdo->prepare("
-                UPDATE web_users
-                SET password_hash = :h
-                WHERE id = :id
-            ");
-            $stmt->execute([
-                ':h'  => $hash,
-                ':id' => $id,
-            ]);
-
-            // LOG
-            try {
-                log_admin_action(
-                    $pdo,
-                    $currentAdminId,
-                    $currentUsername,
-                    "Felhasználói jelszó módosítása: '{$user['username']}'",
-                    [
-                        'user_id' => $id,
-                    ]
-                );
-            } catch (Throwable $e) {}
-
-            echo json_encode(['ok' => true, 'id' => $id]);
-            exit;
-        }
-
-        if ($action === 'delete_user') {
-            $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-
-            if ($id <= 0) {
-                throw new Exception('Hiányzó felhasználó ID.');
-            }
-
-            $stmt = $pdo->prepare("SELECT username, email FROM web_users WHERE id = :id");
-            $stmt->execute([':id' => $id]);
-            $user = $stmt->fetch();
-            if (!$user) {
-                throw new Exception('Felhasználó nem található.');
-            }
-
-            $stmt = $pdo->prepare("DELETE FROM web_users WHERE id = :id");
-            $stmt->execute([':id' => $id]);
-
-            // LOG
-            try {
-                log_admin_action(
-                    $pdo,
-                    $currentAdminId,
-                    $currentUsername,
-                    "Felhasználó törlése: '{$user['username']}' ({$user['email']})",
-                    [
-                        'user_id' => $id,
-                    ]
-                );
-            } catch (Throwable $e) {}
-
-            echo json_encode(['ok' => true, 'id' => $id]);
-            exit;
-        }
-
-        throw new Exception('Ismeretlen művelet.');
-    } catch (Exception $e) {
-        http_response_code(400);
-        echo json_encode([
-            'ok'    => false,
-            'error' => $e->getMessage(),
-        ]);
-        exit;
     }
 }
 
-/* ---------------- GET: lista oldal render ---------------- */
+// --- KERESÉS ÉS LISTÁZÁS ---
+$search = trim($_GET['search'] ?? '');
+$sql = "SELECT id, username, email, created_at, last_ip, is_banned, is_muted FROM users";
+$params = [];
 
-try {
-    $pdo = get_pdo();
-    $stmt = $pdo->query("
-        SELECT id, username, email, registered_at, last_login, last_ip
-        FROM web_users
-        ORDER BY id DESC
-    ");
-    $users = $stmt->fetchAll();
-} catch (Exception $e) {
-    die('Adatbázis hiba: ' . $e->getMessage());
+if ($search !== '') {
+    $sql .= " WHERE username LIKE ? OR email LIKE ? OR last_ip LIKE ?";
+    $params = ["%$search%", "%$search%", "%$search%"];
+}
+
+$sql .= " ORDER BY created_at DESC LIMIT 100"; // Maximum 100-at mutatunk egyszerre a gyorsaság miatt
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$usersList = $stmt->fetchAll();
+
+// --- KIVÁLASZTOTT JÁTÉKOS BETÖLTÉSE (Jobb oldali panel) ---
+$selectedUser = null;
+if (isset($_GET['view']) && is_numeric($_GET['view'])) {
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->execute([(int)$_GET['view']]);
+    $selectedUser = $stmt->fetch();
 }
 ?>
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="UTF-8">
-  <title>ETHERNIA Admin - Felhasználók</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/admin/assets/css/base.css?v=<?= time(); ?>">
-  <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
-  <link rel="stylesheet" href="/admin/assets/css/users.css?v=<?= time(); ?>">
-  <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300;400;500&display=swap">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Felhasználók Kezelése | ETHERNIA Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300..700&display=block">
+    <link rel="stylesheet" href="/assets/css/globals.css?v=<?= time(); ?>">
+    <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
+    <link rel="stylesheet" href="/admin/assets/css/users.css?v=<?= time(); ?>">
 </head>
 <body class="admin-body">
-  <div class="admin-layout">
 
-    <?php
-      $currentNav = 'users';
-      require __DIR__ . '/_sidebar.php';
-    ?>
+<div class="admin-layout">
+    <?php require_once __DIR__ . '/includes/sidebar.php'; ?>
+    
+    <main class="admin-main">
+        <header class="admin-header glass">
+            <div class="header-left">
+                <span class="material-symbols-rounded header-icon">group</span>
+                <div>
+                    <h1>Felhasználók & Játékosok</h1>
+                    <p class="subtitle">Regisztrált fiókok keresése, kezelése és büntetése</p>
+                </div>
+            </div>
+            <div class="admin-user-info">
+                Bejelentkezve mint: <strong class="text-red"><?= h($admin_name) ?></strong>
+            </div>
+        </header>
 
-    <div class="admin-main">
-      <header class="admin-header">
-        <div>
-          <h1 class="admin-title">Felhasználók</h1>
-          <p class="admin-subtitle">
-            Regisztrált ETHERNIA fiókok – e‑mail, regisztráció dátuma, utolsó belépés és IP cím.
-          </p>
+        <div class="admin-content">
+            
+            <?php if ($msg): ?>
+                <div class="alert-box <?= $msgType ?>">
+                    <span class="material-symbols-rounded"><?= $msgType === 'success' ? 'check_circle' : 'error' ?></span>
+                    <?= h($msg) ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="admin-panel glass search-panel">
+                <form method="GET" class="search-form">
+                    <span class="material-symbols-rounded search-icon">search</span>
+                    <input type="text" name="search" class="search-input" placeholder="Keresés név, email vagy IP cím alapján..." value="<?= h($search) ?>">
+                    <button type="submit" class="btn-action btn-claim">Keresés</button>
+                    <?php if($search): ?>
+                        <a href="/admin/users.php" class="btn-action btn-back">Mindenki</a>
+                    <?php endif; ?>
+                </form>
+            </div>
+
+            <div class="split-layout">
+                
+                <div class="admin-panel glass list-panel">
+                    <div class="panel-header">
+                        <h2><span class="material-symbols-rounded">list</span> Találatok (Max 100)</h2>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Felhasználó</th>
+                                    <th>Regisztrált</th>
+                                    <th>Státusz</th>
+                                    <th>Művelet</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($usersList as $u): ?>
+                                    <tr class="hover-row <?= ($selectedUser && $selectedUser['id'] === $u['id']) ? 'active-row' : '' ?>">
+                                        <td class="td-id">#<?= $u['id'] ?></td>
+                                        <td>
+                                            <div class="player-cell">
+                                                <img src="https://minotar.net/helm/<?= h($u['username']) ?>/24.png" class="player-head">
+                                                <div style="display:flex; flex-direction:column;">
+                                                    <strong><?= h($u['username']) ?></strong>
+                                                    <span style="font-size: 0.75rem; color: var(--text-muted);"><?= h($u['email'] ?? 'Nincs email') ?></span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="td-muted"><?= date('Y.m.d.', strtotime($u['created_at'])) ?></td>
+                                        <td>
+                                            <div style="display:flex; gap:0.3rem;">
+                                                <?php if($u['is_banned']): ?>
+                                                    <span class="status-badge error" title="Weboldalról kitiltva"><span class="material-symbols-rounded">block</span></span>
+                                                <?php endif; ?>
+                                                <?php if($u['is_muted']): ?>
+                                                    <span class="status-badge warning" title="Ticketekből némítva"><span class="material-symbols-rounded">volume_off</span></span>
+                                                <?php endif; ?>
+                                                <?php if(!$u['is_banned'] && !$u['is_muted']): ?>
+                                                    <span class="status-badge success"><span class="material-symbols-rounded">check_circle</span></span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a href="?search=<?= urlencode($search) ?>&view=<?= $u['id'] ?>" class="btn-sm btn-open">Kezelés</a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                <?php if(empty($usersList)): ?>
+                                    <tr><td colspan="5" style="text-align:center; padding: 2rem; color: var(--text-muted);">Nincs találat a keresésre.</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <?php if ($selectedUser): ?>
+                    <div class="admin-panel glass profile-panel">
+                        <div class="panel-header">
+                            <h2><span class="material-symbols-rounded">account_box</span> Játékos Profilja</h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="profile-header">
+                                <img src="https://minotar.net/helm/<?= h($selectedUser['username']) ?>/64.png" class="profile-avatar">
+                                <div>
+                                    <h3 class="profile-name"><?= h($selectedUser['username']) ?></h3>
+                                    <span class="profile-id">ID: #<?= $selectedUser['id'] ?></span>
+                                </div>
+                            </div>
+
+                            <div class="profile-info-grid">
+                                <div class="info-box">
+                                    <span class="info-label">Email cím</span>
+                                    <span class="info-value"><?= h($selectedUser['email'] ?? 'Nem megadott') ?></span>
+                                </div>
+                                <div class="info-box">
+                                    <span class="info-label">Utolsó IP Cím</span>
+                                    <span class="info-value"><?= h($selectedUser['last_ip'] ?? 'Ismeretlen') ?></span>
+                                </div>
+                                <div class="info-box">
+                                    <span class="info-label">Regisztráció ideje</span>
+                                    <span class="info-value"><?= date('Y. M d. H:i', strtotime($selectedUser['created_at'])) ?></span>
+                                </div>
+                            </div>
+
+                            <hr class="control-divider">
+                            <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 1rem;">Büntetések és Korlátozások</h4>
+
+                            <div class="punishment-actions">
+                                <a href="?action=toggle_ban&id=<?= $selectedUser['id'] ?>&view=<?= $selectedUser['id'] ?>" 
+                                   class="btn-punish <?= $selectedUser['is_banned'] ? 'active-punishment' : '' ?>"
+                                   onclick="ethConfirm(event, 'Biztosan meg akarod változtatni a Web Ban státuszt?', this.href);">
+                                    <span class="material-symbols-rounded">block</span>
+                                    <div>
+                                        <strong><?= $selectedUser['is_banned'] ? 'Web Ban Feloldása' : 'Kitiltás a Weboldalról' ?></strong>
+                                        <span><?= $selectedUser['is_banned'] ? 'A játékos újra be tud lépni.' : 'Nem fog tudni bejelentkezni az oldalra.' ?></span>
+                                    </div>
+                                </a>
+
+                                <a href="?action=toggle_mute&id=<?= $selectedUser['id'] ?>&view=<?= $selectedUser['id'] ?>" 
+                                   class="btn-punish <?= $selectedUser['is_muted'] ? 'active-warning' : '' ?>"
+                                   onclick="ethConfirm(event, 'Biztosan meg akarod változtatni a Némítás státuszt?', this.href);">
+                                    <span class="material-symbols-rounded">volume_off</span>
+                                    <div>
+                                        <strong><?= $selectedUser['is_muted'] ? 'Némítás Feloldása' : 'Némítás a Ticketekből' ?></strong>
+                                        <span><?= $selectedUser['is_muted'] ? 'Újra nyithat jegyeket.' : 'Nem nyithat új hibajegyet (Spam ellen).' ?></span>
+                                    </div>
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="admin-panel glass profile-panel empty-profile">
+                        <span class="material-symbols-rounded">person_search</span>
+                        <p>Válassz ki egy játékost a bal oldali listából a kezeléshez!</p>
+                    </div>
+                <?php endif; ?>
+
+            </div>
         </div>
-      </header>
+    </main>
+</div>
 
-      <section class="admin-section">
-        <?php if (empty($users)): ?>
-          <div class="admin-empty">
-            <p>Még egyetlen felhasználó sem regisztrált.</p>
-          </div>
-        <?php else: ?>
-          <div class="admin-table-wrapper users-table-wrapper">
-            <table class="admin-table users-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Felhasználónév</th>
-                  <th>E‑mail</th>
-                  <th>Regisztráció</th>
-                  <th>Utolsó belépés</th>
-                  <th>IP cím</th>
-                  <th>Műveletek</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php foreach ($users as $u): ?>
-                  <tr
-                    data-id="<?php echo (int)$u['id']; ?>"
-                    data-username="<?php echo h($u['username']); ?>"
-                    data-email="<?php echo h($u['email']); ?>"
-                  >
-                    <td><?php echo (int)$u['id']; ?></td>
-                    <td><?php echo h($u['username']); ?></td>
-                    <td class="cell-email"><?php echo h($u['email']); ?></td>
-                    <td><?php echo h($u['registered_at'] ?: 'ismeretlen'); ?></td>
-                    <td><?php echo h($u['last_login'] ?: '—'); ?></td>
-                    <td><?php echo h($u['last_ip'] ?: '—'); ?></td>
-                    <td class="cell-actions">
-                      <button
-                        type="button"
-                        class="btn btn-secondary btn-sm js-change-email"
-                      >
-                        E‑mail módosítás
-                      </button>
-                      <button
-                        type="button"
-                        class="btn btn-secondary btn-sm js-change-password"
-                      >
-                        Jelszó csere
-                      </button>
-                      <button
-                        type="button"
-                        class="btn btn-danger btn-sm js-delete-user"
-                      >
-                        Fiók törlése
-                      </button>
-                    </td>
-                  </tr>
-                <?php endforeach; ?>
-              </tbody>
-            </table>
-          </div>
-        <?php endif; ?>
-      </section>
-
-      <!-- MODALOK -->
-      <div class="modal" id="modal-change-email" aria-hidden="true">
-        <div class="modal-backdrop"></div>
-        <div class="modal-dialog modal-dialog-narrow" role="dialog" aria-modal="true">
-          <button type="button" class="modal-close" data-modal-close>×</button>
-          <form class="modal-content" id="form-change-email">
-            <h2>E‑mail módosítása</h2>
-            <input type="hidden" name="id" id="email-user-id">
-
-            <div class="form-group">
-              <label>Felhasználó</label>
-              <div id="email-username" style="font-size:0.85rem; opacity:0.85;"></div>
-            </div>
-
-            <div class="form-group">
-              <label for="email-new">Új e‑mail cím</label>
-              <input type="email" id="email-new" name="email" required>
-            </div>
-
-            <div class="modal-actions">
-              <p class="form-error" id="email-error" hidden></p>
-              <div class="actions-right">
-                <button type="button" class="btn btn-secondary" data-modal-close>Mégse</button>
-                <button type="submit" class="btn btn-primary">Mentés</button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <div class="modal" id="modal-change-password" aria-hidden="true">
-        <div class="modal-backdrop"></div>
-        <div class="modal-dialog modal-dialog-narrow" role="dialog" aria-modal="true">
-          <button type="button" class="modal-close" data-modal-close>×</button>
-          <form class="modal-content" id="form-change-password">
-            <h2>Jelszó csere</h2>
-            <input type="hidden" name="id" id="pw-user-id">
-
-            <div class="form-group">
-              <label>Felhasználó</label>
-              <div id="pw-username" style="font-size:0.85rem; opacity:0.85;"></div>
-            </div>
-
-            <div class="form-group">
-              <label for="pw-new">Új jelszó</label>
-              <input type="password" id="pw-new" name="password" required>
-            </div>
-
-            <div class="form-group">
-              <label for="pw-new2">Új jelszó mégegyszer</label>
-              <input type="password" id="pw-new2" required>
-            </div>
-
-            <div class="modal-actions">
-              <p class="form-error" id="pw-error" hidden></p>
-              <div class="actions-right">
-                <button type="button" class="btn btn-secondary" data-modal-close>Mégse</button>
-                <button type="submit" class="btn btn-primary">Mentés</button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <div class="modal" id="modal-delete-user" aria-hidden="true">
-        <div class="modal-backdrop"></div>
-        <div class="modal-dialog modal-dialog-narrow" role="dialog" aria-modal="true">
-          <button type="button" class="modal-close" data-modal-close>×</button>
-          <form class="modal-content" id="form-delete-user">
-            <h2>Fiók törlése</h2>
-            <input type="hidden" name="id" id="del-user-id">
-
-            <p style="font-size:0.9rem;">
-              Biztosan törlöd ezt a felhasználót?
-            </p>
-            <p style="font-size:0.9rem; opacity:0.85;">
-              <strong id="del-username"></strong> – <span id="del-email"></span>
-            </p>
-
-            <div class="modal-actions">
-              <p class="form-error" id="del-error" hidden></p>
-              <div class="actions-right">
-                <button type="button" class="btn btn-secondary" data-modal-close>Mégse</button>
-                <button type="submit" class="btn btn-danger">Törlés</button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <script src="/admin/assets/js/users.js?v=<?= time(); ?>"></script>
+<script src="/admin/assets/js/sidebar.js?v=<?= time(); ?>"></script>
 </body>
 </html>
