@@ -38,7 +38,6 @@
     resize: none;
 }
 
-/* KATEGÓRIA VÁLASZTÓ GRID */
 .category-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -119,7 +118,6 @@
 }
 .cat-other input:checked + .cat-content .material-symbols-rounded { color: var(--eth-primary); }
 
-/* --- GOMB DIZÁJN --- */
 .btn-auth {
     background: transparent;
     color: var(--text-main);
@@ -141,7 +139,6 @@
     transform: translateY(-2px);
 }
 
-/* FIGYELMEZTETÉS DOBROZ (WARNING) */
 .profile-alert.warning { 
     border-left: 4px solid var(--eth-warning); 
     color: var(--eth-warning); 
@@ -165,7 +162,6 @@
     font-weight: 600;
 }
 
-/* Ticket Lista (Grid) */
 .ticket-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -206,7 +202,6 @@
     color: var(--text-muted);
 }
 
-/* Státusz Jelzők */
 .ticket-status {
     padding: 0.3rem 0.8rem;
     border-radius: var(--radius-pill);
@@ -255,7 +250,6 @@
     scrollbar-color: var(--eth-primary) transparent;
 }
 
-/* Üzenet Buborékok */
 .chat-bubble-wrapper {
     display: flex;
     gap: 1rem;
@@ -285,6 +279,7 @@
     flex-direction: column;
 }
 
+/* KÖZÖS LILA ÜVEG DIZÁJN MINDEN SZÖVEGBUBORÉKNAK! */
 .chat-text {
     padding: 1rem 1.2rem;
     border-radius: 18px;
@@ -292,28 +287,25 @@
     line-height: 1.5;
     position: relative;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    
+    /* Az a bizonyos fehér szöveg, lila keret és halványlila háttér */
+    background: rgba(168, 85, 247, 0.15); 
+    border: 1px solid var(--eth-primary);
+    color: #fff;
 }
 
+/* Csak a sarkok lekerekítése tér el, aszerint ki írta */
 .mine .chat-text {
-    background: var(--eth-primary);
-    color: #fff;
     border-top-right-radius: 4px; 
 }
 
 .admin .chat-text {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--border-glass);
-    color: var(--text-main);
     border-top-left-radius: 4px; 
 }
 
-/* AZ ÚJ RENDSZER-BOT ÜZENET DIZÁJNJA */
+/* A rendszerüzenetnél dőlt betűvel jelezzük a különbséget */
 .system-msg .chat-text {
-    background: rgba(168, 85, 247, 0.15); /* Lila üveg */
-    border: 1px solid var(--eth-primary);
-    color: #f8fafc;
     font-style: italic;
-    border-top-left-radius: 4px;
 }
 .system-msg .admin-badge {
     background: var(--eth-primary);
