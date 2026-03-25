@@ -8,38 +8,78 @@ document.addEventListener("DOMContentLoaded", () => {
         chatMsgs.scrollTop = chatMsgs.scrollHeight;
     }
 
-    // 2. Fájlnév kiírása csatoláskor
+    // 2. Fájl előnézet (Image Preview) logika
     const fileInput = document.getElementById("chat-file-input") as HTMLInputElement | null;
-    const fileDisplay = document.getElementById("file-name-display");
+    const previewContainer = document.getElementById("image-preview-container");
+    const previewImg = document.getElementById("image-preview") as HTMLImageElement | null;
+    const removeBtn = document.getElementById("remove-image-btn");
     
-    if (fileInput && fileDisplay) {
+    if (fileInput && previewContainer && previewImg) {
         fileInput.addEventListener("change", function() {
             if (this.files && this.files.length > 0) {
-                fileDisplay.textContent = "Csatolva: " + this.files[0].name;
+                const file = this.files[0];
+                
+                // Csak akkor csinálunk előnézetet, ha tényleg kép
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target?.result as string;
+                        previewContainer.style.display = "inline-block";
+                    }
+                    reader.readAsDataURL(file);
+                }
             } else {
-                fileDisplay.textContent = "";
+                clearPreview();
             }
         });
     }
 
-    // 3. Textarea dinamikus magasság és Enter-es küldés
+    if (removeBtn) {
+        removeBtn.addEventListener("click", clearPreview);
+    }
+
+    function clearPreview() {
+        if (fileInput) fileInput.value = "";
+        if (previewContainer) previewContainer.style.display = "none";
+        if (previewImg) previewImg.src = "";
+    }
+
+    // 3. Textarea dinamikus magasság és Okos Küldés
     const chatTextarea = document.querySelector(".chat-textarea") as HTMLTextAreaElement | null;
+    const chatForm = document.querySelector(".chat-form") as HTMLFormElement | null;
     
     if (chatTextarea) {
         chatTextarea.addEventListener("input", function() {
-            this.style.height = "24px"; // Alaphelyzetbe állítás a méréshez
-            this.style.height = (this.scrollHeight) + "px"; // Igazítás a tartalomhoz
+            this.style.height = "24px"; 
+            this.style.height = (this.scrollHeight) + "px"; 
         });
 
+        // Enter gomb lekezelése
         chatTextarea.addEventListener("keydown", function(e: KeyboardEvent) {
             if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault(); 
-                if (this.value.trim() !== '') {
-                    const form = this.closest("form");
-                    if (form) {
-                        form.submit();
+                
+                const hasText = this.value.trim() !== '';
+                const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+
+                // Csak akkor küldi el, ha van kép VAGY van szöveg
+                if (hasText || hasFile) {
+                    if (chatForm) {
+                        chatForm.submit();
                     }
                 }
+            }
+        });
+    }
+
+    // Gombra kattintás lekezelése (hogy ne lehessen üreset küldeni)
+    if (chatForm) {
+        chatForm.addEventListener("submit", function(e) {
+            const hasText = chatTextarea && chatTextarea.value.trim() !== '';
+            const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+            
+            if (!hasText && !hasFile) {
+                e.preventDefault(); // Megállítjuk a küldést, ha mindkettő üres
             }
         });
     }

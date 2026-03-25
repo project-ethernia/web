@@ -118,14 +118,13 @@
 }
 .cat-other input:checked + .cat-content .material-symbols-rounded { color: var(--eth-primary); }
 
-/* --- ÚJ: LELAKATOLT, FOGLALT KATEGÓRIA --- */
 .disabled-cat {
     cursor: not-allowed;
-    pointer-events: none; /* Teljesen letiltja a kattintást */
+    pointer-events: none;
 }
 
 .disabled-cat .cat-content {
-    opacity: 0.3 !important; /* Szürke és átlátszó marad, ha rávisszük az egeret, akkor is */
+    opacity: 0.3 !important; 
     background: rgba(0, 0, 0, 0.6);
     border-color: rgba(255, 255, 255, 0.05);
     filter: grayscale(100%);
@@ -364,6 +363,47 @@
     padding: 1.5rem;
     background: rgba(0,0,0,0.3);
     border-top: 1px solid var(--border-glass);
+}
+
+/* ==========================================================================
+   ÚJ: KÉP ELŐNÉZET KONTÉNER (PREVIEW)
+   ========================================================================== */
+.image-preview-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--eth-primary);
+    box-shadow: 0 5px 15px rgba(168, 85, 247, 0.2);
+}
+.image-preview-container img {
+    display: block;
+    max-height: 120px;
+    max-width: 100%;
+    object-fit: contain;
+    background: rgba(0,0,0,0.5);
+}
+.remove-image-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    border: 1px solid var(--border-glass);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.remove-image-btn:hover {
+    background: var(--eth-danger);
+    border-color: var(--eth-danger);
+    transform: scale(1.1);
 }
 
 .chat-form {

@@ -48,20 +48,13 @@ $stmtActive->execute([$user_id]);
 $activeCategories = $stmtActive->fetchAll(PDO::FETCH_COLUMN);
 $allCategoriesFull = (count($activeCategories) >= 4);
 
-// ==============================================================================
-// ÚJ: BASE64 KÉPFELTÖLTŐ, 3-SZOROS BIZTONSÁGI ELLENŐRZÉSSEL
-// ==============================================================================
 function uploadImageAsBase64($fileArray) {
     if (isset($fileArray) && $fileArray['error'] === UPLOAD_ERR_OK) {
         $tmpName = $fileArray['tmp_name'];
         $fileSize = $fileArray['size'];
 
-        // 1. Biztonsági méretkorlát (pl. max 5MB, hogy ne robbanjon fel a DB)
-        if ($fileSize > 5 * 1024 * 1024) {
-            return null; // Túl nagy fájl
-        }
+        if ($fileSize > 5 * 1024 * 1024) return null; 
 
-        // 2. Kőkemény MIME (fájltípus) ellenőrzés a fájl tartalma alapján
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mimeType = finfo_file($finfo, $tmpName);
         finfo_close($finfo);
@@ -69,21 +62,15 @@ function uploadImageAsBase64($fileArray) {
         $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         
         if (in_array($mimeType, $allowedMimeTypes)) {
-            // 3. Biztonság: Tényleg egy vizuális kép? (Kiszűri az álcázott PHP scripteket)
             if (getimagesize($tmpName) !== false) {
-                
-                // Beolvassuk a képet, és Base64 kódoljuk!
                 $imageData = file_get_contents($tmpName);
                 $base64 = base64_encode($imageData);
-                
-                // Ezt a stringet egyből megeszi a HTML <img> tag src attribútuma!
                 return 'data:' . $mimeType . ';base64,' . $base64;
             }
         }
     }
     return null;
 }
-// ==============================================================================
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
     $subject = trim($_POST['subject'] ?? '');
@@ -118,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
     }
 }
 
-// ITT HASZNÁLJUK AZ ÚJ FUNKCIÓT VÁLASZADÁSKOR!
+// JAVÍTVA: Elfogadja a választ, ha van szöveg VAGY van csatolmány
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET['id'])) {
     $ticket_id = (int)$_GET['id'];
     $message = trim($_POST['message'] ?? '');
@@ -127,17 +114,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
     $check->execute([$ticket_id, $user_id]);
     $ticket = $check->fetch();
 
-    if ($ticket && $ticket['status'] !== 'closed' && $message) {
-        
-        // Hívjuk az új Base64 mentőt!
+    if ($ticket && $ticket['status'] !== 'closed') {
         $attachment = uploadImageAsBase64($_FILES['attachment'] ?? null);
         
-        $stmt = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$ticket_id, $user_id, $message, $attachment]);
-        $pdo->prepare("UPDATE tickets SET status = 'open', updated_at = NOW() WHERE id = ?")->execute([$ticket_id]);
-        
-        header("Location: /support.php?action=view&id=" . $ticket_id);
-        exit;
+        // Csak akkor mentjük, ha a játékos írt valamit, VAGY küldött képet!
+        if ($message !== '' || $attachment !== null) {
+            $stmt = $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, attachment) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$ticket_id, $user_id, $message, $attachment]);
+            $pdo->prepare("UPDATE tickets SET status = 'open', updated_at = NOW() WHERE id = ?")->execute([$ticket_id]);
+            
+            header("Location: /support.php?action=view&id=" . $ticket_id);
+            exit;
+        }
     }
 }
 ?>
@@ -352,11 +340,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                                     <span class="chat-author"><?= $authorName ?> <?= $badge ? '<span class="admin-badge">'.$badge.'</span>' : '' ?></span>
                                     <span class="chat-time"><?= formatHungarianDate($m['created_at']) ?></span>
                                 </div>
-                                <div class="chat-text">
-                                    <?= nl2br($cleanMessage) ?>
-                                </div>
+                                <?php if ($cleanMessage !== ''): ?>
+                                    <div class="chat-text">
+                                        <?= nl2br($cleanMessage) ?>
+                                    </div>
+                                <?php endif; ?>
                                 <?php if ($m['attachment']): ?>
-                                    <div class="chat-attachment">
+                                    <div class="chat-attachment" <?= $cleanMessage === '' ? 'style="margin-top: 0;"' : '' ?>>
                                         <a href="<?= $m['attachment'] ?>" target="_blank">
                                             <img src="<?= $m['attachment'] ?>" alt="Csatolmány">
                                         </a>
@@ -369,15 +359,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
 
                 <?php if ($ticket['status'] !== 'closed'): ?>
                     <div class="chat-input-area">
+                        <div id="image-preview-container" class="image-preview-container" style="display: none;">
+                            <img id="image-preview" src="" alt="Előnézet">
+                            <button type="button" id="remove-image-btn" class="remove-image-btn"><span class="material-symbols-rounded">close</span></button>
+                        </div>
+
                         <form method="POST" action="/support.php?action=reply&id=<?= $ticket_id ?>" enctype="multipart/form-data" class="chat-form">
                             <label class="chat-upload-btn" title="Kép csatolása">
                                 <span class="material-symbols-rounded">image</span>
                                 <input type="file" name="attachment" accept="image/*" style="display: none;" id="chat-file-input">
                             </label>
-                            <textarea name="message" placeholder="Írj egy választ (Küldés: Enter, Új sor: Shift+Enter)..." required class="chat-textarea"></textarea>
+                            <textarea name="message" placeholder="Írj egy választ (Küldés: Enter, Új sor: Shift+Enter)..." class="chat-textarea"></textarea>
                             <button type="submit" class="chat-send-btn"><span class="material-symbols-rounded">send</span></button>
                         </form>
-                        <div id="file-name-display" style="font-size: 0.75rem; color: var(--eth-primary); margin-top: 0.5rem; text-align: left;"></div>
                     </div>
                 <?php else: ?>
                     <div class="chat-closed-alert">
