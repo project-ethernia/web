@@ -7,7 +7,14 @@
     padding: 2.5rem;
     border-radius: var(--radius-md);
     max-width: 800px;
-    margin: 3rem auto 0; /* EXTRA MARGIN FELÜLRE! */
+    margin: 3rem auto 0;
+}
+
+/* JAVÍTÁS 1: Szép, szellős térközt adunk a form elemei közé! */
+.support-form-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem; 
 }
 
 .support-input, .support-textarea {
@@ -27,6 +34,11 @@
     border-color: var(--eth-primary);
     background: rgba(0,0,0,0.5);
     box-shadow: 0 0 15px var(--eth-primary-glow);
+}
+
+/* JAVÍTÁS 2: Letiltjuk a szövegdoboz rángatását! */
+.support-textarea {
+    resize: none;
 }
 
 /* ==========================================================================
@@ -120,7 +132,7 @@
     border: 2px solid var(--eth-primary);
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    font-weight: 600; /* Vékonyítva, ahogy kérted */
+    font-weight: 600;
     box-shadow: 0 0 10px rgba(0,0,0,0);
     width: fit-content;
     display: inline-flex;
