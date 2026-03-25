@@ -158,15 +158,32 @@ body.admin-body {
 
 /* Emberi üzenetek (Admin & Játékos) */
 .chat-bubble-wrapper { display: flex; gap: 1rem; max-width: 80%; }
-.chat-bubble-wrapper.mine { align-self: flex-end; flex-direction: row-reverse; } /* Admin (Te) */
-.chat-bubble-wrapper.player { align-self: flex-start; } /* Játékos */
+.chat-bubble-wrapper.mine { align-self: flex-end; flex-direction: row-reverse; } 
+.chat-bubble-wrapper.player { align-self: flex-start; } 
 
 .chat-avatar { width: 40px; height: 40px; border-radius: 8px; image-rendering: pixelated; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-.chat-content { display: flex; flex-direction: column; max-width: 100%; }
+.chat-content { 
+    display: flex; 
+    flex-direction: column; 
+    max-width: 100%; 
+    min-width: 0; /* JAVÍTÁS: Engedi a Flexboxnak, hogy sort törjön */
+}
+
 .mine .chat-content { align-items: flex-end; }
 .player .chat-content { align-items: flex-start; }
 
-.chat-text { padding: 1rem 1.2rem; border-radius: 18px; font-size: 0.95rem; line-height: 1.6; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.chat-text { 
+    padding: 1rem 1.2rem; 
+    border-radius: 18px; 
+    font-size: 0.95rem; 
+    line-height: 1.6; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+    
+    /* JAVÍTÁS: TÖKÉLETES SOR-TÖRÉS */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+}
 
 /* Admin üzenete (Piros!) */
 .mine .chat-text { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--admin-red); color: #fff; border-top-right-radius: 4px; }
@@ -187,7 +204,7 @@ body.admin-body {
 .chat-attachment img:hover { filter: brightness(1.2); }
 
 /* ==========================================================================
-   ÚJ: LETISZTULT RENDSZERÜZENET (SÁRGA, KÖZÉPRE)
+   LETISZTULT RENDSZERÜZENET (SÁRGA, KÖZÉPRE)
    ========================================================================== */
 .system-msg-simple {
     align-self: center;
@@ -214,10 +231,10 @@ body.admin-body {
 }
 
 /* ==========================================================================
-   ÚJ: TYPING INDICATOR ANIMÁCIÓ
+   TYPING INDICATOR ANIMÁCIÓ
    ========================================================================== */
 .typing-indicator {
-    display: none; /* Alapból rejtve, a JS adja rá az .active osztályt */
+    display: none; 
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
@@ -228,7 +245,7 @@ body.admin-body {
     color: var(--text-muted);
     margin-top: -0.5rem;
     margin-bottom: 1rem;
-    align-self: flex-start; /* Játékos oldalra igazítva, mert az admin látja ezt */
+    align-self: flex-start; 
 }
 
 .typing-indicator.active {

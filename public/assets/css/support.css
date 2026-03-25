@@ -239,13 +239,13 @@
 .status-closed { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
 
 /* ==========================================================================
-   MESSENGER CHAT FELÜLET (ALAP BEÁLLÍTÁSOK)
+   MESSENGER CHAT FELÜLET
    ========================================================================== */
 .chat-container {
     border-radius: var(--radius-md);
     display: flex;
     flex-direction: column;
-    height: 70vh; /* Ez a normál nézet magassága */
+    height: 70vh;
     overflow: hidden;
 }
 
@@ -302,6 +302,8 @@
     display: flex;
     flex-direction: column;
     max-width: 100%;
+    /* JAVÍTÁS: Engedjük a flexboxnak, hogy sortörést alkalmazzon a hosszú szövegeknél */
+    min-width: 0; 
 }
 
 .mine .chat-content { align-items: flex-end; }
@@ -317,6 +319,10 @@
     background: rgba(168, 85, 247, 0.15); 
     border: 1px solid var(--eth-primary);
     color: #fff;
+    /* JAVÍTÁS: Sortörés hosszú, szóköz nélküli szövegeknél (pl. linkek) */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
 }
 
 .mine .chat-text { border-top-right-radius: 4px; }
@@ -478,11 +484,8 @@
     gap: 0.5rem;
 }
 
-/* ==========================================================================
-   ÚJ: WEB-APP MÓD (TELJES KÉPERNYŐS CHAT NÉZET)
-   ========================================================================== */
 body.chat-app-mode {
-    overflow: hidden; /* Letiltja a főoldal görgetését */
+    overflow: hidden;
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -492,24 +495,24 @@ body.chat-app-mode main.container {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding-top: 6rem !important; /* Pont a navbar alá cuppan */
+    padding-top: 6rem !important;
     padding-bottom: 2rem !important;
-    min-height: 0; /* Kötelező flexbox szabály, hogy ne nyúljon túl a képernyőn */
+    min-height: 0;
 }
 
 body.chat-app-mode .footer {
-    display: none; /* Eltünteti a láblécet */
+    display: none;
 }
 
 body.chat-app-mode .chat-container {
     flex: 1;
-    height: auto; /* Felülírja a korábbi 70vh fix értéket */
+    height: auto;
     min-height: 0; 
     margin-bottom: 0;
 }
 
 /* ==========================================================================
-   ÚJ: RENDSZERÜZENET (SÁRGA, KÖZÉPRE)
+   RENDSZERÜZENET ÉS GÉPELÉS ANIMÁCIÓ
    ========================================================================== */
 .system-msg-simple {
     text-align: center;
@@ -532,9 +535,6 @@ body.chat-app-mode .chat-container {
     color: #f59e0b;
 }
 
-/* ==========================================================================
-   ÚJ: TYPING INDICATOR ANIMÁCIÓ
-   ========================================================================== */
 .typing-indicator {
     display: none;
     align-items: center;
