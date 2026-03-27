@@ -5,6 +5,9 @@
         <div class="copyright">© <?= date('Y') ?> Ethernia Network. Minden jog fenntartva.</div>
     </div>
 </footer>
+
+<script src="/assets/js/globals.js?v=<?= time(); ?>"></script>
+
 <?php if (!empty($extra_js)): ?>
     <?php foreach ($extra_js as $js): ?>
         <script src="<?= $js ?>?v=<?= time(); ?>"></script>

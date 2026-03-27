@@ -8,15 +8,27 @@ if (empty($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$currentUser = $_SESSION['username'];
+$currentUser = $_SESSION['username'] ?? 'Játékos';
 $current_page = 'support';
 $page_title = 'Ügyfélszolgálat | Ethernia';
 $extra_css = ['/assets/css/support.css'];
+
+$SUPPORT_CATEGORIES = [
+    'Játékbeli hiba (Bug)' => ['color' => '#ef4444', 'icon' => 'bug_report'],
+    'Játékos jelentés' => ['color' => '#f59e0b', 'icon' => 'gavel'],
+    'Vásárlás / Pénzügy' => ['color' => '#22c55e', 'icon' => 'shopping_cart'],
+    'Egyéb kérdés' => ['color' => '#3b82f6', 'icon' => 'help_center']
+];
 
 $stmt = $pdo->prepare("SELECT is_muted FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $is_muted = (int)$stmt->fetchColumn();
 
+$stmt = $pdo->prepare("SELECT category FROM tickets WHERE user_id = ? AND status != 'closed'");
+$stmt->execute([$user_id]);
+$active_categories = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+$can_open_new = count($active_categories) < count($SUPPORT_CATEGORIES);
 $action = $_GET['action'] ?? 'list';
 
 function h($str) { return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8'); }
@@ -44,9 +56,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
         header('Location: /support.php');
         exit;
     }
-    $category = $_POST['category'] ?? 'Általános';
+    $category = $_POST['category'] ?? 'Egyéb kérdés';
     $subject = trim($_POST['subject'] ?? '');
     $message = trim($_POST['message'] ?? '');
+    
+    if (in_array($category, $active_categories)) {
+        header('Location: /support.php?error=already_open');
+        exit;
+    }
     
     if ($subject && $message) {
         $stmt = $pdo->prepare("INSERT INTO tickets (user_id, category, subject, status) VALUES (?, ?, ?, 'open')");
@@ -82,11 +99,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<main class="support-container">
+<main class="support-container <?= $action === 'view' ? 'view-ticket-mode' : '' ?>">
+    <?php if ($action !== 'view'): ?>
     <div class="support-header">
         <h1>Ügyfélszolgálat</h1>
         <p>Problémád akadt a szerveren? Nyiss egy hibajegyet, és az adminok hamarosan segítenek!</p>
     </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['error']) && $_GET['error'] === 'already_open'): ?>
+        <div class="alert-box error"><span class="material-symbols-rounded">error</span> Ebben a kategóriában már van aktív hibajegyed!</div>
+    <?php endif; ?>
 
     <?php if ($action === 'list'): ?>
         <?php
@@ -97,13 +120,16 @@ require_once __DIR__ . '/includes/header.php';
         <div class="glass support-panel">
             <div class="panel-header">
                 <h2><span class="material-symbols-rounded">forum</span> Hibajegyeim</h2>
-                <?php if (!$is_muted): ?>
+                <?php if (!$is_muted && $can_open_new): ?>
                     <a href="?action=new" class="btn-primary"><span class="material-symbols-rounded">add</span> Új Hibajegy</a>
+                <?php elseif (!$can_open_new): ?>
+                    <span class="btn-primary" style="background: rgba(255,255,255,0.1); color: #94a3b8; cursor: not-allowed;"><span class="material-symbols-rounded">block</span> Elérted a limitet</span>
                 <?php endif; ?>
             </div>
             
             <?php if ($is_muted): ?>
-                <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; color: #ef4444; padding: 1rem; margin: 1rem; border-radius: 8px; font-weight: 600;">
+                <div class="alert-box error" style="margin: 1rem;">
+                    <span class="material-symbols-rounded">volume_off</span>
                     A fiókod némítva lett az ügyfélszolgálati rendszerben. Nem nyithatsz új hibajegyeket.
                 </div>
             <?php endif; ?>
@@ -134,7 +160,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
 
     <?php elseif ($action === 'new'): ?>
-        <?php if ($is_muted) { header('Location: /support.php'); exit; } ?>
+        <?php if ($is_muted || !$can_open_new) { header('Location: /support.php'); exit; } ?>
         <div class="glass support-panel form-panel">
             <div class="panel-header">
                 <h2><span class="material-symbols-rounded">create</span> Új Hibajegy Nyitása</h2>
@@ -142,13 +168,22 @@ require_once __DIR__ . '/includes/header.php';
             </div>
             <form method="POST" action="?action=create" class="new-ticket-form">
                 <div class="input-group">
-                    <label>Kategória</label>
-                    <select name="category" class="eth-input" required>
-                        <option value="Játékbeli hiba (Bug)">Játékbeli hiba (Bug)</option>
-                        <option value="Játékos jelentés">Játékos jelentés</option>
-                        <option value="Vásárlás / Pénzügy">Vásárlás / Pénzügy</option>
-                        <option value="Egyéb kérdés">Egyéb kérdés</option>
-                    </select>
+                    <label>Kategória (Válassz egyet)</label>
+                    <div class="category-grid">
+                        <?php foreach ($SUPPORT_CATEGORIES as $cat_name => $cat_data): ?>
+                            <?php $is_active = in_array($cat_name, $active_categories); ?>
+                            <label class="category-card <?= $is_active ? 'disabled-card' : '' ?>" style="--cat-color: <?= $cat_data['color'] ?>;">
+                                <?php if ($is_active): ?>
+                                    <span class="material-symbols-rounded locked-badge" title="Már van aktív jegyed itt!">lock</span>
+                                <?php endif; ?>
+                                <input type="radio" name="category" value="<?= h($cat_name) ?>" <?= $is_active ? 'disabled' : 'required' ?>>
+                                <div class="category-content">
+                                    <span class="material-symbols-rounded"><?= $cat_data['icon'] ?></span>
+                                    <span><?= h($cat_name) ?></span>
+                                </div>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
                 <div class="input-group">
                     <label>Tárgy (Rövid összefoglaló)</label>
@@ -180,8 +215,8 @@ require_once __DIR__ . '/includes/header.php';
         ?>
         <div class="chat-container glass">
             <div class="chat-header">
-                <div>
-                    <a href="/support.php" class="btn-back" style="margin-bottom: 0.5rem;"><span class="material-symbols-rounded">arrow_back</span> Vissza</a>
+                <div style="display:flex; align-items:center; gap:1rem;">
+                    <a href="/support.php" class="btn-back"><span class="material-symbols-rounded">arrow_back</span></a>
                     <h2 style="margin:0; font-size:1.3rem;"><?= h($ticket['subject']) ?></h2>
                 </div>
                 <span class="ticket-status <?= $statusClass ?>"><?= $statusTexts[$ticket['status']] ?></span>
@@ -194,7 +229,7 @@ require_once __DIR__ . '/includes/header.php';
                         if ($isSystem): 
                             $cleanMessage = trim(substr($m['message'], 8));
                     ?>
-                        <div class="system-msg"><span class="material-symbols-rounded">info</span> <?= nl2br(h($cleanMessage)) ?></div>
+                        <div class="system-msg-simple"><span class="material-symbols-rounded">info</span> <?= nl2br(h($cleanMessage)) ?></div>
                     <?php else: 
                             $isMine = ($m['is_admin'] == 0 && $m['sender_id'] == $user_id);
                             $wrapperClass = $isMine ? 'mine' : 'admin';
@@ -206,7 +241,10 @@ require_once __DIR__ . '/includes/header.php';
                             <img src="<?= $avatarUrl ?>" alt="Avatar" class="chat-avatar">
                             <div class="chat-content">
                                 <div class="chat-meta">
-                                    <span class="chat-author"><?= $authorName ?></span>
+                                    <span class="chat-author">
+                                        <?= $authorName ?>
+                                        <?= !$isMine ? '<span class="role-badge role-STAFF">STAFF</span>' : '' ?>
+                                    </span>
                                     <span class="chat-time"><?= formatHungarianDate($m['created_at']) ?></span>
                                 </div>
                                 <?php if ($cleanMessage !== ''): ?>
@@ -230,21 +268,17 @@ require_once __DIR__ . '/includes/header.php';
                             <span class="material-symbols-rounded">image</span>
                             <input type="file" name="attachment" accept="image/*" style="display: none;">
                         </label>
-                        <textarea name="message" placeholder="Írd le a válaszod ide..." class="chat-textarea"></textarea>
+                        <textarea name="message" placeholder="Írd le a válaszod ide (Enter a küldés)..." class="chat-textarea"></textarea>
                         <button type="submit" class="chat-send-btn"><span class="material-symbols-rounded">send</span></button>
                     </form>
                 </div>
             <?php else: ?>
                 <div class="chat-closed-alert">
-                    <span class="material-symbols-rounded">lock</span> A jegy lezárva. Nem tudsz már válaszolni.
+                    <span class="material-symbols-rounded">lock</span> Ez a hibajegy le lett zárva. Nem tudsz már válaszolni.
                 </div>
             <?php endif; ?>
         </div>
     <?php endif; ?>
 </main>
-<script>
-    const chatMsgs = document.getElementById('chat-messages');
-    if(chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
-</script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

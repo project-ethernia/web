@@ -1,6 +1,7 @@
 "use strict";
 /// <reference lib="dom" />
 document.addEventListener("DOMContentLoaded", () => {
+    // Chat azonnali legörgetése az aljára betöltéskor
     const chatMsgs = document.getElementById("chat-messages");
     if (chatMsgs) {
         chatMsgs.scrollTop = chatMsgs.scrollHeight;
@@ -40,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const chatTextarea = document.querySelector(".chat-textarea");
     const chatForm = document.querySelector(".chat-form");
-    // --- REAL-TIME AJAX ÉS TYPING INDICATOR LOGIKA ---
     let lastMsgId = 0;
     const msgElements = document.querySelectorAll(".chat-bubble-wrapper, .system-msg-simple");
     if (msgElements.length > 0) {
@@ -54,11 +54,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let typingTimeout = null;
     if (chatTextarea) {
         chatTextarea.addEventListener("input", function () {
-            this.style.height = "24px";
+            this.style.height = "45px";
             this.style.height = (this.scrollHeight) + "px";
-            // Ha írunk, beállítjuk a typing flag-et 2 másodpercre
             isTyping = true;
-            clearTimeout(typingTimeout);
+            if (typingTimeout)
+                clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => { isTyping = false; }, 2000);
         });
         chatTextarea.addEventListener("keydown", function (e) {
@@ -81,14 +81,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 e.preventDefault();
         });
     }
-    // A szinkronizáló ciklus (Minden 2 mp)
+    // Valós idejű AJAX szinkronizáció
     if (ticketId && chatMsgs) {
         setInterval(() => {
             fetch(`?action=sync&id=${ticketId}&last_id=${lastMsgId}&typing=${isTyping ? 1 : 0}`)
                 .then(res => res.json())
                 .then(data => {
                 if (data.html) {
-                    // Beszúrjuk az új üzenetet a Typing Indicator ELÉ!
                     if (typingIndicator) {
                         typingIndicator.insertAdjacentHTML('beforebegin', data.html);
                     }
