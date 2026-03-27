@@ -1,24 +1,15 @@
-.main-content {
-    padding: 120px 2rem 4rem 2rem;
-    max-width: 1000px;
-    margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-}
-
-.support-header { text-align: center; margin-bottom: 1rem; }
+.support-container { max-width: 1000px; margin: 2rem auto 4rem auto; padding: 0 1.5rem; flex: 1; width: 100%; display: flex; flex-direction: column; gap: 2rem; }
+.support-header { text-align: center; }
 .support-header h1 { font-size: 2.5rem; margin: 0 0 0.5rem 0; text-transform: uppercase; letter-spacing: 0.1em; color: var(--eth-primary); text-shadow: 0 0 20px var(--eth-primary-glow); }
 .support-header p { color: var(--text-muted); font-size: 1.1rem; }
 
-.support-panel { display: flex; flex-direction: column; overflow: hidden; }
+.support-panel { display: flex; flex-direction: column; overflow: hidden; border-radius: var(--radius-md); }
 .panel-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-glass); background: rgba(0,0,0,0.3); display: flex; justify-content: space-between; align-items: center; }
 .panel-header h2 { margin: 0; font-size: 1.3rem; display: flex; align-items: center; gap: 0.6rem; color: #fff; }
 .panel-header h2 .material-symbols-rounded { color: var(--eth-primary); }
 
 .btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 700; background: var(--eth-primary); color: #fff; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem; border: none; cursor: pointer; transition: 0.3s; text-decoration: none; }
-.btn-primary:hover { filter: brightness(1.2); box-shadow: 0 0 15px var(--eth-primary-glow); }
+.btn-primary:hover { filter: brightness(1.2); box-shadow: 0 0 15px var(--eth-primary-glow); color: #fff; }
 .btn-back { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.8rem; transition: 0.3s; text-decoration: none; }
 .btn-back:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
@@ -48,9 +39,11 @@
 .eth-input:focus { border-color: var(--eth-primary); box-shadow: 0 0 15px var(--eth-primary-glow); }
 .eth-input option { background: #0b0710; color: #fff; }
 
-.chat-container { display: flex; flex-direction: column; height: 700px; overflow: hidden; }
+.chat-container { display: flex; flex-direction: column; height: 700px; overflow: hidden; border-radius: var(--radius-md); }
 .chat-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); }
-.chat-messages { flex: 1; padding: 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; }
+.chat-messages { flex: 1; padding: 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;}
+.chat-messages::-webkit-scrollbar { width: 6px; }
+.chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 
 .system-msg { align-self: center; background: rgba(0,0,0,0.4); border: 1px solid var(--border-glass); padding: 0.8rem 1.5rem; border-radius: 9999px; font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; gap: 0.5rem; }
 .system-msg .material-symbols-rounded { color: var(--eth-primary); font-size: 1.2rem; }

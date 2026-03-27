@@ -8,12 +8,16 @@ if (empty($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$user_name = $_SESSION['username'];
-$action = $_GET['action'] ?? 'list';
+$currentUser = $_SESSION['username'];
+$current_page = 'support';
+$page_title = 'Ügyfélszolgálat | Ethernia';
+$extra_css = ['/assets/css/support.css'];
 
 $stmt = $pdo->prepare("SELECT is_muted FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $is_muted = (int)$stmt->fetchColumn();
+
+$action = $_GET['action'] ?? 'list';
 
 function h($str) { return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8'); }
 function formatHungarianDate($datetime) {
@@ -74,23 +78,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
     header("Location: /support.php?action=view&id=" . $ticket_id);
     exit;
 }
+
+require_once __DIR__ . '/includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="hu">
-<head>
-    <meta charset="UTF-8">
-    <title>Ügyfélszolgálat | Ethernia</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300..700&display=block">
-    <link rel="stylesheet" href="/assets/css/globals.css?v=<?= time(); ?>">
-    <link rel="stylesheet" href="/assets/css/support.css?v=<?= time(); ?>">
-</head>
-<body class="public-body">
 
-<?php require_once __DIR__ . '/includes/navbar.php'; ?>
-
-<main class="main-content">
+<main class="support-container">
     <div class="support-header">
         <h1>Ügyfélszolgálat</h1>
         <p>Problémád akadt a szerveren? Nyiss egy hibajegyet, és az adminok hamarosan segítenek!</p>
@@ -102,77 +94,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
         $stmt->execute([$user_id]);
         $tickets = $stmt->fetchAll();
         ?>
-        <div class="support-layout">
-            <div class="glass support-panel list-panel">
-                <div class="panel-header">
-                    <h2><span class="material-symbols-rounded">forum</span> Hibajegyeim</h2>
-                    <?php if (!$is_muted): ?>
-                        <a href="?action=new" class="btn-primary"><span class="material-symbols-rounded">add</span> Új Hibajegy</a>
-                    <?php endif; ?>
-                </div>
-                
-                <?php if ($is_muted): ?>
-                    <div class="alert-box error" style="margin: 1rem;">
-                        <span class="material-symbols-rounded">volume_off</span>
-                        A fiókod némítva lett az ügyfélszolgálati rendszerben. Nem nyithatsz új hibajegyeket.
-                    </div>
-                <?php endif; ?>
-
-                <?php if (empty($tickets)): ?>
-                    <div class="empty-state">
-                        <span class="material-symbols-rounded">support_agent</span>
-                        <p>Még nem nyitottál egyetlen hibajegyet sem.</p>
-                    </div>
-                <?php else: ?>
-                    <div class="ticket-list">
-                        <?php foreach ($tickets as $t): ?>
-                            <?php 
-                                $statusClass = 'status-' . $t['status'];
-                                $statusTexts = ['open' => 'FELDOLGOZÁS ALATT', 'answered' => 'VÁLASZOLTAK', 'paused' => 'SZÜNETELTETVE', 'closed' => 'LEZÁRVA'];
-                            ?>
-                            <a href="?action=view&id=<?= $t['id'] ?>" class="ticket-item">
-                                <div class="ticket-info">
-                                    <span class="ticket-cat"><?= h($t['category']) ?></span>
-                                    <strong class="ticket-subject"><?= h($t['subject']) ?></strong>
-                                    <span class="ticket-date"><?= formatHungarianDate($t['updated_at']) ?></span>
-                                </div>
-                                <span class="ticket-status <?= $statusClass ?>"><?= $statusTexts[$t['status']] ?></span>
-                            </a>
-                        <?php endforeach; ?>
-                    </div>
+        <div class="glass support-panel">
+            <div class="panel-header">
+                <h2><span class="material-symbols-rounded">forum</span> Hibajegyeim</h2>
+                <?php if (!$is_muted): ?>
+                    <a href="?action=new" class="btn-primary"><span class="material-symbols-rounded">add</span> Új Hibajegy</a>
                 <?php endif; ?>
             </div>
+            
+            <?php if ($is_muted): ?>
+                <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; color: #ef4444; padding: 1rem; margin: 1rem; border-radius: 8px; font-weight: 600;">
+                    A fiókod némítva lett az ügyfélszolgálati rendszerben. Nem nyithatsz új hibajegyeket.
+                </div>
+            <?php endif; ?>
+
+            <?php if (empty($tickets)): ?>
+                <div class="empty-state">
+                    <span class="material-symbols-rounded">support_agent</span>
+                    <p>Még nem nyitottál egyetlen hibajegyet sem.</p>
+                </div>
+            <?php else: ?>
+                <div class="ticket-list">
+                    <?php foreach ($tickets as $t): ?>
+                        <?php 
+                            $statusClass = 'status-' . $t['status'];
+                            $statusTexts = ['open' => 'FELDOLGOZÁS ALATT', 'answered' => 'VÁLASZOLTAK', 'paused' => 'SZÜNETELTETVE', 'closed' => 'LEZÁRVA'];
+                        ?>
+                        <a href="?action=view&id=<?= $t['id'] ?>" class="ticket-item">
+                            <div class="ticket-info">
+                                <span class="ticket-cat"><?= h($t['category']) ?></span>
+                                <strong class="ticket-subject"><?= h($t['subject']) ?></strong>
+                                <span class="ticket-date"><?= formatHungarianDate($t['updated_at']) ?></span>
+                            </div>
+                            <span class="ticket-status <?= $statusClass ?>"><?= $statusTexts[$t['status']] ?></span>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
 
     <?php elseif ($action === 'new'): ?>
         <?php if ($is_muted) { header('Location: /support.php'); exit; } ?>
-        <div class="support-layout">
-            <div class="glass support-panel form-panel">
-                <div class="panel-header">
-                    <h2><span class="material-symbols-rounded">create</span> Új Hibajegy Nyitása</h2>
-                    <a href="/support.php" class="btn-back"><span class="material-symbols-rounded">arrow_back</span> Mégse</a>
-                </div>
-                <form method="POST" action="?action=create" class="new-ticket-form">
-                    <div class="input-group">
-                        <label>Kategória</label>
-                        <select name="category" class="eth-input" required>
-                            <option value="Játékbeli hiba (Bug)">Játékbeli hiba (Bug)</option>
-                            <option value="Játékos jelentés">Játékos jelentés</option>
-                            <option value="Vásárlás / Pénzügy">Vásárlás / Pénzügy</option>
-                            <option value="Egyéb kérdés">Egyéb kérdés</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Tárgy (Rövid összefoglaló)</label>
-                        <input type="text" name="subject" class="eth-input" required placeholder="Pl.: Eltűnt az itemem a ládából">
-                    </div>
-                    <div class="input-group">
-                        <label>Részletes leírás</label>
-                        <textarea name="message" class="eth-input" rows="6" required placeholder="Írd le a problémádat minél pontosabban..."></textarea>
-                    </div>
-                    <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 1rem;"><span class="material-symbols-rounded">send</span> Hibajegy Beküldése</button>
-                </form>
+        <div class="glass support-panel form-panel">
+            <div class="panel-header">
+                <h2><span class="material-symbols-rounded">create</span> Új Hibajegy Nyitása</h2>
+                <a href="/support.php" class="btn-back"><span class="material-symbols-rounded">arrow_back</span> Mégse</a>
             </div>
+            <form method="POST" action="?action=create" class="new-ticket-form">
+                <div class="input-group">
+                    <label>Kategória</label>
+                    <select name="category" class="eth-input" required>
+                        <option value="Játékbeli hiba (Bug)">Játékbeli hiba (Bug)</option>
+                        <option value="Játékos jelentés">Játékos jelentés</option>
+                        <option value="Vásárlás / Pénzügy">Vásárlás / Pénzügy</option>
+                        <option value="Egyéb kérdés">Egyéb kérdés</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Tárgy (Rövid összefoglaló)</label>
+                    <input type="text" name="subject" class="eth-input" required placeholder="Pl.: Eltűnt az itemem a ládából">
+                </div>
+                <div class="input-group">
+                    <label>Részletes leírás</label>
+                    <textarea name="message" class="eth-input" rows="6" required placeholder="Írd le a problémádat minél pontosabban..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 1rem;"><span class="material-symbols-rounded">send</span> Hibajegy Beküldése</button>
+            </form>
         </div>
 
     <?php elseif ($action === 'view' && isset($_GET['id'])): ?>
@@ -182,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
         $stmt->execute([$ticket_id, $user_id]);
         $ticket = $stmt->fetch();
 
-        if (!$ticket) die('<div class="main-content"><div class="glass support-panel"><h2 style="padding:2rem;">Hiba! Jegy nem található.</h2></div></div>');
+        if (!$ticket) die('<div class="glass support-panel"><h2 style="padding:2rem;">Hiba! Jegy nem található.</h2></div>');
 
         $msgStmt = $pdo->prepare("SELECT tm.*, a.username as admin_username FROM ticket_messages tm LEFT JOIN admins a ON tm.sender_id = a.id WHERE tm.ticket_id = ? ORDER BY tm.created_at ASC");
         $msgStmt->execute([$ticket_id]);
@@ -211,8 +198,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
                     <?php else: 
                             $isMine = ($m['is_admin'] == 0 && $m['sender_id'] == $user_id);
                             $wrapperClass = $isMine ? 'mine' : 'admin';
-                            $avatarUrl = 'https://minotar.net/helm/' . h($isMine ? $user_name : ($m['admin_username'] ?? 'Admin')) . '/32.png';
-                            $authorName = h($isMine ? $user_name : ($m['admin_username'] ?? 'Ethernia Stáb'));
+                            $avatarUrl = 'https://minotar.net/helm/' . h($isMine ? $currentUser : ($m['admin_username'] ?? 'Admin')) . '/32.png';
+                            $authorName = h($isMine ? $currentUser : ($m['admin_username'] ?? 'Ethernia Stáb'));
                             $cleanMessage = h($m['message']);
                     ?>
                         <div class="chat-bubble-wrapper <?= $wrapperClass ?>">
@@ -259,5 +246,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET[
     const chatMsgs = document.getElementById('chat-messages');
     if(chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
 </script>
-</body>
-</html>
+
+<?php require_once __DIR__ . '/includes/footer.php'; ?>
