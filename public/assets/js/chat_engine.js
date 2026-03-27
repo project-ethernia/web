@@ -1,21 +1,21 @@
 "use strict";
 /// <reference lib="dom" />
 document.addEventListener("DOMContentLoaded", () => {
-    // Kőkemény típusdeklarációk a TypeScript miatt
     const chatMsgs = document.getElementById("chat-messages");
     const chatForm = document.getElementById("chat-form");
     const chatTextarea = document.getElementById("chat-textarea");
     const fileInput = document.getElementById("chat-file-input");
     const submitBtn = document.getElementById("chat-submit-btn");
     const ticketIdEl = document.getElementById("chat-ticket-id");
+    const contextEl = document.getElementById("chat-context");
     const typingIndicator = document.getElementById("typing-indicator");
     const previewContainer = document.getElementById("image-preview-container");
     const previewImg = document.getElementById("image-preview");
     const removeBtn = document.getElementById("remove-image-btn");
-    // Ha nem egy ticket nézetben vagyunk (nincs chat), a TS megnyugszik és kilépünk
     if (!chatMsgs || !ticketIdEl)
         return;
     const ticketId = parseInt(ticketIdEl.value, 10);
+    const chatContext = contextEl ? contextEl.value : 'player'; // <-- ITT OLVASSA BE
     let lastMsgId = 0;
     let isTyping = false;
     let typingTimeout = null;
@@ -75,11 +75,12 @@ document.addEventListener("DOMContentLoaded", () => {
     function notifyTyping(typing) {
         const now = Date.now();
         if (typing && now - lastTypingNotify < 2000)
-            return; // Ne spammeljük az API-t
+            return;
         lastTypingNotify = now;
-        fetch(`/chat_api.php?action=typing&ticket_id=${ticketId}&typing=${typing ? 1 : 0}`).catch(() => { });
+        // CONTEXT BEKÜLDÉSE:
+        fetch(`/chat_api.php?action=typing&ticket_id=${ticketId}&typing=${typing ? 1 : 0}&context=${chatContext}`).catch(() => { });
     }
-    // --- 3. ZERO-RELOAD KÜLDÉS (FETCH API) ---
+    // --- 3. ZERO-RELOAD KÜLDÉS ---
     if (chatForm) {
         chatForm.addEventListener("submit", async function (e) {
             e.preventDefault();
@@ -89,7 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
             if (!hasText && !hasFile)
                 return;
-            // UI Lezárása (Megakadályozza a Spam-et)
             isSubmitting = true;
             if (submitBtn) {
                 submitBtn.disabled = true;
@@ -100,6 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const formData = new FormData(chatForm);
             formData.append('action', 'send');
             formData.append('ticket_id', ticketId.toString());
+            formData.append('context', chatContext); // CONTEXT BEKÜLDÉSE!
             try {
                 const res = await fetch('/chat_api.php', { method: 'POST', body: formData });
                 const data = await res.json();
@@ -109,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         chatTextarea.style.height = '45px';
                     }
                     clearPreview();
-                    syncChat(); // Azonnali frissítés kérése
+                    syncChat();
                 }
                 else if (data.error === 'cooldown') {
                     alert("Kérjük, várj picit a következő üzenet előtt!");
@@ -122,7 +123,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error(err);
             }
             finally {
-                // UI Feloldása
                 isSubmitting = false;
                 isTyping = false;
                 if (submitBtn) {
@@ -136,14 +136,15 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-    // --- 4. SZINKRONIZÁCIÓ (JSON RENDERELÉS) ---
+    // --- 4. SZINKRONIZÁCIÓ ---
     let isSyncing = false;
     async function syncChat() {
         if (isSyncing || !chatMsgs)
-            return; // Ha a chatMsgs nincs, ne is fusson
+            return;
         isSyncing = true;
         try {
-            const res = await fetch(`/chat_api.php?action=sync&ticket_id=${ticketId}&last_id=${lastMsgId}`);
+            // CONTEXT BEKÜLDÉSE:
+            const res = await fetch(`/chat_api.php?action=sync&ticket_id=${ticketId}&last_id=${lastMsgId}&context=${chatContext}`);
             const data = await res.json();
             if (data.success && data.messages && data.messages.length > 0) {
                 let html = '';
@@ -177,7 +178,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 lastMsgId = data.last_id;
                 chatMsgs.scrollTo({ top: chatMsgs.scrollHeight, behavior: 'smooth' });
             }
-            // Gépelés indikátor frissítése
             if (typingIndicator) {
                 if (data.other_typing) {
                     typingIndicator.classList.add("active");
@@ -187,7 +187,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     typingIndicator.classList.remove("active");
                 }
             }
-            // Ha lezárták a ticketet időközben
             if (data.ticket_status === 'closed') {
                 const inputArea = document.querySelector('.chat-input-area');
                 if (inputArea) {

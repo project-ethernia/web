@@ -3,13 +3,24 @@ session_start();
 require_once __DIR__ . '/database.php';
 header('Content-Type: application/json; charset=utf-8');
 
-$is_admin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true;
-$current_user_id = $is_admin ? ($_SESSION['admin_id'] ?? 0) : ($_SESSION['user_id'] ?? 0);
-$current_username = $is_admin ? ($_SESSION['admin_username'] ?? '') : ($_SESSION['username'] ?? '');
+$context = $_REQUEST['context'] ?? 'player'; // alapértelmezett játékos
 
-if (!$current_user_id) {
-    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
-    exit;
+if ($context === 'admin') {
+    if (empty($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
+        echo json_encode(['success' => false, 'error' => 'Unauthorized admin']);
+        exit;
+    }
+    $is_admin = true;
+    $current_user_id = $_SESSION['admin_id'] ?? 0;
+    $current_username = $_SESSION['admin_username'] ?? '';
+} else {
+    if (empty($_SESSION['user_id'])) {
+        echo json_encode(['success' => false, 'error' => 'Unauthorized player']);
+        exit;
+    }
+    $is_admin = false;
+    $current_user_id = $_SESSION['user_id'] ?? 0;
+    $current_username = $_SESSION['username'] ?? '';
 }
 
 $action = $_REQUEST['action'] ?? '';

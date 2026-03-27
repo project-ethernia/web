@@ -157,6 +157,7 @@ require_once __DIR__ . '/includes/topbar.php';
                 </div>
 
                 <input type="hidden" id="chat-ticket-id" value="<?= $ticket_id ?>">
+                <input type="hidden" id="chat-context" value="admin"> <div class="chat-messages" id="chat-messages"></div>
                 <div class="chat-messages" id="chat-messages">
                     <div class="typing-indicator" id="typing-indicator">
                         <span class="material-symbols-rounded">edit</span>
