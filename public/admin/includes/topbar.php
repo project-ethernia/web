@@ -1,4 +1,4 @@
-<header class="admin-header glass" style="width: 100%; flex-shrink: 0;">
+<header class="admin-header glass">
             <div class="header-left">
                 <span class="material-symbols-rounded header-icon"><?= $topbar_icon ?? 'dashboard' ?></span>
                 <div>
@@ -7,5 +7,5 @@
                 </div>
             </div>
         </header>
-        <div class="admin-content" style="width: 100%; display: flex; flex-direction: column; gap: 2rem; padding-top: 1rem;">
+        <div class="admin-content">
             <?php displayFlash(); ?>

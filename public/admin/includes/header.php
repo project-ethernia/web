@@ -8,6 +8,12 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300..700&display=block">
     <link rel="stylesheet" href="/assets/css/globals.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
+    <style>
+        .admin-layout { display: flex; min-height: 100vh; overflow: hidden; width: 100%; }
+        .admin-main { flex: 1; min-width: 0; padding: 2rem; display: flex; flex-direction: column; gap: 2rem; height: 100vh; overflow-y: auto; box-sizing: border-box; }
+        .admin-header { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; border-radius: 12px; }
+        .admin-content { display: flex; flex-direction: column; gap: 2rem; flex: 1; }
+    </style>
     <?php if (!empty($extra_css)): ?>
         <?php foreach ($extra_css as $css): ?>
             <link rel="stylesheet" href="<?= $css ?>?v=<?= time(); ?>">
@@ -20,6 +26,6 @@
     <?php endif; ?>
 </head>
 <body class="admin-body">
-<div class="admin-layout" style="display: flex; min-height: 100vh; width: 100%;">
+<div class="admin-layout">
     <?php require_once __DIR__ . '/sidebar.php'; ?>
-    <main class="admin-main" style="flex: 1; display: flex; flex-direction: column; width: 100%;"></main>
+    <main class="admin-main"></main>
