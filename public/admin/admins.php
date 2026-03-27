@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             setFlash('error', 'Ez a felhasználónév már létezik az adminok között!');
         } else {
             $hash = password_hash($new_pass, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO admins (username, password, role) VALUES (?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO admins (username, password_hash, role) VALUES (?, ?, ?)");
             $stmt->execute([$new_user, $hash, $new_role]);
             log_admin_action($pdo, $admin_id, $admin_name, "Új adminisztrátor hozzáadva: " . $new_user . " (" . $new_role . ")");
             setFlash('success', 'Új csapattag sikeresen hozzáadva: ' . h($new_user));
