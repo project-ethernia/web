@@ -1,101 +1,3 @@
-/* ==========================================================================
-   ETHERNIA ADMIN - DASHBOARD (FŐOLDAL)
-   ========================================================================== */
-
-:root {
-    --admin-red: #ef4444;
-    --admin-red-glow: rgba(239, 68, 68, 0.3);
-    --admin-bg: #0b0710;
-}
-
-body.admin-body {
-    background-color: var(--admin-bg);
-    background-image: radial-gradient(circle at 50% 0%, rgba(239, 68, 68, 0.1) 0%, transparent 50%);
-    color: #fff;
-    font-family: var(--font-body);
-    margin: 0;
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-
-.glass {
-    background: rgba(20, 15, 25, 0.6);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(239, 68, 68, 0.15);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    border-radius: var(--radius-md);
-}
-
-.text-red { color: var(--admin-red); }
-.text-muted { color: var(--text-muted); }
-
-/* --- ALAP LAYOUT --- */
-.admin-layout {
-    display: flex;
-    min-height: 100vh;
-}
-
-.admin-main {
-    flex: 1;
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    overflow-y: auto;
-}
-
-/* --- FEJLÉC --- */
-.admin-header {
-    padding: 1.5rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-}
-
-.header-icon {
-    font-size: 3rem;
-    color: var(--admin-red);
-    filter: drop-shadow(0 0 10px var(--admin-red-glow));
-}
-
-.admin-header h1 {
-    font-family: var(--font-heading);
-    font-size: 1.8rem;
-    margin: 0 0 0.3rem 0;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.admin-header .subtitle {
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
-
-.admin-user-info {
-    font-size: 0.95rem;
-    background: rgba(0,0,0,0.3);
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius-pill);
-    border: 1px solid rgba(255,255,255,0.05);
-}
-
-.admin-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-}
-
-/* --- ÜDVÖZLŐ BANNER --- */
 .welcome-banner {
     display: flex;
     justify-content: space-between;
@@ -129,7 +31,6 @@ body.admin-body {
     user-select: none;
 }
 
-/* --- STATISZTIKA KÁRTYÁK --- */
 .dashboard-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -180,7 +81,6 @@ body.admin-body {
     color: #fff;
 }
 
-/* --- PANELS (Alsó szekció) --- */
 .dashboard-panels {
     display: flex;
     gap: 1.5rem;
@@ -216,38 +116,6 @@ body.admin-body {
     flex: 1;
 }
 
-.quick-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.btn-quick {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: var(--radius-sm);
-    color: #cbd5e1;
-    text-decoration: none;
-    font-weight: 600;
-    transition: 0.2s;
-}
-
-.btn-quick .material-symbols-rounded {
-    color: var(--admin-red);
-}
-
-.btn-quick:hover {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.3);
-    color: #fff;
-    transform: translateX(5px);
-}
-
-/* --- DASHBOARD LOGOK LISTÁJA --- */
 .recent-logs { display: flex; flex-direction: column; }
 .log-item { display: flex; gap: 1rem; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
 .log-item:hover { background: rgba(255,255,255,0.02); }
@@ -256,7 +124,6 @@ body.admin-body {
 .log-text { font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; display: flex; flex-direction: column; }
 .log-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
 
-/* Reszponzivitás */
 @media (max-width: 1024px) {
     .dashboard-panels {
         flex-direction: column;
