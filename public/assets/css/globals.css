@@ -1,43 +1,26 @@
-/* ==========================================================================
-   ETHERNIA - KÖZPONTI VÁLTOZÓK (GLOBALS)
-   Itt tudod egy helyen átállítani a teljes weboldal színvilágát és betűit!
-   ========================================================================== */
 :root {
-    /* FŐ SZÍNEK */
     --eth-primary: #a855f7;
     --eth-primary-glow: rgba(168, 85, 247, 0.4);
-    
-    /* ÁLLAPOT SZÍNEK */
     --eth-danger: #ef4444;
     --eth-success: #22c55e;
     --eth-warning: #eab308;
-
-    /* HÁTTÉR ÉS ÜVEG EFFEKT */
     --bg-base: #07050f;
     --bg-glass: rgba(20, 15, 35, 0.6);
     --border-glass: rgba(255, 255, 255, 0.08);
     --border-glass-focus: var(--eth-primary-glow);
-    
-    /* SZÖVEGEK (Kivilágosítva, hogy ne tűnjenek el a lila fényben!) */
-    --text-main: #ffffff; /* Vakító fehér */
-    --text-muted: #e2e8f0; /* Világos ezüst/szürke, ami ordít a sötétben is */
-    
-    /* ÚJ PRÉMIUM BETŰTÍPUSOK */
-    --font-heading: 'Poppins', sans-serif; /* Kerek, vastag, modern címek */
-    --font-body: 'Outfit', sans-serif;     /* Letisztult folyószöveg */
-
-    /* EGYÉB GLOBÁLIS BEÁLLÍTÁSOK */
+    --text-main: #ffffff;
+    --text-muted: #e2e8f0;
+    --font-heading: 'Poppins', sans-serif;
+    --font-body: 'Outfit', sans-serif;
     --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     --radius-sm: 8px;
     --radius-md: 16px;
     --radius-pill: 9999px;
 }
 
-/* Alapvető reset */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 a { color: inherit; text-decoration: none; }
 
-/* Globális Betű és Szín beállítása */
 body {
     font-family: var(--font-body);
     color: var(--text-main);
@@ -49,38 +32,28 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
 }
 
-/* ==========================================================================
-   EGYEDI GÖRGETÉS (SCROLLBAR)
-   ========================================================================== */
-
-/* Firefox támogatás (Vékonyított lila tekerő, sötét alapon) */
 html {
     scrollbar-width: thin;
     scrollbar-color: var(--eth-primary) var(--bg-base);
 }
 
-/* Webkit (Chrome, Edge, Safari, Opera) */
 ::-webkit-scrollbar {
-    width: 10px; /* A görgetősáv szélessége */
-    height: 10px; /* Vízszintes görgetősáv vastagsága (ha lenne) */
+    width: 10px;
+    height: 10px;
 }
 
-/* A sín, amin csúszik */
 ::-webkit-scrollbar-track {
     background: var(--bg-base);
     border-left: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Maga a tekerő */
 ::-webkit-scrollbar-thumb {
     background: var(--eth-primary);
     border-radius: var(--radius-pill);
-    /* Egy kis trükk: sötét keretet adunk neki, hogy úgy tűnjön, mintha "lebegne" a sínben */
     border: 2px solid var(--bg-base); 
     transition: var(--transition);
 }
 
-/* Ha ráviszed az egeret a tekerőre */
 ::-webkit-scrollbar-thumb:hover {
-    background: #c084fc; /* Világosabb lila */
+    background: #c084fc;
 }
