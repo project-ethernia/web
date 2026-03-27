@@ -1,7 +1,6 @@
 /// <reference lib="dom" />
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Chat azonnali legörgetése az aljára betöltéskor
     const chatMsgs = document.getElementById("chat-messages");
     if (chatMsgs) {
         chatMsgs.scrollTop = chatMsgs.scrollHeight;
@@ -40,7 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const chatTextarea = document.querySelector(".chat-textarea") as HTMLTextAreaElement | null;
     const chatForm = document.querySelector(".chat-form") as HTMLFormElement | null;
+    const chatSubmitBtn = document.getElementById("chat-submit-btn") as HTMLButtonElement | null;
     
+    let isSubmitting = false; // Duplikáció megakadályozása
+
     let lastMsgId = 0;
     const msgElements = document.querySelectorAll(".chat-bubble-wrapper, .system-msg-simple");
     if (msgElements.length > 0) {
@@ -62,16 +64,21 @@ document.addEventListener("DOMContentLoaded", () => {
             
             isTyping = true;
             if (typingTimeout) clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => { isTyping = false; }, 2000);
+            typingTimeout = setTimeout(() => { isTyping = false; }, 3000); // 3 másodperc tűrés
         });
 
         chatTextarea.addEventListener("keydown", function(e: KeyboardEvent) {
             if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault(); 
+                if (isSubmitting) return; // Ha már küld, ignorálja
+                
                 const hasText = this.value.trim() !== '';
                 const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
                 if (hasText || hasFile) {
-                    if (chatForm) chatForm.submit();
+                    if (chatForm) {
+                        lockForm();
+                        chatForm.submit();
+                    }
                 }
             }
         });
@@ -79,10 +86,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (chatForm) {
         chatForm.addEventListener("submit", function(e) {
+            if (isSubmitting) {
+                e.preventDefault();
+                return;
+            }
+            
             const hasText = chatTextarea && chatTextarea.value.trim() !== '';
             const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
-            if (!hasText && !hasFile) e.preventDefault();
+            if (!hasText && !hasFile) {
+                e.preventDefault();
+            } else {
+                lockForm();
+            }
         });
+    }
+
+    // Beküldéskor gomb és textarea lezárása
+    function lockForm() {
+        isSubmitting = true;
+        isTyping = false; // Ne mutassa tovább, hogy ír
+        if (chatSubmitBtn) {
+            chatSubmitBtn.disabled = true;
+            chatSubmitBtn.innerHTML = '<span class="material-symbols-rounded">hourglass_empty</span>';
+        }
+        if (chatTextarea) {
+            chatTextarea.readOnly = true;
+        }
     }
 
     // Valós idejű AJAX szinkronizáció

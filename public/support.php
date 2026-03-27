@@ -24,6 +24,7 @@ $stmt = $pdo->prepare("SELECT is_muted FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $is_muted = (int)$stmt->fetchColumn();
 
+// Lekérjük a Jelenleg nyitott kategóriákat (Hogy ne spammelhesse tele mindet)
 $stmt = $pdo->prepare("SELECT category FROM tickets WHERE user_id = ? AND status != 'closed'");
 $stmt->execute([$user_id]);
 $active_categories = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -51,21 +52,25 @@ function uploadImageAsBase64($fileArray) {
     return null;
 }
 
+// === AJAX SZINKRONIZÁCIÓ (VALÓS IDEJŰ CHAT ÉS GÉPELÉS) ===
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'sync' && isset($_GET['id'])) {
     header('Content-Type: application/json');
     $ticket_id = (int)$_GET['id'];
     $last_id = (int)($_GET['last_id'] ?? 0);
     $typing = (int)($_GET['typing'] ?? 0);
 
+    // Gépelési státusz frissítése
     if ($typing) {
         $pdo->prepare("UPDATE tickets SET user_typing_at = NOW() WHERE id = ? AND user_id = ?")->execute([$ticket_id, $user_id]);
     }
 
+    // Admin gépelési státusz ellenőrzése (5 másodperces tűréshatárral a villogás ellen)
     $stmt = $pdo->prepare("SELECT admin_typing_at FROM tickets WHERE id = ? AND user_id = ?");
     $stmt->execute([$ticket_id, $user_id]);
     $admin_typing_at = $stmt->fetchColumn();
-    $is_admin_typing = ($admin_typing_at && strtotime($admin_typing_at) >= time() - 3);
+    $is_admin_typing = ($admin_typing_at && strtotime($admin_typing_at) >= time() - 5);
 
+    // Új üzenetek lekérése
     $msgStmt = $pdo->prepare("SELECT tm.*, a.username as admin_username FROM ticket_messages tm LEFT JOIN admins a ON tm.sender_id = a.id WHERE tm.ticket_id = ? AND tm.id > ? ORDER BY tm.id ASC");
     $msgStmt->execute([$ticket_id, $last_id]);
     $messages = $msgStmt->fetchAll();
@@ -83,8 +88,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'sync' && isset($_GET['i
         } else {
             $isMine = ($m['is_admin'] == 0 && $m['sender_id'] == $user_id);
             $wrapperClass = $isMine ? 'mine' : 'admin';
-            $avatarUrl = 'https://minotar.net/helm/' . urlencode($isMine ? $currentUser : ($m['admin_username'] ?? 'Admin')) . '/32.png';
-            $authorName = h($isMine ? $currentUser : ($m['admin_username'] ?? 'Ethernia Stáb'));
+            
+            // Pontos név és avatar meghatározása
+            $authorName = $isMine ? h($currentUser) : h($m['admin_username'] ?? 'Ethernia Stáb');
+            $avatarUrl = 'https://minotar.net/helm/' . urlencode($authorName) . '/32.png';
             $cleanMessage = h($m['message']);
             
             $html .= '<div class="chat-bubble-wrapper ' . $wrapperClass . '" data-id="'.$m['id'].'">';
@@ -103,10 +110,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'sync' && isset($_GET['i
     exit;
 }
 
+// Backend oldali Spam / F5 védelem
 function checkCooldown() {
     $now = time();
     $last_action = $_SESSION['last_ticket_action'] ?? 0;
-    if ($now - $last_action < 3) {
+    if ($now - $last_action < 5) { // Szigorú 5 másodperces cooldown
         return false;
     }
     $_SESSION['last_ticket_action'] = $now;
@@ -160,6 +168,7 @@ require_once __DIR__ . '/includes/header.php';
 ?>
 
 <main class="support-container <?= $action === 'view' ? 'view-ticket-mode' : '' ?>">
+    
     <?php if ($action !== 'view'): ?>
     <div class="support-header">
         <h1>Ügyfélszolgálat</h1>
@@ -171,7 +180,7 @@ require_once __DIR__ . '/includes/header.php';
         <?php if ($_GET['error'] === 'already_open'): ?>
             <div class="alert-box error"><span class="material-symbols-rounded">error</span> Ebben a kategóriában már van aktív hibajegyed!</div>
         <?php elseif ($_GET['error'] === 'spam'): ?>
-            <div class="alert-box error"><span class="material-symbols-rounded">timer</span> Kérjük, várj pár másodpercet a következő művelet előtt!</div>
+            <div class="alert-box error"><span class="material-symbols-rounded">timer</span> Kérjük, várj pár másodpercet a következő művelet előtt (Spam védelem)!</div>
         <?php endif; ?>
     <?php endif; ?>
 
@@ -257,7 +266,7 @@ require_once __DIR__ . '/includes/header.php';
                     <label>Részletes leírás</label>
                     <textarea name="message" class="eth-input" rows="6" required placeholder="Írd le a problémádat minél pontosabban..."></textarea>
                 </div>
-                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 1rem;"><span class="material-symbols-rounded">send</span> Hibajegy Beküldése</button>
+                <button type="submit" class="btn-primary" id="chat-submit-btn" style="width: 100%; justify-content: center; padding: 1rem;"><span class="material-symbols-rounded">send</span> Hibajegy Beküldése</button>
             </form>
         </div>
 
@@ -297,8 +306,9 @@ require_once __DIR__ . '/includes/header.php';
                     <?php else: 
                             $isMine = ($m['is_admin'] == 0 && $m['sender_id'] == $user_id);
                             $wrapperClass = $isMine ? 'mine' : 'admin';
-                            $avatarUrl = 'https://minotar.net/helm/' . urlencode($isMine ? $currentUser : ($m['admin_username'] ?? 'Admin')) . '/32.png';
+                            
                             $authorName = h($isMine ? $currentUser : ($m['admin_username'] ?? 'Ethernia Stáb'));
+                            $avatarUrl = 'https://minotar.net/helm/' . urlencode($authorName) . '/32.png';
                             $cleanMessage = h($m['message']);
                     ?>
                         <div class="chat-bubble-wrapper <?= $wrapperClass ?>" data-id="<?= $m['id'] ?>">
@@ -325,6 +335,7 @@ require_once __DIR__ . '/includes/header.php';
                 <?php endforeach; ?>
 
                 <div class="typing-indicator" id="typing-indicator">
+                    <span class="material-symbols-rounded">edit</span>
                     <span class="typing-text">Az Ethernia Stáb éppen ír</span>
                     <div class="typing-dots"><span></span><span></span><span></span></div>
                 </div>
