@@ -1,21 +1,17 @@
-/* --- A GÖRGŐ FIXÁLÁSA (NO-SCROLL HACK) --- */
 body:has(.view-ticket-mode) {
-    overflow: hidden; /* A weboldal soha többé nem görgethető chatelés közben */
+    overflow: hidden; 
     height: 100vh;
 }
 
-.support-container { max-width: 1000px; margin: 2rem auto 4rem auto; padding: 0 1.5rem; flex: 1; width: 100%; display: flex; flex-direction: column; gap: 2rem; }
+.support-container { max-width: 1000px; margin: 2rem auto 4rem auto; padding: 0 1.5rem; flex: 1; width: 100%; display: flex; flex-direction: column; gap: 2rem; min-height: 0; }
 
-/* FIX CHAT NÉZET - PONOTS KISZÁMÍTÁS */
+/* --- A LÉNYEG: TÖKÉLETES KITÖLTÉS --- */
 .support-container.view-ticket-mode { 
     margin: 0 auto; 
     padding-top: 1rem; 
     padding-bottom: 1.5rem; 
-    height: calc(100vh - 100px); /* A navbar és a padding magasságának levonása */
-    max-height: calc(100vh - 100px);
-    overflow: hidden; 
-    display: flex; 
-    flex-direction: column;
+    flex: 1; 
+    min-height: 0; 
 }
 
 .support-header { text-align: center; }
@@ -75,13 +71,12 @@ body:has(.view-ticket-mode) {
 
 /* FIX CHAT RENDSZER BELSŐ MAGJA */
 .chat-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; border-radius: var(--radius-md); min-height: 0; }
-.chat-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); }
+.chat-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); flex-shrink: 0;}
 
 .chat-messages { flex: 1; padding: 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent; scroll-behavior: smooth; min-height: 0; }
 .chat-messages::-webkit-scrollbar { width: 6px; }
 .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 
-/* TYPING INDICATOR TÖKÉLETESÍTVE */
 .typing-indicator { display: none; align-items: center; gap: 0.5rem; padding: 0.8rem 1.2rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 12px; color: #c084fc; font-size: 0.85rem; font-weight: 600; width: fit-content; margin-top: auto; animation: fadeIn 0.3s ease; }
 .typing-indicator.active { display: flex !important; }
 .typing-dots span { display: inline-block; width: 4px; height: 4px; background: #c084fc; border-radius: 50%; margin: 0 2px; animation: bounce 1.4s infinite ease-in-out both; }
@@ -116,7 +111,7 @@ body:has(.view-ticket-mode) {
 .chat-attachment img { max-width: 300px; border-radius: 8px; border: 1px solid var(--border-glass); cursor: pointer; transition: 0.3s; }
 .chat-attachment img:hover { filter: brightness(1.1); box-shadow: 0 0 20px rgba(255,255,255,0.1); }
 
-.chat-input-area { padding: 1.5rem 2rem; border-top: 1px solid var(--border-glass); background: rgba(0,0,0,0.3); }
+.chat-input-area { padding: 1.5rem 2rem; border-top: 1px solid var(--border-glass); background: rgba(0,0,0,0.3); flex-shrink: 0; }
 .chat-form { display: flex; gap: 1rem; align-items: flex-end; }
 .chat-upload-btn { display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; border-radius: 12px; background: rgba(255,255,255,0.05); color: #94a3b8; cursor: pointer; transition: 0.2s; border: 1px solid var(--border-glass); flex-shrink: 0; }
 .chat-upload-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
