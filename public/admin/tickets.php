@@ -5,18 +5,13 @@ require_once __DIR__ . '/includes/core.php';
 $action = $_GET['action'] ?? 'list';
 
 function formatTicketId($id) { return sprintf("#%03d-%03d", floor($id / 1000), $id % 1000); }
-function formatHungarianDate($datetime) {
-    $ts = strtotime($datetime);
-    return date('Y. m. d. - H:i', $ts);
-}
+function formatHungarianDate($datetime) { return date('Y. m. d. - H:i', strtotime($datetime)); }
 
 if (isset($_GET['do']) && isset($_GET['id'])) {
     $do = $_GET['do'];
     $ticket_id = (int)$_GET['id'];
     
-    $botMsg = "";
-    $newStatus = null;
-    $logMessage = "";
+    $botMsg = ""; $newStatus = null; $logMessage = "";
     
     if ($do === 'claim') {
         $pdo->prepare("UPDATE tickets SET claimed_by = ? WHERE id = ?")->execute([$admin_id, $ticket_id]);
@@ -45,17 +40,9 @@ if (isset($_GET['do']) && isset($_GET['id'])) {
         setFlash('error', 'Hibajegy véglegesen lezárva.');
     }
 
-    if ($newStatus) {
-        $pdo->prepare("UPDATE tickets SET status = ?, updated_at = NOW() WHERE id = ?")->execute([$newStatus, $ticket_id]);
-    }
-    if ($botMsg) {
-        $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, is_admin) VALUES (?, ?, ?, 1)")
-            ->execute([$ticket_id, $admin_id, $botMsg]);
-    }
-
-    if ($logMessage !== "") {
-        log_admin_action($pdo, $admin_id, $admin_name, $logMessage);
-    }
+    if ($newStatus) $pdo->prepare("UPDATE tickets SET status = ?, updated_at = NOW() WHERE id = ?")->execute([$newStatus, $ticket_id]);
+    if ($botMsg) $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, is_admin) VALUES (?, ?, ?, 1)")->execute([$ticket_id, $admin_id, $botMsg]);
+    if ($logMessage !== "") log_admin_action($pdo, $admin_id, $admin_name, $logMessage);
 
     header("Location: /admin/tickets.php?action=view&id=" . $ticket_id);
     exit;
@@ -63,7 +50,7 @@ if (isset($_GET['do']) && isset($_GET['id'])) {
 
 $page_title = 'Ügyfélszolgálat | ETHERNIA Admin';
 $extra_css = ['/admin/assets/css/tickets.css'];
-$extra_js = ['/assets/js/chat_engine.js']; // BEHÚZZUK A KÖZÖS MOTORT
+$extra_js = ['/assets/js/chat_engine.js']; 
 $topbar_icon = 'support_agent';
 $topbar_title = 'Ügyfélszolgálat (Tickets)';
 $topbar_subtitle = 'Hibajegyek kezelése és játékos támogatás';
@@ -75,30 +62,12 @@ require_once __DIR__ . '/includes/topbar.php';
 <div class="support-container <?= $action === 'view' ? 'view-ticket-mode' : '' ?>">
     <?php if ($action === 'list'): ?>
         <?php
-        $stmt = $pdo->query("
-            SELECT t.*, u.username as creator_name, a.username as admin_name 
-            FROM tickets t 
-            LEFT JOIN users u ON t.user_id = u.id 
-            LEFT JOIN admins a ON t.claimed_by = a.id 
-            ORDER BY 
-                CASE t.status WHEN 'open' THEN 1 WHEN 'answered' THEN 2 WHEN 'paused' THEN 3 ELSE 4 END, 
-                t.updated_at DESC
-        ");
+        $stmt = $pdo->query("SELECT t.*, u.username as creator_name, a.username as admin_name FROM tickets t LEFT JOIN users u ON t.user_id = u.id LEFT JOIN admins a ON t.claimed_by = a.id ORDER BY CASE t.status WHEN 'open' THEN 1 WHEN 'answered' THEN 2 WHEN 'paused' THEN 3 ELSE 4 END, t.updated_at DESC");
         $tickets = $stmt->fetchAll();
         ?>
         <div class="admin-panel glass">
             <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Kategória & Tárgy</th>
-                        <th>Játékos</th>
-                        <th>Felelős Admin</th>
-                        <th>Státusz</th>
-                        <th>Utolsó frissítés</th>
-                        <th>Művelet</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>ID</th><th>Kategória & Tárgy</th><th>Játékos</th><th>Felelős</th><th>Státusz</th><th>Frissítés</th><th>Művelet</th></tr></thead>
                 <tbody>
                     <?php foreach ($tickets as $t): ?>
                         <?php 
@@ -107,23 +76,9 @@ require_once __DIR__ . '/includes/topbar.php';
                         ?>
                         <tr class="hover-row">
                             <td class="td-id"><strong><?= formatTicketId($t['id']) ?></strong></td>
-                            <td>
-                                <div class="td-cat"><?= h($t['category']) ?></div>
-                                <div class="td-subject"><?= h($t['subject']) ?></div>
-                            </td>
-                            <td>
-                                <div class="player-cell">
-                                    <img src="https://minotar.net/helm/<?= h($t['creator_name']) ?>/24.png" class="player-head">
-                                    <?= h($t['creator_name']) ?>
-                                </div>
-                            </td>
-                            <td>
-                                <?php if($t['claimed_by']): ?>
-                                    <span class="badge badge-claimed"><span class="material-symbols-rounded">person</span> <?= h($t['admin_name']) ?></span>
-                                <?php else: ?>
-                                    <span class="badge badge-unclaimed">Nincs felelős</span>
-                                <?php endif; ?>
-                            </td>
+                            <td><div class="td-cat"><?= h($t['category']) ?></div><div class="td-subject"><?= h($t['subject']) ?></div></td>
+                            <td><div class="player-cell"><img src="https://minotar.net/helm/<?= h($t['creator_name']) ?>/24.png" class="player-head"><?= h($t['creator_name']) ?></div></td>
+                            <td><?= $t['claimed_by'] ? '<span class="badge badge-claimed"><span class="material-symbols-rounded">person</span> '.h($t['admin_name']).'</span>' : '<span class="badge badge-unclaimed">Nincs felelős</span>' ?></td>
                             <td><span class="ticket-status <?= $statusClass ?>"><?= $statusTexts[$t['status']] ?></span></td>
                             <td class="td-date"><?= formatHungarianDate($t['updated_at']) ?></td>
                             <td><a href="?action=view&id=<?= $t['id'] ?>" class="btn-sm btn-open">Megnyitás</a></td>
@@ -139,8 +94,7 @@ require_once __DIR__ . '/includes/topbar.php';
         $stmt = $pdo->prepare("SELECT t.*, u.username as creator_name FROM tickets t JOIN users u ON t.user_id = u.id WHERE t.id = ?");
         $stmt->execute([$ticket_id]);
         $ticket = $stmt->fetch();
-
-        if (!$ticket) die('<div class="admin-panel glass"><h2>Hiba!</h2><p>Ticket nem található.</p></div>');
+        if (!$ticket) die('<div class="admin-panel glass"><h2>Hiba! Jegy nem található.</h2></div>');
 
         $statusClass = 'status-' . $ticket['status'];
         $statusTexts = ['open' => 'NYITOTT', 'answered' => 'VÁLASZOLTUNK', 'paused' => 'SZÜNETELTETVE', 'closed' => 'LEZÁRVA'];
@@ -157,7 +111,8 @@ require_once __DIR__ . '/includes/topbar.php';
                 </div>
 
                 <input type="hidden" id="chat-ticket-id" value="<?= $ticket_id ?>">
-                <input type="hidden" id="chat-context" value="admin"> <div class="chat-messages" id="chat-messages"></div>
+                <input type="hidden" id="chat-context" value="admin">
+                
                 <div class="chat-messages" id="chat-messages">
                     <div class="typing-indicator" id="typing-indicator">
                         <span class="material-symbols-rounded">edit</span>
@@ -198,7 +153,7 @@ require_once __DIR__ . '/includes/topbar.php';
                     <?php elseif ($ticket['claimed_by'] == $admin_id): ?>
                         <a href="?do=unclaim&id=<?= $ticket_id ?>" class="btn-action btn-warning" onclick="ethConfirm(event, 'Biztosan lemondasz erről a jegyről?', this.href);"><span class="material-symbols-rounded">waving_hand</span> Lemondok róla</a>
                     <?php else: ?>
-                        <div class="alert-box warning">Ezt a jegyet már egy másik admin lefoglalta.</div>
+                        <div class="alert-box warning" style="padding: 0.8rem; font-size: 0.8rem;">Ezt a jegyet már egy másik admin lefoglalta.</div>
                     <?php endif; ?>
 
                     <hr class="control-divider">

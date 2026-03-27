@@ -2,17 +2,14 @@
 session_start();
 require_once __DIR__ . '/database.php';
 
-if (empty($_SESSION['user_id'])) {
-    header('Location: /auth/login.php');
-    exit;
-}
+if (empty($_SESSION['user_id'])) { header('Location: /auth/login.php'); exit; }
 
 $user_id = $_SESSION['user_id'];
 $currentUser = $_SESSION['username'] ?? 'Játékos';
 $current_page = 'support';
 $page_title = 'Ügyfélszolgálat | Ethernia';
 $extra_css = ['/assets/css/support.css'];
-$extra_js = ['/assets/js/chat_engine.js']; // BEHÚZZUK AZ ÚJ MOTORT
+$extra_js = ['/assets/js/chat_engine.js']; 
 
 $SUPPORT_CATEGORIES = [
     'Játékbeli hiba (Bug)' => ['color' => '#ef4444', 'icon' => 'bug_report'],
@@ -33,10 +30,7 @@ $can_open_new = count($active_categories) < count($SUPPORT_CATEGORIES);
 $action = $_GET['action'] ?? 'list';
 
 function h($str) { return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8'); }
-function formatHungarianDate($datetime) {
-    $ts = strtotime($datetime);
-    return date('Y. m. d. - H:i', $ts);
-}
+function formatHungarianDate($datetime) { return date('Y. m. d. - H:i', strtotime($datetime)); }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
     if ($is_muted || !$can_open_new) { header('Location: /support.php'); exit; }
@@ -64,6 +58,7 @@ require_once __DIR__ . '/includes/header.php';
 ?>
 
 <main class="support-container <?= $action === 'view' ? 'view-ticket-mode' : '' ?>">
+    
     <?php if ($action !== 'view'): ?>
     <div class="support-header">
         <h1>Ügyfélszolgálat</h1>
@@ -72,9 +67,9 @@ require_once __DIR__ . '/includes/header.php';
     <?php endif; ?>
 
     <?php if (isset($_GET['error'])): ?>
-        <?php if ($_GET['error'] === 'already_open'): ?>
-            <div class="alert-box error"><span class="material-symbols-rounded">error</span> Ebben a kategóriában már van aktív hibajegyed!</div>
-        <?php endif; ?>
+        <div class="alert-box error"><span class="material-symbols-rounded">error</span> 
+            <?= $_GET['error'] === 'already_open' ? 'Ebben a kategóriában már van aktív hibajegyed!' : 'Kérjük, várj pár másodpercet (Spam védelem)!' ?>
+        </div>
     <?php endif; ?>
 
     <?php if ($action === 'list'): ?>
@@ -94,17 +89,11 @@ require_once __DIR__ . '/includes/header.php';
             </div>
             
             <?php if ($is_muted): ?>
-                <div class="alert-box error" style="margin: 1rem;">
-                    <span class="material-symbols-rounded">volume_off</span>
-                    A fiókod némítva lett az ügyfélszolgálati rendszerben. Nem nyithatsz új hibajegyeket.
-                </div>
+                <div class="alert-box error" style="margin: 1rem;">A fiókod némítva lett az ügyfélszolgálati rendszerben. Nem nyithatsz új hibajegyeket.</div>
             <?php endif; ?>
 
             <?php if (empty($tickets)): ?>
-                <div class="empty-state">
-                    <span class="material-symbols-rounded">support_agent</span>
-                    <p>Még nem nyitottál egyetlen hibajegyet sem.</p>
-                </div>
+                <div class="empty-state"><span class="material-symbols-rounded">support_agent</span><p>Még nem nyitottál egyetlen hibajegyet sem.</p></div>
             <?php else: ?>
                 <div class="ticket-list">
                     <?php foreach ($tickets as $t): ?>
@@ -139,14 +128,9 @@ require_once __DIR__ . '/includes/header.php';
                         <?php foreach ($SUPPORT_CATEGORIES as $cat_name => $cat_data): ?>
                             <?php $is_active = in_array($cat_name, $active_categories); ?>
                             <label class="category-card <?= $is_active ? 'disabled-card' : '' ?>" style="--cat-color: <?= $cat_data['color'] ?>;">
-                                <?php if ($is_active): ?>
-                                    <span class="material-symbols-rounded locked-badge" title="Már van aktív jegyed itt!">lock</span>
-                                <?php endif; ?>
+                                <?php if ($is_active): ?><span class="material-symbols-rounded locked-badge" title="Már van aktív jegyed itt!">lock</span><?php endif; ?>
                                 <input type="radio" name="category" value="<?= h($cat_name) ?>" <?= $is_active ? 'disabled' : 'required' ?>>
-                                <div class="category-content">
-                                    <span class="material-symbols-rounded"><?= $cat_data['icon'] ?></span>
-                                    <span><?= h($cat_name) ?></span>
-                                </div>
+                                <div class="category-content"><span class="material-symbols-rounded"><?= $cat_data['icon'] ?></span><span><?= h($cat_name) ?></span></div>
                             </label>
                         <?php endforeach; ?>
                     </div>
@@ -169,7 +153,6 @@ require_once __DIR__ . '/includes/header.php';
         $stmt = $pdo->prepare("SELECT * FROM tickets WHERE id = ? AND user_id = ?");
         $stmt->execute([$ticket_id, $user_id]);
         $ticket = $stmt->fetch();
-
         if (!$ticket) die('<div class="glass support-panel"><h2 style="padding:2rem;">Hiba! Jegy nem található.</h2></div>');
 
         $statusClass = 'status-' . $ticket['status'];
@@ -179,13 +162,14 @@ require_once __DIR__ . '/includes/header.php';
             <div class="chat-header">
                 <div style="display:flex; align-items:center; gap:1rem;">
                     <a href="/support.php" class="btn-back"><span class="material-symbols-rounded">arrow_back</span></a>
-                    <h2 style="margin:0; font-size:1.3rem;"><?= h($ticket['subject']) ?></h2>
+                    <h2 style="margin:0; font-size:1.2rem;"><?= h($ticket['subject']) ?></h2>
                 </div>
                 <span class="ticket-status <?= $statusClass ?>"><?= $statusTexts[$ticket['status']] ?></span>
             </div>
 
             <input type="hidden" id="chat-ticket-id" value="<?= $ticket_id ?>">
-            <input type="hidden" id="chat-context" value="player"> <div class="chat-messages" id="chat-messages"></div>
+            <input type="hidden" id="chat-context" value="player">
+            
             <div class="chat-messages" id="chat-messages">
                 <div class="typing-indicator" id="typing-indicator">
                     <span class="material-symbols-rounded">edit</span>
