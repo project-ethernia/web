@@ -71,6 +71,27 @@ body.admin-body {
     height: 100vh;
     overflow-y: auto;
     box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: #ef4444 #07050f;
+}
+
+.admin-main::-webkit-scrollbar {
+    width: 10px;
+}
+
+.admin-main::-webkit-scrollbar-track {
+    background: #07050f;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-main::-webkit-scrollbar-thumb {
+    background: #ef4444;
+    border-radius: 9999px;
+    border: 2px solid #07050f; 
+}
+
+.admin-main::-webkit-scrollbar-thumb:hover {
+    background: #f87171;
 }
 
 .admin-header {
