@@ -1,376 +1,59 @@
-/* ==========================================================================
-   ETHERNIA ADMIN - ALAP LAYOUT ÉS ADMINISZTRÁTOROK KEZELÉSE
-   ========================================================================== */
-
-:root {
-    --admin-red: #ef4444;
-    --admin-red-glow: rgba(239, 68, 68, 0.3);
-    --admin-bg: #0b0710;
-}
-
-body.admin-body {
-    background-color: var(--admin-bg);
-    background-image: radial-gradient(circle at 50% 0%, rgba(239, 68, 68, 0.1) 0%, transparent 50%);
-    color: #fff;
-    font-family: var(--font-body);
-    margin: 0;
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-
-.glass {
-    background: rgba(20, 15, 25, 0.6);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(239, 68, 68, 0.15);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    border-radius: var(--radius-md);
-}
-
-.text-red { color: var(--admin-red); }
-.text-muted { color: var(--text-muted); }
-
-/* --- ALAP LAYOUT --- */
-.admin-layout {
-    display: flex;
-    min-height: 100vh;
-}
-
-.admin-main {
-    flex: 1;
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    overflow-y: auto;
-}
-
-/* --- FEJLÉC --- */
-.admin-header {
-    padding: 1.5rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-}
-
-.header-icon {
-    font-size: 3rem;
-    color: var(--admin-red);
-    filter: drop-shadow(0 0 10px var(--admin-red-glow));
-}
-
-.admin-header h1 {
-    font-family: var(--font-heading);
-    font-size: 1.8rem;
-    margin: 0 0 0.3rem 0;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.admin-header .subtitle {
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
-
-.admin-user-info {
-    font-size: 0.95rem;
-    background: rgba(0,0,0,0.3);
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius-pill);
-    border: 1px solid rgba(255,255,255,0.05);
-}
-
-.admin-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-}
-
-/* --- ALAP TÁBLÁZAT --- */
-.admin-panel {
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    padding: 1px;
-}
-
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: rgba(0,0,0,0.2);
-}
-
-.admin-table th {
-    text-align: left;
-    padding: 1.2rem 1.5rem;
-    background: rgba(239, 68, 68, 0.1);
-    color: #f8fafc;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    border-bottom: 2px solid var(--admin-red);
-}
-
-.admin-table td {
-    padding: 1.2rem 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    vertical-align: middle;
-}
-
+.admin-table { width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.2); }
+.admin-table th { text-align: left; padding: 1.2rem 1.5rem; background: rgba(239, 68, 68, 0.1); color: #f8fafc; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid #ef4444; }
+.admin-table td { padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
 .hover-row:hover { background: rgba(255, 255, 255, 0.03); }
 
-.td-id { color: var(--text-muted); font-family: monospace; font-size: 1.1rem; }
-.player-cell { display: flex; align-items: center; gap: 0.8rem; font-weight: 500; }
-.player-head { width: 28px; height: 28px; border-radius: 6px; image-rendering: pixelated; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-.btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-radius: var(--radius-pill); text-decoration: none; transition: var(--transition); display: inline-block; }
+.td-id { color: #94a3b8; font-family: monospace; font-size: 1.1rem; }
 
+.admin-user-cell { display: flex; align-items: center; gap: 0.8rem; font-weight: 500; }
+.admin-avatar { width: 32px; height: 32px; border-radius: 6px; image-rendering: pixelated; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+.td-muted { color: #94a3b8; font-size: 0.9rem; font-weight: 500; }
 
-/* ==========================================================================
-   ADMIN SPECIFIKUS DIZÁJN (SPLIT LAYOUT)
-   ========================================================================== */
+.role-badge { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.3rem 0.8rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--role-color); border: 1px solid var(--role-color); background: transparent; }
+.role-badge .material-symbols-rounded { font-size: 1.1rem; }
 
-.split-layout {
-    display: flex;
-    gap: 2rem;
-    align-items: flex-start;
-}
+.status-2fa { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; font-weight: 700; }
+.status-2fa.success { color: #22c55e; }
+.status-2fa.warning { color: #f59e0b; }
+.status-2fa .material-symbols-rounded { font-size: 1.1rem; }
 
-.list-panel {
-    flex: 2; /* Szélesebb bal oldal a táblázatnak */
-}
+.action-buttons { display: flex; gap: 0.5rem; align-items: center; }
 
-.form-panel {
-    flex: 1; /* Kisebb jobb oldal a formnak */
-    min-width: 320px;
-}
+.btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-radius: 9999px; text-decoration: none; transition: all 0.3s; display: inline-block; cursor: pointer; }
+.btn-danger { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 0.4rem 0.6rem; }
+.btn-danger:hover { background: #ef4444; color: #fff; box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+.btn-warning { background: transparent; border: 1px solid #f59e0b; color: #f59e0b; padding: 0.4rem 0.6rem; }
+.btn-warning:hover { background: #f59e0b; color: #fff; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
+.btn-disabled { padding: 0.4rem 0.6rem; color: rgba(255,255,255,0.2); cursor: not-allowed; display: inline-block; }
 
-.panel-header {
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    background: rgba(0,0,0,0.3);
-}
+.split-layout { display: flex; gap: 2rem; align-items: flex-start; }
+.list-panel { flex: 2; overflow: hidden; }
+.form-panel { flex: 1; min-width: 320px; }
 
-.panel-header h2 {
-    margin: 0;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
+.panel-header { padding: 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.3); }
+.panel-header h2 { margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; }
+.panel-header h2 .material-symbols-rounded { color: #ef4444; }
+.panel-body { padding: 2rem; }
 
-.panel-header h2 .material-symbols-rounded {
-    color: var(--admin-red);
-}
+.add-admin-form { display: flex; flex-direction: column; gap: 1.5rem; }
+.input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.input-group label { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
 
-.panel-body {
-    padding: 2rem;
-}
+.admin-input { width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; color: #fff; font-size: 0.95rem; outline: none; transition: 0.3s; font-family: 'Outfit', sans-serif; }
+.admin-input:focus { border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
 
-/* TÁBLÁZAT SPECIFIKUS */
-.role-badge {
-    padding: 0.3rem 0.8rem;
-    border-radius: var(--radius-pill);
-    font-size: 0.75rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: inline-block;
-}
+.role-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; margin-top: 0.5rem; }
+.role-card { cursor: pointer; display: block; }
+.role-card input[type="radio"] { display: none; }
+.role-content { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem; background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.08); border-radius: 8px; color: #94a3b8; transition: 0.3s; opacity: 0.6; text-align: center; font-weight: 600; font-size: 0.8rem; }
+.role-content .material-symbols-rounded { font-size: 1.5rem; transition: 0.3s; }
+.role-card:hover .role-content { opacity: 0.8; background: rgba(0, 0, 0, 0.5); }
+.role-card input:checked + .role-content { opacity: 1; border-color: var(--role-color); background: rgba(0, 0, 0, 0.6); color: #fff; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 0 15px var(--role-color); }
+.role-card input:checked + .role-content .material-symbols-rounded { color: var(--role-color); filter: drop-shadow(0 0 5px var(--role-color)); }
 
-.td-muted {
-    color: var(--text-muted);
-    font-family: monospace;
-    font-size: 0.9rem;
-}
-
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-}
-.status-badge.success { color: #22c55e; }
-.status-badge.error { color: var(--admin-red); }
-.status-badge .material-symbols-rounded { font-size: 1rem; }
-
-.btn-danger {
-    background: transparent;
-    border: 1px solid var(--admin-red);
-    color: var(--admin-red);
-    padding: 0.4rem 0.6rem;
-}
-.btn-danger:hover {
-    background: var(--admin-red);
-    color: #fff;
-    box-shadow: 0 0 10px var(--admin-red-glow);
-}
-
-/* FORM SPECIFIKUS */
-.add-admin-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.input-group label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-muted);
-}
-
-.admin-input {
-    width: 100%;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--border-glass);
-    border-radius: var(--radius-sm);
-    color: #fff;
-    font-size: 0.95rem;
-    outline: none;
-    transition: var(--transition);
-    font-family: var(--font-body);
-}
-
-.admin-input:focus {
-    border-color: var(--admin-red);
-    box-shadow: 0 0 15px var(--admin-red-glow);
-}
-
-.input-hint {
-    font-size: 0.75rem;
-    color: #f59e0b;
-    font-style: italic;
-}
-
-/* KÁRTYÁS SZEREPKÖR VÁLASZTÓ (ÚJ!) */
-.role-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-top: 0.5rem;
-}
-
-.role-card {
-    cursor: pointer;
-    display: block;
-}
-
-.role-card input[type="radio"] {
-    display: none;
-}
-
-.role-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.3);
-    border: 2px solid var(--border-glass);
-    border-radius: var(--radius-sm);
-    color: var(--text-muted);
-    transition: var(--transition);
-    opacity: 0.6;
-    text-align: center;
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-
-.role-content .material-symbols-rounded {
-    font-size: 1.8rem;
-    transition: var(--transition);
-}
-
-.role-card:hover .role-content {
-    opacity: 0.8;
-    background: rgba(0, 0, 0, 0.5);
-}
-
-/* Kattintva / Kiválasztva - Dinamikus színnel a CSS változóból! */
-.role-card input:checked + .role-content {
-    opacity: 1;
-    border-color: var(--role-color);
-    background: rgba(0, 0, 0, 0.6);
-    color: #fff;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 0 15px var(--role-color);
-}
-
-.role-card input:checked + .role-content .material-symbols-rounded {
-    color: var(--role-color);
-    filter: drop-shadow(0 0 5px var(--role-color));
-}
-
-.btn-action { 
-    position: relative; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    padding: 1rem 1.5rem 1rem 3rem; 
-    border-radius: var(--radius-sm); 
-    font-weight: 700; 
-    cursor: pointer; 
-    text-transform: uppercase; 
-    letter-spacing: 0.05em; 
-    font-size: 0.85rem; 
-    background: rgba(0,0,0,0.3); 
-    transition: 0.2s; 
-    text-decoration: none; 
-    border: 1px solid transparent; 
-}
-.btn-action .material-symbols-rounded {
-    position: absolute;
-    left: 1.2rem;
-    font-size: 1.3rem;
-}
+.btn-action { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem; background: rgba(0,0,0,0.3); transition: 0.2s; text-decoration: none; border: 1px solid transparent; }
 .btn-claim { border-color: #22c55e; color: #22c55e; }
 .btn-claim:hover { background: rgba(34, 197, 94, 0.15); box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); color: #fff; }
-
-/* ÜZENET DOBOZOK */
-.alert-box {
-    padding: 1rem 1.5rem;
-    border-radius: var(--radius-sm);
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    margin-bottom: 2rem;
-    animation: fadeIn 0.3s ease-out;
-}
-.alert-box.success {
-    background: rgba(34, 197, 94, 0.1);
-    border-left: 4px solid #22c55e;
-    color: #22c55e;
-}
-.alert-box.error {
-    background: rgba(239, 68, 68, 0.1);
-    border-left: 4px solid var(--admin-red);
-    color: var(--admin-red);
-}
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 1100px) {
     .split-layout { flex-direction: column; }
