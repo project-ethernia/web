@@ -51,19 +51,77 @@ function uploadImageAsBase64($fileArray) {
     return null;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
-    if ($is_muted) {
-        header('Location: /support.php');
-        exit;
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'sync' && isset($_GET['id'])) {
+    header('Content-Type: application/json');
+    $ticket_id = (int)$_GET['id'];
+    $last_id = (int)($_GET['last_id'] ?? 0);
+    $typing = (int)($_GET['typing'] ?? 0);
+
+    if ($typing) {
+        $pdo->prepare("UPDATE tickets SET user_typing_at = NOW() WHERE id = ? AND user_id = ?")->execute([$ticket_id, $user_id]);
     }
+
+    $stmt = $pdo->prepare("SELECT admin_typing_at FROM tickets WHERE id = ? AND user_id = ?");
+    $stmt->execute([$ticket_id, $user_id]);
+    $admin_typing_at = $stmt->fetchColumn();
+    $is_admin_typing = ($admin_typing_at && strtotime($admin_typing_at) >= time() - 3);
+
+    $msgStmt = $pdo->prepare("SELECT tm.*, a.username as admin_username FROM ticket_messages tm LEFT JOIN admins a ON tm.sender_id = a.id WHERE tm.ticket_id = ? AND tm.id > ? ORDER BY tm.id ASC");
+    $msgStmt->execute([$ticket_id, $last_id]);
+    $messages = $msgStmt->fetchAll();
+
+    $html = '';
+    $new_last_id = $last_id;
+
+    foreach ($messages as $m) {
+        $new_last_id = $m['id'];
+        $isSystem = (strpos($m['message'], '[SYSTEM]') === 0);
+        
+        if ($isSystem) {
+            $cleanMessage = trim(substr($m['message'], 8));
+            $html .= '<div class="system-msg-simple" data-id="'.$m['id'].'"><span class="material-symbols-rounded">info</span> ' . nl2br(h($cleanMessage)) . '</div>';
+        } else {
+            $isMine = ($m['is_admin'] == 0 && $m['sender_id'] == $user_id);
+            $wrapperClass = $isMine ? 'mine' : 'admin';
+            $avatarUrl = 'https://minotar.net/helm/' . urlencode($isMine ? $currentUser : ($m['admin_username'] ?? 'Admin')) . '/32.png';
+            $authorName = h($isMine ? $currentUser : ($m['admin_username'] ?? 'Ethernia Stáb'));
+            $cleanMessage = h($m['message']);
+            
+            $html .= '<div class="chat-bubble-wrapper ' . $wrapperClass . '" data-id="'.$m['id'].'">';
+            $html .= '<img src="' . $avatarUrl . '" alt="Avatar" class="chat-avatar">';
+            $html .= '<div class="chat-content">';
+            $html .= '<div class="chat-meta"><span class="chat-author">' . $authorName;
+            if (!$isMine) $html .= ' <span class="role-badge role-STAFF">STAFF</span>';
+            $html .= '</span><span class="chat-time">' . formatHungarianDate($m['created_at']) . '</span></div>';
+            if ($cleanMessage !== '') $html .= '<div class="chat-text">' . nl2br($cleanMessage) . '</div>';
+            if ($m['attachment']) $html .= '<div class="chat-attachment" ' . ($cleanMessage === '' ? 'style="margin-top: 0;"' : '') . '><a href="' . h($m['attachment']) . '" target="_blank"><img src="' . h($m['attachment']) . '"></a></div>';
+            $html .= '</div></div>';
+        }
+    }
+
+    echo json_encode(['html' => $html, 'last_id' => $new_last_id, 'other_typing' => $is_admin_typing]);
+    exit;
+}
+
+function checkCooldown() {
+    $now = time();
+    $last_action = $_SESSION['last_ticket_action'] ?? 0;
+    if ($now - $last_action < 3) {
+        return false;
+    }
+    $_SESSION['last_ticket_action'] = $now;
+    return true;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
+    if ($is_muted) { header('Location: /support.php'); exit; }
+    if (!checkCooldown()) { header('Location: /support.php?error=spam'); exit; }
+    
     $category = $_POST['category'] ?? 'Egyéb kérdés';
     $subject = trim($_POST['subject'] ?? '');
     $message = trim($_POST['message'] ?? '');
     
-    if (in_array($category, $active_categories)) {
-        header('Location: /support.php?error=already_open');
-        exit;
-    }
+    if (in_array($category, $active_categories)) { header('Location: /support.php?error=already_open'); exit; }
     
     if ($subject && $message) {
         $stmt = $pdo->prepare("INSERT INTO tickets (user_id, category, subject, status) VALUES (?, ?, ?, 'open')");
@@ -80,6 +138,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'create') {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply' && isset($_GET['id'])) {
     $ticket_id = (int)$_GET['id'];
+    if (!checkCooldown()) { header("Location: /support.php?action=view&id=" . $ticket_id . "&error=spam"); exit; }
+
     $message = trim($_POST['message'] ?? '');
     $attachment = uploadImageAsBase64($_FILES['attachment'] ?? null);
     
@@ -107,8 +167,12 @@ require_once __DIR__ . '/includes/header.php';
     </div>
     <?php endif; ?>
 
-    <?php if (isset($_GET['error']) && $_GET['error'] === 'already_open'): ?>
-        <div class="alert-box error"><span class="material-symbols-rounded">error</span> Ebben a kategóriában már van aktív hibajegyed!</div>
+    <?php if (isset($_GET['error'])): ?>
+        <?php if ($_GET['error'] === 'already_open'): ?>
+            <div class="alert-box error"><span class="material-symbols-rounded">error</span> Ebben a kategóriában már van aktív hibajegyed!</div>
+        <?php elseif ($_GET['error'] === 'spam'): ?>
+            <div class="alert-box error"><span class="material-symbols-rounded">timer</span> Kérjük, várj pár másodpercet a következő művelet előtt!</div>
+        <?php endif; ?>
     <?php endif; ?>
 
     <?php if ($action === 'list'): ?>
@@ -206,7 +270,7 @@ require_once __DIR__ . '/includes/header.php';
 
         if (!$ticket) die('<div class="glass support-panel"><h2 style="padding:2rem;">Hiba! Jegy nem található.</h2></div>');
 
-        $msgStmt = $pdo->prepare("SELECT tm.*, a.username as admin_username FROM ticket_messages tm LEFT JOIN admins a ON tm.sender_id = a.id WHERE tm.ticket_id = ? ORDER BY tm.created_at ASC");
+        $msgStmt = $pdo->prepare("SELECT tm.*, a.username as admin_username FROM ticket_messages tm LEFT JOIN admins a ON tm.sender_id = a.id WHERE tm.ticket_id = ? ORDER BY tm.id ASC");
         $msgStmt->execute([$ticket_id]);
         $messages = $msgStmt->fetchAll();
 
@@ -229,15 +293,15 @@ require_once __DIR__ . '/includes/header.php';
                         if ($isSystem): 
                             $cleanMessage = trim(substr($m['message'], 8));
                     ?>
-                        <div class="system-msg-simple"><span class="material-symbols-rounded">info</span> <?= nl2br(h($cleanMessage)) ?></div>
+                        <div class="system-msg-simple" data-id="<?= $m['id'] ?>"><span class="material-symbols-rounded">info</span> <?= nl2br(h($cleanMessage)) ?></div>
                     <?php else: 
                             $isMine = ($m['is_admin'] == 0 && $m['sender_id'] == $user_id);
                             $wrapperClass = $isMine ? 'mine' : 'admin';
-                            $avatarUrl = 'https://minotar.net/helm/' . h($isMine ? $currentUser : ($m['admin_username'] ?? 'Admin')) . '/32.png';
+                            $avatarUrl = 'https://minotar.net/helm/' . urlencode($isMine ? $currentUser : ($m['admin_username'] ?? 'Admin')) . '/32.png';
                             $authorName = h($isMine ? $currentUser : ($m['admin_username'] ?? 'Ethernia Stáb'));
                             $cleanMessage = h($m['message']);
                     ?>
-                        <div class="chat-bubble-wrapper <?= $wrapperClass ?>">
+                        <div class="chat-bubble-wrapper <?= $wrapperClass ?>" data-id="<?= $m['id'] ?>">
                             <img src="<?= $avatarUrl ?>" alt="Avatar" class="chat-avatar">
                             <div class="chat-content">
                                 <div class="chat-meta">
@@ -259,17 +323,26 @@ require_once __DIR__ . '/includes/header.php';
                         </div>
                     <?php endif; ?>
                 <?php endforeach; ?>
+
+                <div class="typing-indicator" id="typing-indicator">
+                    <span class="typing-text">Az Ethernia Stáb éppen ír</span>
+                    <div class="typing-dots"><span></span><span></span><span></span></div>
+                </div>
             </div>
 
             <?php if ($ticket['status'] !== 'closed'): ?>
                 <div class="chat-input-area">
+                    <div id="image-preview-container" class="image-preview-container" style="display: none;">
+                        <img id="image-preview" src="">
+                        <button type="button" id="remove-image-btn" class="remove-image-btn"><span class="material-symbols-rounded">close</span></button>
+                    </div>
                     <form method="POST" action="?action=reply&id=<?= $ticket_id ?>" enctype="multipart/form-data" class="chat-form">
                         <label class="chat-upload-btn">
                             <span class="material-symbols-rounded">image</span>
-                            <input type="file" name="attachment" accept="image/*" style="display: none;">
+                            <input type="file" id="chat-file-input" name="attachment" accept="image/*" style="display: none;">
                         </label>
                         <textarea name="message" placeholder="Írd le a válaszod ide (Enter a küldés)..." class="chat-textarea"></textarea>
-                        <button type="submit" class="chat-send-btn"><span class="material-symbols-rounded">send</span></button>
+                        <button type="submit" class="chat-send-btn" id="chat-submit-btn"><span class="material-symbols-rounded">send</span></button>
                     </form>
                 </div>
             <?php else: ?>
