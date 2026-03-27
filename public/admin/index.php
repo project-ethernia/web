@@ -52,7 +52,6 @@ require_once __DIR__ . '/includes/topbar.php';
 </div>
 
 <div class="dashboard-panels">
-    
     <div class="panel glass" style="flex: 2;">
         <div class="panel-header">
             <h3><span class="material-symbols-rounded">monitoring</span> Rendszer Aktivitás (Elmúlt 7 nap)</h3>
@@ -84,7 +83,6 @@ require_once __DIR__ . '/includes/topbar.php';
             <?php endif; ?>
         </div>
     </div>
-
 </div>
 
 <script>
