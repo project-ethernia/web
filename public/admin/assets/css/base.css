@@ -1,39 +1,31 @@
-/* --- KŐKEMÉNY ADMIN ELRENDEZÉS (FLEXBOX BÖRTÖN) --- */
-
 body.admin-body {
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden; /* AZ EGÉSZ WEBOLDAL GÖRGETÉSÉNEK TILTÁSA */
-    height: 100vh;
-    width: 100vw;
-    background-color: var(--admin-bg);
-}
-
-/* Fő tartó doboz */
-.admin-layout {
-    display: flex;
-    flex-direction: row;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
     margin: 0;
     padding: 0;
+    background-color: var(--admin-bg, #0b0710);
+    background-image: radial-gradient(circle at 50% 0%, rgba(239, 68, 68, 0.1) 0%, transparent 50%);
+    color: var(--text-main, #ffffff);
+    font-family: var(--font-body, 'Outfit', sans-serif);
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
-/* A jobb oldali tartalom (Topbárral és mindennel) */
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
 .admin-main {
-    flex: 1; /* Kitölti a sidebar melletti MINDEN helyet */
+    flex: 1;
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    overflow-y: auto; /* KIZÁRÓLAG ITT LEHET GÖRGETNI! */
+    margin-left: 280px; /* PONTOSAN ILYEN SZÉLES AZ OLDALSÁV */
     padding: 2rem;
-    position: relative;
-    background: transparent;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
 }
 
-
-/* --- TOPBAR (FELSŐ MENÜ) --- */
+/* TOPBAR */
 .admin-topbar {
     display: flex;
     justify-content: space-between;
@@ -46,82 +38,21 @@ body.admin-body {
     border-radius: 12px;
     margin-bottom: 2rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    flex-shrink: 0; /* A Topbar soha nem nyomódhat össze! */
+    flex-shrink: 0;
 }
+.topbar-left { display: flex; align-items: center; gap: 1rem; }
+.topbar-icon { width: 48px; height: 48px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+.topbar-title h1 { margin: 0; font-size: 1.4rem; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; }
+.topbar-subtitle { margin: 0; font-size: 0.85rem; color: #94a3b8; }
+.topbar-right { display: flex; align-items: center; gap: 1.5rem; }
+.admin-profile { display: flex; align-items: center; gap: 0.8rem; padding: 0.5rem 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 9999px; color: #fff; font-weight: 600; }
+.admin-profile img { width: 32px; height: 32px; border-radius: 50%; image-rendering: pixelated; }
+.mobile-menu-btn { display: none; background: transparent; border: none; color: #fff; font-size: 2rem; cursor: pointer; }
 
-.topbar-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.topbar-icon {
-    width: 48px;
-    height: 48px;
-    background: rgba(239, 68, 68, 0.15);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: var(--admin-red);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    box-shadow: 0 0 15px var(--admin-red-glow);
-}
-
-.topbar-title h1 {
-    margin: 0;
-    font-size: 1.4rem;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.topbar-subtitle {
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
-
-.topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-}
-
-.admin-profile {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 9999px;
-    color: #fff;
-    font-weight: 600;
-}
-
-.admin-profile img {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    image-rendering: pixelated;
-}
-
-.mobile-menu-btn {
-    display: none;
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 2rem;
-    cursor: pointer;
-}
-
-/* MOBIL / TABLET KORREKCIÓK */
 @media (max-width: 992px) {
-    .admin-main { padding: 1rem; }
+    .admin-main { margin-left: 0; padding: 1rem; }
     .mobile-menu-btn { display: block; }
-    .admin-topbar { padding: 1rem; margin-bottom: 1rem; flex-direction: column; gap: 1rem; text-align: center; }
+    .admin-topbar { padding: 1rem; flex-direction: column; gap: 1rem; text-align: center; }
     .topbar-left { flex-direction: column; }
-    .topbar-right .admin-profile { display: none; } /* Mobilon rejtjük a profilt a helyspórolásért */
+    .topbar-right .admin-profile { display: none; }
 }
