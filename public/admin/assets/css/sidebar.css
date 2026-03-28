@@ -1,7 +1,9 @@
+/* --- OLDALSÁV (STICKY) --- */
 .sidebar {
     width: 280px;
+    flex-shrink: 0; /* Tilos összenyomni! */
     height: 100vh;
-    position: fixed; /* EZ HIÁNYZOTT! Ez rögzíti a helyére */
+    position: sticky; /* ITT A MÁGIA! Görgetéskor a képernyőn marad */
     top: 0;
     left: 0;
     background: rgba(15, 10, 20, 0.85); 
@@ -13,22 +15,30 @@
     overflow-y: auto;
     scrollbar-width: none; 
     z-index: 1000;
-    transition: transform 0.3s ease;
 }
 .sidebar::-webkit-scrollbar { display: none; } 
 
 .sidebar-header { padding: 2rem 1.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
 .sidebar-header h2 { color: #ef4444; font-size: 1.5rem; letter-spacing: 0.1em; text-shadow: 0 0 15px rgba(239, 68, 68, 0.4); margin: 0; }
+
 .sidebar-nav { padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
 .sidebar-link { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1rem; color: #94a3b8; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s; }
 .sidebar-link:hover, .sidebar-link.active { background: rgba(239, 68, 68, 0.15); color: #fff; box-shadow: inset 4px 0 0 #ef4444; }
 .sidebar-link.active { background: rgba(239, 68, 68, 0.25); border-left: none; }
 .sidebar-link .material-symbols-rounded { font-size: 1.3rem; }
+
 .sidebar-footer { padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); }
 .btn-logout { display: flex; align-items: center; justify-content: center; gap: 0.8rem; width: 100%; padding: 0.8rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; transition: 0.3s; cursor: pointer; }
 .btn-logout:hover { background: #ef4444; color: #fff; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
 
+/* MOBIL / TABLET KORREKCIÓK */
 @media (max-width: 992px) {
-    .sidebar { transform: translateX(-100%); }
-    .sidebar.open { transform: translateX(0); }
+    .sidebar {
+        position: fixed;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    .sidebar.open {
+        transform: translateX(0);
+    }
 }
