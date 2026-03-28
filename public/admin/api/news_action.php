@@ -7,75 +7,44 @@ if (!hasPermission($admin_role, 'all')) {
     exit;
 }
 
-// 1. Megvizsgáljuk, hogy JSON kérés jött-e (Toggle/Törlés esetén) vagy hagyományos Form (Mentés/Kép)
-$contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
-
-if (strpos($contentType, 'application/json') !== false) {
-    // JSON feldolgozása (Toggle és Delete funkciók)
-    $data = json_decode(file_get_contents('php://input'), true);
-    $action = $data['action'] ?? '';
-    $id = (int)($data['id'] ?? 0);
-    $state = (int)($data['state'] ?? 0);
-} else {
-    // FORM feldolgozása (Hozzáadás, Szerkesztés, Képfeltöltés)
-    $action = $_POST['action'] ?? '';
-    $id = (int)($_POST['id'] ?? 0);
-    $title = trim($_POST['title'] ?? '');
-    $category = trim($_POST['category'] ?? '');
-    $snippet = trim($_POST['snippet'] ?? ''); // RÖVID SZÖVEG
-    $content = trim($_POST['content'] ?? ''); // HOSSZÚ SZÖVEG
-    $is_published = isset($_POST['is_published']) ? 1 : 0;
-}
-
-// --- AKCIÓK KEZELÉSE ---
+// Mindent JSON-ből olvasunk ki!
+$data = json_decode(file_get_contents('php://input'), true);
+$action = $data['action'] ?? '';
 
 if ($action === 'add' || $action === 'edit') {
+    $id = (int)($data['id'] ?? 0);
+    $title = trim($data['title'] ?? '');
+    $category = trim($data['category'] ?? '');
+    $snippet = trim($data['snippet'] ?? '');
+    $content = trim($data['content'] ?? '');
+    $image_url = trim($data['image_url'] ?? ''); // URL KÉP FOGADÁSA
+    $is_published = (int)($data['is_published'] ?? 0);
+
     if (!$title || !$content || !$snippet) {
         echo json_encode(['status' => 'error', 'message' => 'Minden szöveges mező kitöltése kötelező!']);
         exit;
     }
 
-    // Képfeltöltés kezelése
-    $image_query_part = "";
-    $image_param = null;
-    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $upload_dir = __DIR__ . '/../../assets/img/news/';
-        if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
-        
-        $filename = time() . '_' . basename($_FILES['image']['name']);
-        if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_dir . $filename)) {
-            $image_path = '/assets/img/news/' . $filename;
-            $image_query_part = ", image_url = ?";
-            $image_param = $image_path;
-        }
-    }
-
     if ($action === 'add') {
-        $sql = "INSERT INTO news (title, category, snippet, content, is_published, author_id" . ($image_param ? ", image_url" : "") . ") VALUES (?, ?, ?, ?, ?, ?" . ($image_param ? ", ?" : "") . ")";
-        $params = [$title, $category, $snippet, $content, $is_published, $admin_id];
-        if ($image_param) $params[] = $image_param;
-        
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
+        $stmt = $pdo->prepare("INSERT INTO news (title, category, snippet, content, image_url, is_published, author_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $category, $snippet, $content, $image_url, $is_published, $admin_id]);
         echo json_encode(['status' => 'success', 'message' => 'Hír sikeresen közzétéve!']);
     } else {
-        $sql = "UPDATE news SET title=?, category=?, snippet=?, content=?, is_published=?" . $image_query_part . " WHERE id=?";
-        $params = [$title, $category, $snippet, $content, $is_published];
-        if ($image_param) $params[] = $image_param;
-        $params[] = $id;
-        
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
+        $stmt = $pdo->prepare("UPDATE news SET title=?, category=?, snippet=?, content=?, image_url=?, is_published=? WHERE id=?");
+        $stmt->execute([$title, $category, $snippet, $content, $image_url, $is_published, $id]);
         echo json_encode(['status' => 'success', 'message' => 'Hír sikeresen frissítve!']);
     }
 
 } elseif ($action === 'delete') {
+    $id = (int)($data['id'] ?? 0);
     $pdo->prepare("DELETE FROM news WHERE id = ?")->execute([$id]);
     echo json_encode(['status' => 'success', 'message' => 'Hír véglegesen törölve.']);
 
 } elseif ($action === 'toggle') {
+    $id = (int)($data['id'] ?? 0);
+    $state = (int)($data['state'] ?? 0);
     $pdo->prepare("UPDATE news SET is_published = ? WHERE id = ?")->execute([$state, $id]);
-    echo json_encode(['status' => 'success', 'message' => 'Láthatóság sikeresen módosítva.']);
+    echo json_encode(['status' => 'success', 'message' => $state === 1 ? 'Hír közzétéve.' : 'Hír elrejtve.']);
 
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Ismeretlen művelet.']);

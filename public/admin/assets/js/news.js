@@ -72,10 +72,21 @@ document.addEventListener("DOMContentLoaded", function () {
                                 var tr = document.createElement('tr');
                                 tr.className = 'hover-row';
                                 var isPub = Number(news.is_published) === 1;
+                                // Toggle Gomb Logika
                                 var visibilityBtn = isPub
                                     ? "<button type=\"button\" class=\"toggle-visibility active\" style=\"cursor: pointer;\" title=\"Kattints az elrejt\u00E9shez\" onclick=\"doNewsAction('toggle', ".concat(news.id, ", 0)\"><span class=\"material-symbols-rounded\">visibility</span></button>")
                                     : "<button type=\"button\" class=\"toggle-visibility inactive\" style=\"cursor: pointer;\" title=\"Kattints a k\u00F6zz\u00E9t\u00E9telhez\" onclick=\"doNewsAction('toggle', ".concat(news.id, ", 1)\"><span class=\"material-symbols-rounded\">visibility_off</span></button>");
-                                tr.innerHTML = "\n                        <td class=\"td-id\">#".concat(String(news.id).padStart(3, '0'), "</td>\n                        <td>\n                            <div class=\"news-title\">").concat(news.title, "</div>\n                            <span class=\"cat-badge\" style=\"background: rgba(255,255,255,0.1);\">").concat(news.category, "</span>\n                        </td>\n                        <td class=\"td-muted\">").concat(news.author_name || 'Ismeretlen', "</td>\n                        <td>").concat(visibilityBtn, "</td>\n                        <td>\n                            <div class=\"action-buttons\">\n                                <button type=\"button\" class=\"btn-sm btn-edit\" onclick=\"editNews(").concat(news.id, ")\"><span class=\"material-symbols-rounded\">edit</span></button>\n                                <button type=\"button\" class=\"btn-sm btn-danger\" onclick=\"doNewsAction('delete', ").concat(news.id, ")\"><span class=\"material-symbols-rounded\">delete</span></button>\n                            </div>\n                        </td>\n                    ");
+                                // JAVÍTVA: Gyönyörű Badge dizájn kategóriák alapján
+                                var badgeClass = 'default';
+                                if (news.category === 'Karbantartás')
+                                    badgeClass = 'info';
+                                else if (news.category === 'Frissítés')
+                                    badgeClass = 'success';
+                                else if (news.category === 'Bejelentés')
+                                    badgeClass = 'warning';
+                                else if (news.category === 'Esemény')
+                                    badgeClass = 'error';
+                                tr.innerHTML = "\n                        <td class=\"td-id\">#".concat(String(news.id).padStart(3, '0'), "</td>\n                        <td>\n                            <div style=\"font-weight: 700; font-size: 1.05rem; margin-bottom: 0.4rem; color: #fff;\">").concat(news.title, "</div>\n                            <span class=\"badge ").concat(badgeClass, "\">").concat(news.category, "</span>\n                        </td>\n                        <td class=\"td-muted\">").concat(news.author_name || 'Ismeretlen', "</td>\n                        <td>").concat(visibilityBtn, "</td>\n                        <td>\n                            <div class=\"action-buttons\">\n                                <button type=\"button\" class=\"btn-sm btn-edit\" onclick=\"editNews(").concat(news.id, ")\"><span class=\"material-symbols-rounded\">edit</span></button>\n                                <button type=\"button\" class=\"btn-sm btn-danger\" onclick=\"doNewsAction('delete', ").concat(news.id, ")\"><span class=\"material-symbols-rounded\">delete</span></button>\n                            </div>\n                        </td>\n                    ");
                                 tbody.appendChild(tr);
                             });
                         }
@@ -97,12 +108,22 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (form) {
         form.addEventListener('submit', function (e) { return __awaiter(void 0, void 0, void 0, function () {
-            var formData, btn, res, data, actionInput, defaultRadio, headerText, err_2;
+            var formData, payload, btn, res, data, actionInput, defaultRadio, headerText, headerIcon, err_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         e.preventDefault();
                         formData = new FormData(form);
+                        payload = {
+                            action: formData.get('action'),
+                            id: formData.get('id'),
+                            title: formData.get('title'),
+                            category: formData.get('category'),
+                            snippet: formData.get('snippet'),
+                            content: formData.get('content'),
+                            image_url: formData.get('image_url'),
+                            is_published: formData.get('is_published') ? 1 : 0
+                        };
                         btn = form.querySelector('button[type="submit"]');
                         if (btn) {
                             btn.disabled = true;
@@ -113,7 +134,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         _a.trys.push([1, 4, 5, 6]);
                         return [4 /*yield*/, fetch('/admin/api/news_action.php', {
                                 method: 'POST',
-                                body: formData // A böngésző magától beállítja a multipart/form-data headert!
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
                             })];
                     case 2:
                         res = _a.sent();
@@ -121,10 +143,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     case 3:
                         data = _a.sent();
                         if (data.status === 'success') {
-                            if (typeof showToast === 'function')
-                                showToast('success', data.message);
-                            else
-                                alert(data.message);
+                            showToast('success', data.message);
                             form.reset();
                             actionInput = document.getElementById('news-action');
                             if (actionInput)
@@ -132,21 +151,22 @@ document.addEventListener("DOMContentLoaded", function () {
                             defaultRadio = document.querySelector('input[name="category"][value="Karbantartás"]');
                             if (defaultRadio)
                                 defaultRadio.checked = true;
-                            headerText = document.querySelector('.form-panel .panel-header h2');
-                            if (headerText)
-                                headerText.innerHTML = '<span class="material-symbols-rounded">add_circle</span> Új hír írása';
+                            headerText = document.getElementById('form-header-text');
+                            headerIcon = document.getElementById('form-header-icon');
+                            if (headerText && headerIcon) {
+                                headerText.innerText = 'Új hír írása';
+                                headerIcon.innerText = 'add_circle';
+                                headerIcon.style.color = 'var(--admin-red)';
+                            }
                             loadNews();
                         }
                         else {
-                            if (typeof showToast === 'function')
-                                showToast('error', data.message);
-                            else
-                                alert(data.message);
+                            showToast('error', data.message);
                         }
                         return [3 /*break*/, 6];
                     case 4:
                         err_2 = _a.sent();
-                        alert("Hálózati hiba a mentés során.");
+                        showToast('error', "Hálózati hiba a mentés során.");
                         return [3 /*break*/, 6];
                     case 5:
                         if (btn) {
@@ -159,44 +179,48 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }); });
     }
-    // Toggle és Törlés (Ez maradt JSON, mert itt nincsenek fájlok)
-    window.doNewsAction = function (action, id, state) { return __awaiter(void 0, void 0, void 0, function () {
-        var res, data, e_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (action === 'delete' && !confirm("Biztosan törlöd a hírt?"))
-                        return [2 /*return*/];
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 4, , 5]);
-                    return [4 /*yield*/, fetch('/admin/api/news_action.php', {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ action: action, id: id, state: state })
-                        })];
-                case 2:
-                    res = _a.sent();
-                    return [4 /*yield*/, res.json()];
-                case 3:
-                    data = _a.sent();
-                    if (data.status === 'success') {
-                        if (typeof showToast === 'function')
+    // Toggle és Törlés API hívó (Custom Confirm modallal)
+    function executeAction(action, id, state) {
+        return __awaiter(this, void 0, void 0, function () {
+            var res, data, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, fetch('/admin/api/news_action.php', {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: action, id: id, state: state })
+                            })];
+                    case 1:
+                        res = _a.sent();
+                        return [4 /*yield*/, res.json()];
+                    case 2:
+                        data = _a.sent();
+                        if (data.status === 'success') {
                             showToast('success', data.message);
-                        loadNews(); // Frissíti a listát, így a szem ikon is azonnal átvált!
-                    }
-                    else {
-                        if (typeof showToast === 'function')
+                            loadNews(); // Frissíti a listát, így a szem ikon is azonnal átvált!
+                        }
+                        else {
                             showToast('error', data.message);
-                    }
-                    return [3 /*break*/, 5];
-                case 4:
-                    e_1 = _a.sent();
-                    console.error("Hiba az akció során:", e_1);
-                    return [3 /*break*/, 5];
-                case 5: return [2 /*return*/];
-            }
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _a.sent();
+                        showToast('error', "Hiba az akció során.");
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
         });
-    }); };
+    }
+    window.doNewsAction = function (action, id, state) {
+        if (action === 'delete') {
+            ethConfirm("Biztosan véglegesen törlöd ezt a hírt?", function () { return executeAction(action, id, state); });
+        }
+        else {
+            executeAction(action, id, state);
+        }
+    };
     window.editNews = function (id) {
         var news = currentNewsList.find(function (n) { return Number(n.id) === id; });
         if (!news)
@@ -213,24 +237,25 @@ document.addEventListener("DOMContentLoaded", function () {
         var catRadio = document.querySelector("input[name=\"category\"][value=\"".concat(news.category, "\"]"));
         if (catRadio)
             catRadio.checked = true;
-        // Rövid szöveg (snippet) betöltése
         var snippetInput = document.getElementById('news-snippet');
         if (snippetInput)
             snippetInput.value = news.snippet || '';
-        // Hosszú szöveg betöltése
         var contentInput = document.getElementById('news-content');
         if (contentInput)
             contentInput.value = news.content || '';
-        // Kép input törlése biztonsági okokból szerkesztéskor
         var imageInput = document.getElementById('news-image');
         if (imageInput)
-            imageInput.value = '';
+            imageInput.value = news.image_url || '';
         var pubInput = document.getElementById('news-published');
         if (pubInput)
             pubInput.checked = (Number(news.is_published) === 1);
-        var headerText = document.querySelector('.form-panel .panel-header h2');
-        if (headerText)
-            headerText.innerHTML = '<span class="material-symbols-rounded" style="color: var(--admin-info);">edit</span> Hír szerkesztése';
+        var headerText = document.getElementById('form-header-text');
+        var headerIcon = document.getElementById('form-header-icon');
+        if (headerText && headerIcon) {
+            headerText.innerText = 'Hír szerkesztése';
+            headerIcon.innerText = 'edit';
+            headerIcon.style.color = 'var(--admin-info)';
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
     loadNews();
