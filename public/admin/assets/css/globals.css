@@ -113,6 +113,9 @@ html { scrollbar-width: thin; scrollbar-color: var(--admin-red) var(--admin-bg);
 .toast-error { border-left-color: var(--admin-red); }
 .toast-error .material-symbols-rounded { color: var(--admin-red); }
 
+.player-cell { display: flex; align-items: center; gap: 0.8rem; font-weight: 500; }
+.player-head { width: 32px; height: 32px; border-radius: 8px; image-rendering: pixelated; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+
 /* --- MOBIL NÉZET --- */
 .topbar-right { display: flex; align-items: center; gap: 1.5rem; }
 .admin-profile { display: flex; align-items: center; gap: 0.8rem; padding: 0.5rem 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 9999px; color: #fff; font-weight: 600; }
