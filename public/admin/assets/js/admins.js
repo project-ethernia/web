@@ -1,165 +1,196 @@
 "use strict";
 /// <reference lib="dom" />
-document.addEventListener("DOMContentLoaded", function () {
-    var modal = document.getElementById("admin-modal");
-    var form = document.getElementById("admin-form");
-    var errorEl = document.getElementById("admin-error");
-    var closeBtn = modal ? modal.querySelector(".modal-close") : null;
-    var cancelBtn = document.getElementById("admin-cancel");
-    var addBtn = document.getElementById("btn-add-admin");
-    var addBtnEmpty = document.getElementById("btn-add-admin-empty");
-    var usernameInput = document.getElementById("admin-username");
-    function openModal() {
-        if (!modal)
-            return;
-        if (form)
-            form.reset();
-        if (errorEl) {
-            errorEl.hidden = true;
-            errorEl.textContent = "";
-        }
-        modal.classList.add("open");
-        if (usernameInput)
-            usernameInput.focus();
-    }
-    function closeModal() {
-        if (!modal)
-            return;
-        modal.classList.remove("open");
-    }
-    if (addBtn)
-        addBtn.addEventListener("click", openModal);
-    if (addBtnEmpty)
-        addBtnEmpty.addEventListener("click", openModal);
-    var closeElements = [closeBtn, cancelBtn];
-    closeElements.forEach(function (el) {
-        if (!el)
-            return;
-        el.addEventListener("click", function (e) {
-            e.preventDefault();
-            closeModal();
-        });
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
-    if (modal) {
-        modal.addEventListener("click", function (e) {
-            if (e.target === modal)
-                closeModal();
-        });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
-    document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape")
-            closeModal();
-    });
-    if (form) {
-        form.addEventListener("submit", function (e) {
-            e.preventDefault();
-            if (errorEl) {
-                errorEl.hidden = true;
-                errorEl.textContent = "";
-            }
-            var submitBtn = form.querySelector("button[type='submit']");
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.textContent = "Létrehozás...";
-            }
-            var formData = new FormData(form);
-            fetch("admins.php", {
-                method: "POST",
-                body: formData
-            })
-                .then(function (res) { return res.json(); })
-                .then(function (data) {
-                if (!data.ok) {
-                    if (errorEl) {
-                        errorEl.hidden = false;
-                        errorEl.textContent = data.error || "Ismeretlen hiba.";
+};
+// Toast értesítő függvény
+function showToast(type, message) {
+    var container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    var toast = document.createElement('div');
+    toast.className = "toast toast-".concat(type);
+    var icon = 'info';
+    if (type === 'success')
+        icon = 'check_circle';
+    if (type === 'error')
+        icon = 'error';
+    if (type === 'warning')
+        icon = 'warning';
+    toast.innerHTML = "<span class=\"material-symbols-rounded\">".concat(icon, "</span> ").concat(message);
+    container.appendChild(toast);
+    setTimeout(function () { return toast.classList.add('show'); }, 10);
+    setTimeout(function () {
+        toast.classList.remove('show');
+        setTimeout(function () { return toast.remove(); }, 300);
+    }, 3000);
+}
+// Gombnyomások (Törlés, 2FA) kezelése
+function doAdminAction(action, id, confirmMessage) {
+    return __awaiter(this, void 0, void 0, function () {
+        var res, data, err_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (confirmMessage && !confirm(confirmMessage))
+                        return [2 /*return*/];
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 4, , 5]);
+                    return [4 /*yield*/, fetch('/admin/api/admin_action.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: action, id: id })
+                        })];
+                case 2:
+                    res = _a.sent();
+                    return [4 /*yield*/, res.json()];
+                case 3:
+                    data = _a.sent();
+                    if (data.status === 'success') {
+                        showToast('success', data.message);
+                        refreshAdminTable(); // Táblázat frissítése
                     }
                     else {
-                        alert(data.error || "Ismeretlen hiba.");
+                        showToast('error', data.message || 'Hiba történt a művelet során.');
                     }
+                    return [3 /*break*/, 5];
+                case 4:
+                    err_1 = _a.sent();
+                    console.error(err_1);
+                    showToast('error', 'Hálózati hiba történt az API hívás közben!');
+                    return [3 /*break*/, 5];
+                case 5: return [2 /*return*/];
+            }
+        });
+    });
+}
+// Űrlap (Hozzáadás) beküldésének kezelése
+function handleAddAdmin(e) {
+    return __awaiter(this, void 0, void 0, function () {
+        var form, formData, payload, submitBtn, res, data, err_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    e.preventDefault(); // Megakadályozzuk az oldal újratöltését!
+                    form = e.target;
+                    formData = new FormData(form);
+                    payload = {
+                        action: 'add',
+                        username: formData.get('username'),
+                        password: formData.get('password'),
+                        role: formData.get('role')
+                    };
+                    submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = 'Feldolgozás...';
+                    }
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 4, 5, 6]);
+                    return [4 /*yield*/, fetch('/admin/api/admin_action.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        })];
+                case 2:
+                    res = _a.sent();
+                    return [4 /*yield*/, res.json()];
+                case 3:
+                    data = _a.sent();
+                    if (data.status === 'success') {
+                        showToast('success', data.message);
+                        form.reset(); // Ürítjük a formot
+                        refreshAdminTable(); // Táblázat frissítése
+                    }
+                    else {
+                        showToast('error', data.message || 'Hiba történt a hozzáadáskor.');
+                    }
+                    return [3 /*break*/, 6];
+                case 4:
+                    err_2 = _a.sent();
+                    console.error(err_2);
+                    showToast('error', 'Hálózati hiba történt!');
+                    return [3 /*break*/, 6];
+                case 5:
                     if (submitBtn) {
                         submitBtn.disabled = false;
-                        submitBtn.textContent = "Létrehozás";
+                        submitBtn.innerHTML = '<span class="material-symbols-rounded">add_circle</span> Hozzáadás';
                     }
-                    return;
-                }
-                window.location.reload();
-            })
-                .catch(function () {
-                if (errorEl) {
-                    errorEl.hidden = false;
-                    errorEl.textContent = "Hálózati hiba történt.";
-                }
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = "Létrehozás";
-                }
-            });
-        });
-    }
-    document.querySelectorAll(".toggle-btn").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-            var id = btn.dataset.id;
-            if (!id)
-                return;
-            var current = btn.dataset.visible === "1";
-            var next = current ? 0 : 1;
-            var formData = new FormData();
-            formData.append("action", "toggle_active");
-            formData.append("id", id);
-            formData.append("is_active", String(next));
-            fetch("admins.php", {
-                method: "POST",
-                body: formData
-            })
-                .then(function (res) { return res.json(); })
-                .then(function (data) {
-                if (!data.ok) {
-                    alert(data.error || "Hiba az állapot módosításakor.");
-                    return;
-                }
-                btn.dataset.visible = String(next);
-                btn.classList.toggle("active", !!next);
-                var tr = btn.closest("tr");
-                if (tr)
-                    tr.dataset.is_active = String(next);
-            })
-                .catch(function () { return alert("Hálózati hiba történt."); });
-        });
-    });
-    document.querySelectorAll(".btn-reset-pw").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-            var tr = btn.closest("tr");
-            if (!tr)
-                return;
-            var id = tr.dataset.id;
-            if (!id)
-                return;
-            var username = tr.dataset.username || id;
-            var newPw = window.prompt("Új jelszó beállítása ehhez: " + username);
-            if (!newPw)
-                return;
-            if (newPw.length < 4) {
-                alert("A jelszó legyen legalább 4 karakter!");
-                return;
+                    return [7 /*endfinally*/];
+                case 6: return [2 /*return*/];
             }
-            var formData = new FormData();
-            formData.append("action", "reset_password");
-            formData.append("id", id);
-            formData.append("password", newPw);
-            fetch("admins.php", {
-                method: "POST",
-                body: formData
-            })
-                .then(function (res) { return res.json(); })
-                .then(function (data) {
-                if (!data.ok) {
-                    alert(data.error || "Hiba a jelszó csere során.");
-                    return;
-                }
-                alert("Jelszó sikeresen módosítva!");
-            })
-                .catch(function () { return alert("Hálózati hiba a jelszó módosításakor."); });
         });
     });
-});
+}
+// Élő táblázat frissítő mágia
+function refreshAdminTable() {
+    return __awaiter(this, void 0, void 0, function () {
+        var htmlRes, htmlText, parser, doc, currentList, newList, err_3;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    return [4 /*yield*/, fetch(window.location.href)];
+                case 1:
+                    htmlRes = _a.sent();
+                    return [4 /*yield*/, htmlRes.text()];
+                case 2:
+                    htmlText = _a.sent();
+                    parser = new DOMParser();
+                    doc = parser.parseFromString(htmlText, 'text/html');
+                    currentList = document.querySelector('.list-panel');
+                    newList = doc.querySelector('.list-panel');
+                    if (currentList && newList) {
+                        currentList.innerHTML = newList.innerHTML;
+                    }
+                    return [3 /*break*/, 4];
+                case 3:
+                    err_3 = _a.sent();
+                    console.error('Hiba a táblázat frissítésekor', err_3);
+                    return [3 /*break*/, 4];
+                case 4: return [2 /*return*/];
+            }
+        });
+    });
+}
+// Kötjük a globális window objektumhoz, hogy a HTMLből hívhatóak legyenek
+window.doAdminAction = doAdminAction;
+window.handleAddAdmin = handleAddAdmin;

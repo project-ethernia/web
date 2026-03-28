@@ -1,174 +1,120 @@
 /// <reference lib="dom" />
 
-document.addEventListener("DOMContentLoaded", () => {
-  const modal = document.getElementById("admin-modal") as HTMLElement | null;
-  const form = document.getElementById("admin-form") as HTMLFormElement | null;
-  const errorEl = document.getElementById("admin-error") as HTMLElement | null;
-  const closeBtn = modal ? (modal.querySelector(".modal-close") as HTMLElement | null) : null;
-  const cancelBtn = document.getElementById("admin-cancel") as HTMLElement | null;
-  const addBtn = document.getElementById("btn-add-admin") as HTMLElement | null;
-  const addBtnEmpty = document.getElementById("btn-add-admin-empty") as HTMLElement | null;
-  const usernameInput = document.getElementById("admin-username") as HTMLInputElement | null;
-
-  function openModal(): void {
-    if (!modal) return;
-    if (form) form.reset();
-    if (errorEl) {
-      errorEl.hidden = true;
-      errorEl.textContent = "";
+// Toast értesítő függvény
+function showToast(type: 'success' | 'error' | 'warning' | 'info', message: string) {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
     }
-    modal.classList.add("open");
-    if (usernameInput) usernameInput.focus();
-  }
 
-  function closeModal(): void {
-    if (!modal) return;
-    modal.classList.remove("open");
-  }
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    let icon = 'info';
+    if (type === 'success') icon = 'check_circle';
+    if (type === 'error') icon = 'error';
+    if (type === 'warning') icon = 'warning';
 
-  if (addBtn) addBtn.addEventListener("click", openModal);
-  if (addBtnEmpty) addBtnEmpty.addEventListener("click", openModal);
+    toast.innerHTML = `<span class="material-symbols-rounded">${icon}</span> ${message}`;
+    container.appendChild(toast);
 
-  const closeElements: (HTMLElement | null)[] = [closeBtn, cancelBtn];
-  closeElements.forEach((el) => {
-    if (!el) return;
-    el.addEventListener("click", (e: Event) => {
-      e.preventDefault();
-      closeModal();
-    });
-  });
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
 
-  if (modal) {
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) closeModal();
-    });
-  }
+// Gombnyomások (Törlés, 2FA) kezelése
+async function doAdminAction(action: string, id: number, confirmMessage?: string) {
+    if (confirmMessage && !confirm(confirmMessage)) return;
 
-  document.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.key === "Escape") closeModal();
-  });
-
-  if (form) {
-    form.addEventListener("submit", (e: Event) => {
-      e.preventDefault();
-      
-      if (errorEl) {
-        errorEl.hidden = true;
-        errorEl.textContent = "";
-      }
-
-      const submitBtn = form.querySelector("button[type='submit']") as HTMLButtonElement | null;
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Létrehozás...";
-      }
-
-      const formData = new FormData(form);
-
-      fetch("admins.php", {
-        method: "POST",
-        body: formData
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.ok) {
-            if (errorEl) {
-              errorEl.hidden = false;
-              errorEl.textContent = data.error || "Ismeretlen hiba.";
-            } else {
-              alert(data.error || "Ismeretlen hiba.");
-            }
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = "Létrehozás";
-            }
-            return;
-          }
-          window.location.reload();
-        })
-        .catch(() => {
-          if (errorEl) {
-            errorEl.hidden = false;
-            errorEl.textContent = "Hálózati hiba történt.";
-          }
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Létrehozás";
-          }
+    try {
+        const res = await fetch('/admin/api/admin_action.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, id })
         });
-    });
-  }
+        const data = await res.json();
 
-  document.querySelectorAll<HTMLButtonElement>(".toggle-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.id;
-      if (!id) return;
+        if (data.status === 'success') {
+            showToast('success', data.message);
+            refreshAdminTable(); // Táblázat frissítése
+        } else {
+            showToast('error', data.message || 'Hiba történt a művelet során.');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('error', 'Hálózati hiba történt az API hívás közben!');
+    }
+}
 
-      const current = btn.dataset.visible === "1";
-      const next = current ? 0 : 1;
+// Űrlap (Hozzáadás) beküldésének kezelése
+async function handleAddAdmin(e: Event) {
+    e.preventDefault(); // Megakadályozzuk az oldal újratöltését!
+    
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    
+    const payload = {
+        action: 'add',
+        username: formData.get('username'),
+        password: formData.get('password'),
+        role: formData.get('role')
+    };
 
-      const formData = new FormData();
-      formData.append("action", "toggle_active");
-      formData.append("id", id);
-      formData.append("is_active", String(next));
+    const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Feldolgozás...';
+    }
 
-      fetch("admins.php", {
-        method: "POST",
-        body: formData
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.ok) {
-            alert(data.error || "Hiba az állapot módosításakor.");
-            return;
-          }
+    try {
+        const res = await fetch('/admin/api/admin_action.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
 
-          btn.dataset.visible = String(next);
-          btn.classList.toggle("active", !!next);
+        if (data.status === 'success') {
+            showToast('success', data.message);
+            form.reset(); // Ürítjük a formot
+            refreshAdminTable(); // Táblázat frissítése
+        } else {
+            showToast('error', data.message || 'Hiba történt a hozzáadáskor.');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('error', 'Hálózati hiba történt!');
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="material-symbols-rounded">add_circle</span> Hozzáadás';
+        }
+    }
+}
 
-          const tr = btn.closest("tr") as HTMLTableRowElement | null;
-          if (tr) tr.dataset.is_active = String(next);
-        })
-        .catch(() => alert("Hálózati hiba történt."));
-    });
-  });
+// Élő táblázat frissítő mágia
+async function refreshAdminTable() {
+    try {
+        const htmlRes = await fetch(window.location.href);
+        const htmlText = await htmlRes.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlText, 'text/html');
+        
+        const currentList = document.querySelector('.list-panel');
+        const newList = doc.querySelector('.list-panel');
+        if (currentList && newList) {
+            currentList.innerHTML = newList.innerHTML;
+        }
+    } catch (err) {
+        console.error('Hiba a táblázat frissítésekor', err);
+    }
+}
 
-  document.querySelectorAll<HTMLButtonElement>(".btn-reset-pw").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const tr = btn.closest("tr") as HTMLTableRowElement | null;
-      if (!tr) return;
-
-      const id = tr.dataset.id;
-      if (!id) return;
-
-      const username = tr.dataset.username || id;
-
-      const newPw = window.prompt("Új jelszó beállítása ehhez: " + username);
-      if (!newPw) return;
-
-      if (newPw.length < 4) {
-        alert("A jelszó legyen legalább 4 karakter!");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("action", "reset_password");
-      formData.append("id", id);
-      formData.append("password", newPw);
-
-      fetch("admins.php", {
-        method: "POST",
-        body: formData
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.ok) {
-            alert(data.error || "Hiba a jelszó csere során.");
-            return;
-          }
-          alert("Jelszó sikeresen módosítva!");
-        })
-        .catch(() => alert("Hálózati hiba a jelszó módosításakor."));
-    });
-  });
-});
+// Kötjük a globális window objektumhoz, hogy a HTMLből hívhatóak legyenek
+(window as any).doAdminAction = doAdminAction;
+(window as any).handleAddAdmin = handleAddAdmin;
