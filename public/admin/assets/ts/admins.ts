@@ -1,9 +1,26 @@
 /// <reference lib="dom" />
 
-declare function showToast(type: string, message: string): void;
-declare function ethConfirm(message: string, onConfirm: Function): void;
+declare function showToast(type: string, msg: string): void;
+declare function ethConfirm(msg: string, cb: Function): void;
 
-async function executeAdminAction(action: string, id: number) {
+const refreshAdminTable = async () => {
+    try {
+        const htmlRes = await fetch(window.location.href);
+        const htmlText = await htmlRes.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlText, 'text/html');
+        
+        const currentList = document.querySelector('.list-panel');
+        const newList = doc.querySelector('.list-panel');
+        if (currentList && newList) {
+            currentList.innerHTML = newList.innerHTML;
+        }
+    } catch (err) {
+        console.error('Hiba a táblázat frissítésekor', err);
+    }
+};
+
+const executeAdminAction = async (action: string, id: number) => {
     try {
         const res = await fetch('/admin/api/admin_action.php', {
             method: 'POST',
@@ -14,7 +31,7 @@ async function executeAdminAction(action: string, id: number) {
 
         if (data.status === 'success') {
             showToast('success', data.message);
-            refreshAdminTable(); // Táblázat frissítése
+            refreshAdminTable(); 
         } else {
             showToast('error', data.message || 'Hiba történt a művelet során.');
         }
@@ -22,19 +39,17 @@ async function executeAdminAction(action: string, id: number) {
         console.error(err);
         showToast('error', 'Hálózati hiba történt az API hívás közben!');
     }
-}
+};
 
-// Gombnyomások (Törlés, 2FA) kezelése a Custom Confirm modallal
-function doAdminAction(action: string, id: number, confirmMessage?: string) {
+const doAdminAction = (action: string, id: number, confirmMessage?: string) => {
     if (confirmMessage) {
         ethConfirm(confirmMessage, () => executeAdminAction(action, id));
     } else {
         executeAdminAction(action, id);
     }
-}
+};
 
-// Űrlap (Hozzáadás) beküldésének kezelése
-async function handleAddAdmin(e: Event) {
+const handleAddAdmin = async (e: Event) => {
     e.preventDefault(); 
     
     const form = e.target as HTMLFormElement;
@@ -77,25 +92,7 @@ async function handleAddAdmin(e: Event) {
             submitBtn.innerHTML = '<span class="material-symbols-rounded">add_circle</span> Hozzáadás';
         }
     }
-}
-
-// Élő táblázat frissítés
-async function refreshAdminTable() {
-    try {
-        const htmlRes = await fetch(window.location.href);
-        const htmlText = await htmlRes.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlText, 'text/html');
-        
-        const currentList = document.querySelector('.list-panel');
-        const newList = doc.querySelector('.list-panel');
-        if (currentList && newList) {
-            currentList.innerHTML = newList.innerHTML;
-        }
-    } catch (err) {
-        console.error('Hiba a táblázat frissítésekor', err);
-    }
-}
+};
 
 (window as any).doAdminAction = doAdminAction;
 (window as any).handleAddAdmin = handleAddAdmin;

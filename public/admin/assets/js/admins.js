@@ -36,139 +36,130 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-function executeAdminAction(action, id) {
-    return __awaiter(this, void 0, void 0, function () {
-        var res, data, err_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 3, , 4]);
-                    return [4 /*yield*/, fetch('/admin/api/admin_action.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ action: action, id: id })
-                        })];
-                case 1:
-                    res = _a.sent();
-                    return [4 /*yield*/, res.json()];
-                case 2:
-                    data = _a.sent();
-                    if (data.status === 'success') {
-                        showToast('success', data.message);
-                        refreshAdminTable(); // Táblázat frissítése
-                    }
-                    else {
-                        showToast('error', data.message || 'Hiba történt a művelet során.');
-                    }
-                    return [3 /*break*/, 4];
-                case 3:
-                    err_1 = _a.sent();
-                    console.error(err_1);
-                    showToast('error', 'Hálózati hiba történt az API hívás közben!');
-                    return [3 /*break*/, 4];
-                case 4: return [2 /*return*/];
-            }
-        });
+var refreshAdminTable = function () { return __awaiter(void 0, void 0, void 0, function () {
+    var htmlRes, htmlText, parser, doc, currentList, newList, err_1;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 3, , 4]);
+                return [4 /*yield*/, fetch(window.location.href)];
+            case 1:
+                htmlRes = _a.sent();
+                return [4 /*yield*/, htmlRes.text()];
+            case 2:
+                htmlText = _a.sent();
+                parser = new DOMParser();
+                doc = parser.parseFromString(htmlText, 'text/html');
+                currentList = document.querySelector('.list-panel');
+                newList = doc.querySelector('.list-panel');
+                if (currentList && newList) {
+                    currentList.innerHTML = newList.innerHTML;
+                }
+                return [3 /*break*/, 4];
+            case 3:
+                err_1 = _a.sent();
+                console.error('Hiba a táblázat frissítésekor', err_1);
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
     });
-}
-// Gombnyomások (Törlés, 2FA) kezelése a Custom Confirm modallal
-function doAdminAction(action, id, confirmMessage) {
+}); };
+var executeAdminAction = function (action, id) { return __awaiter(void 0, void 0, void 0, function () {
+    var res, data, err_2;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 3, , 4]);
+                return [4 /*yield*/, fetch('/admin/api/admin_action.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: action, id: id })
+                    })];
+            case 1:
+                res = _a.sent();
+                return [4 /*yield*/, res.json()];
+            case 2:
+                data = _a.sent();
+                if (data.status === 'success') {
+                    showToast('success', data.message);
+                    refreshAdminTable();
+                }
+                else {
+                    showToast('error', data.message || 'Hiba történt a művelet során.');
+                }
+                return [3 /*break*/, 4];
+            case 3:
+                err_2 = _a.sent();
+                console.error(err_2);
+                showToast('error', 'Hálózati hiba történt az API hívás közben!');
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); };
+var doAdminAction = function (action, id, confirmMessage) {
     if (confirmMessage) {
         ethConfirm(confirmMessage, function () { return executeAdminAction(action, id); });
     }
     else {
         executeAdminAction(action, id);
     }
-}
-// Űrlap (Hozzáadás) beküldésének kezelése
-function handleAddAdmin(e) {
-    return __awaiter(this, void 0, void 0, function () {
-        var form, formData, payload, submitBtn, res, data, err_2;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    e.preventDefault();
-                    form = e.target;
-                    formData = new FormData(form);
-                    payload = {
-                        action: 'add',
-                        username: formData.get('username'),
-                        password: formData.get('password'),
-                        role: formData.get('role')
-                    };
-                    submitBtn = form.querySelector('button[type="submit"]');
-                    if (submitBtn) {
-                        submitBtn.disabled = true;
-                        submitBtn.innerHTML = 'Feldolgozás...';
-                    }
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 4, 5, 6]);
-                    return [4 /*yield*/, fetch('/admin/api/admin_action.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        })];
-                case 2:
-                    res = _a.sent();
-                    return [4 /*yield*/, res.json()];
-                case 3:
-                    data = _a.sent();
-                    if (data.status === 'success') {
-                        showToast('success', data.message);
-                        form.reset();
-                        refreshAdminTable();
-                    }
-                    else {
-                        showToast('error', data.message || 'Hiba történt a hozzáadáskor.');
-                    }
-                    return [3 /*break*/, 6];
-                case 4:
-                    err_2 = _a.sent();
-                    console.error(err_2);
-                    showToast('error', 'Hálózati hiba történt!');
-                    return [3 /*break*/, 6];
-                case 5:
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = '<span class="material-symbols-rounded">add_circle</span> Hozzáadás';
-                    }
-                    return [7 /*endfinally*/];
-                case 6: return [2 /*return*/];
-            }
-        });
+};
+var handleAddAdmin = function (e) { return __awaiter(void 0, void 0, void 0, function () {
+    var form, formData, payload, submitBtn, res, data, err_3;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                e.preventDefault();
+                form = e.target;
+                formData = new FormData(form);
+                payload = {
+                    action: 'add',
+                    username: formData.get('username'),
+                    password: formData.get('password'),
+                    role: formData.get('role')
+                };
+                submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = 'Feldolgozás...';
+                }
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 4, 5, 6]);
+                return [4 /*yield*/, fetch('/admin/api/admin_action.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    })];
+            case 2:
+                res = _a.sent();
+                return [4 /*yield*/, res.json()];
+            case 3:
+                data = _a.sent();
+                if (data.status === 'success') {
+                    showToast('success', data.message);
+                    form.reset();
+                    refreshAdminTable();
+                }
+                else {
+                    showToast('error', data.message || 'Hiba történt a hozzáadáskor.');
+                }
+                return [3 /*break*/, 6];
+            case 4:
+                err_3 = _a.sent();
+                console.error(err_3);
+                showToast('error', 'Hálózati hiba történt!');
+                return [3 /*break*/, 6];
+            case 5:
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span class="material-symbols-rounded">add_circle</span> Hozzáadás';
+                }
+                return [7 /*endfinally*/];
+            case 6: return [2 /*return*/];
+        }
     });
-}
-// Élő táblázat frissítés
-function refreshAdminTable() {
-    return __awaiter(this, void 0, void 0, function () {
-        var htmlRes, htmlText, parser, doc, currentList, newList, err_3;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 3, , 4]);
-                    return [4 /*yield*/, fetch(window.location.href)];
-                case 1:
-                    htmlRes = _a.sent();
-                    return [4 /*yield*/, htmlRes.text()];
-                case 2:
-                    htmlText = _a.sent();
-                    parser = new DOMParser();
-                    doc = parser.parseFromString(htmlText, 'text/html');
-                    currentList = document.querySelector('.list-panel');
-                    newList = doc.querySelector('.list-panel');
-                    if (currentList && newList) {
-                        currentList.innerHTML = newList.innerHTML;
-                    }
-                    return [3 /*break*/, 4];
-                case 3:
-                    err_3 = _a.sent();
-                    console.error('Hiba a táblázat frissítésekor', err_3);
-                    return [3 /*break*/, 4];
-                case 4: return [2 /*return*/];
-            }
-        });
-    });
-}
+}); };
 window.doAdminAction = doAdminAction;
 window.handleAddAdmin = handleAddAdmin;

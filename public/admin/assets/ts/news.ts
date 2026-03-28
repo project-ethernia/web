@@ -1,7 +1,11 @@
 /// <reference lib="dom" />
 
-declare function showToast(type: string, message: string): void;
-declare function ethConfirm(message: string, onConfirm: Function): void;
+declare function showToast(type: string, msg: string): void;
+declare function ethConfirm(msg: string, cb: Function): void;
+
+// Mivel az onclick események a HTML stringben vannak, szólni kell a TS-nek, hogy léteznek.
+declare function doNewsAction(action: string, id: number, state?: number): void;
+declare function editNews(id: number): void;
 
 document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.getElementById("news-tbody");
@@ -32,12 +36,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     tr.className = 'hover-row';
                     const isPub = Number(news.is_published) === 1;
                     
-                    // Toggle Gomb Logika
                     const visibilityBtn = isPub 
                         ? `<button type="button" class="toggle-visibility active" style="cursor: pointer;" title="Kattints az elrejtéshez" onclick="doNewsAction('toggle', ${news.id}, 0)"><span class="material-symbols-rounded">visibility</span></button>`
                         : `<button type="button" class="toggle-visibility inactive" style="cursor: pointer;" title="Kattints a közzétételhez" onclick="doNewsAction('toggle', ${news.id}, 1)"><span class="material-symbols-rounded">visibility_off</span></button>`;
 
-                    // JAVÍTVA: Gyönyörű Badge dizájn kategóriák alapján
                     let badgeClass = 'default';
                     if (news.category === 'Karbantartás') badgeClass = 'info';
                     else if (news.category === 'Frissítés') badgeClass = 'success';
@@ -79,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             const formData = new FormData(form);
             
-            // JAVÍTVA: Pure JSON küldés, így sosem akad ki a PHP!
             const payload = {
                 action: formData.get('action'),
                 id: formData.get('id'),
@@ -132,7 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Toggle és Törlés API hívó (Custom Confirm modallal)
     async function executeAction(action: string, id: number, state?: number) {
         try {
             const res = await fetch('/admin/api/news_action.php', {
@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
             if (data.status === 'success') {
                 showToast('success', data.message);
-                loadNews(); // Frissíti a listát, így a szem ikon is azonnal átvált!
+                loadNews(); 
             } else {
                 showToast('error', data.message);
             }

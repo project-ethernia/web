@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 
-declare function showToast(type: string, message: string): void;
+declare function showToast(type: string, msg: string): void;
 
 document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.getElementById("users-tbody");
@@ -78,7 +78,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const u = json.data;
                 const statusBadge = u.status === 'Aktív' ? 'success' : 'error';
                 
-                // JAVÍTVA: Az alert() helyett mostantól a showToast() fut le!
                 profilePanel.innerHTML = `
                     <div class="panel-header" style="border-radius: 12px 12px 0 0;">
                         <h2><span class="material-symbols-rounded">person</span> Játékos Profilja</h2>
@@ -112,14 +111,14 @@ document.addEventListener("DOMContentLoaded", () => {
                         <h4 style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 1rem;">Adminisztrátori Műveletek</h4>
                         
                         <div class="punishment-actions">
-                            <button class="btn-punish" onclick="showToast('info', 'A büntetési API hamarosan bekötésre kerül!')">
+                            <button class="btn-punish" onclick="if(typeof showToast === 'function') showToast('info', 'A büntetési API hamarosan bekötésre kerül!'); else alert('Hamarosan!');">
                                 <span class="material-symbols-rounded">gavel</span>
                                 <div>
                                     <strong>Kitiltás (Ban)</strong>
                                     <span>Játékos végleges vagy ideiglenes kitiltása</span>
                                 </div>
                             </button>
-                            <button class="btn-punish" onclick="showToast('info', 'A büntetési API hamarosan bekötésre kerül!')">
+                            <button class="btn-punish" onclick="if(typeof showToast === 'function') showToast('info', 'A büntetési API hamarosan bekötésre kerül!'); else alert('Hamarosan!');">
                                 <span class="material-symbols-rounded">volume_off</span>
                                 <div>
                                     <strong>Némítás (Mute)</strong>

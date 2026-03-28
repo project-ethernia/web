@@ -72,11 +72,9 @@ document.addEventListener("DOMContentLoaded", function () {
                                 var tr = document.createElement('tr');
                                 tr.className = 'hover-row';
                                 var isPub = Number(news.is_published) === 1;
-                                // Toggle Gomb Logika
                                 var visibilityBtn = isPub
                                     ? "<button type=\"button\" class=\"toggle-visibility active\" style=\"cursor: pointer;\" title=\"Kattints az elrejt\u00E9shez\" onclick=\"doNewsAction('toggle', ".concat(news.id, ", 0)\"><span class=\"material-symbols-rounded\">visibility</span></button>")
                                     : "<button type=\"button\" class=\"toggle-visibility inactive\" style=\"cursor: pointer;\" title=\"Kattints a k\u00F6zz\u00E9t\u00E9telhez\" onclick=\"doNewsAction('toggle', ".concat(news.id, ", 1)\"><span class=\"material-symbols-rounded\">visibility_off</span></button>");
-                                // JAVÍTVA: Gyönyörű Badge dizájn kategóriák alapján
                                 var badgeClass = 'default';
                                 if (news.category === 'Karbantartás')
                                     badgeClass = 'info';
@@ -179,7 +177,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }); });
     }
-    // Toggle és Törlés API hívó (Custom Confirm modallal)
     function executeAction(action, id, state) {
         return __awaiter(this, void 0, void 0, function () {
             var res, data, e_1;
@@ -198,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         data = _a.sent();
                         if (data.status === 'success') {
                             showToast('success', data.message);
-                            loadNews(); // Frissíti a listát, így a szem ikon is azonnal átvált!
+                            loadNews();
                         }
                         else {
                             showToast('error', data.message);
