@@ -38,12 +38,14 @@ class AdminToastManager {
 const Toast = new AdminToastManager();
 (window as any).Toast = Toast;
 
+// ITT A BIZTOS VAGY EBBEN ABLAK LOGIKÁJA
 function ethConfirm(e: Event, msg: string, url: string): void {
     e.preventDefault();
     if (confirm(msg)) window.location.href = url;
 }
 (window as any).ethConfirm = ethConfirm;
 
+// CSRF API VÉDELEM
 const originalFetch = window.fetch;
 window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     let config = init || {};
