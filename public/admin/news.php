@@ -37,7 +37,7 @@ require_once __DIR__ . '/includes/topbar.php';
     <div class="form-panel glass" style="border-radius: 12px;">
         <div class="panel-header"><h2><span class="material-symbols-rounded">add_circle</span> Új hír írása</h2></div>
         <div class="panel-body">
-            <form id="news-form" class="add-news-form">
+            <form id="news-form" class="add-news-form" enctype="multipart/form-data">
                 <input type="hidden" id="news-action" name="action" value="add">
                 <input type="hidden" id="news-id" name="id" value="">
                 
@@ -81,8 +81,18 @@ require_once __DIR__ . '/includes/topbar.php';
                 </div>
 
                 <div class="input-group">
-                    <label>Tartalom (HTML engedélyezett)</label>
-                    <textarea id="news-content" name="content" class="admin-input" rows="8" required></textarea>
+                    <label>Rövid kivonat (Főoldali előnézet szövege)</label>
+                    <textarea id="news-snippet" name="snippet" class="admin-input" rows="3" style="resize: none;" required></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Teljes tartalom (Hosszú szöveg, HTML engedélyezett)</label>
+                    <textarea id="news-content" name="content" class="admin-input" rows="10" style="resize: none;" required></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Borítókép (Opcionális)</label>
+                    <input type="file" id="news-image" name="image" class="admin-input" accept="image/*" style="padding: 0.8rem;">
                 </div>
 
                 <label class="checkbox-container" style="margin-top: 1rem;">

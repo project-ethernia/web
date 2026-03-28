@@ -72,7 +72,6 @@ document.addEventListener("DOMContentLoaded", function () {
                                 var tr = document.createElement('tr');
                                 tr.className = 'hover-row';
                                 var isPub = Number(news.is_published) === 1;
-                                // JAVÍTVA: type="button" és cursor pointer a biztonságos kattintáshoz
                                 var visibilityBtn = isPub
                                     ? "<button type=\"button\" class=\"toggle-visibility active\" style=\"cursor: pointer;\" title=\"Kattints az elrejt\u00E9shez\" onclick=\"doNewsAction('toggle', ".concat(news.id, ", 0)\"><span class=\"material-symbols-rounded\">visibility</span></button>")
                                     : "<button type=\"button\" class=\"toggle-visibility inactive\" style=\"cursor: pointer;\" title=\"Kattints a k\u00F6zz\u00E9t\u00E9telhez\" onclick=\"doNewsAction('toggle', ".concat(news.id, ", 1)\"><span class=\"material-symbols-rounded\">visibility_off</span></button>");
@@ -98,20 +97,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (form) {
         form.addEventListener('submit', function (e) { return __awaiter(void 0, void 0, void 0, function () {
-            var formData, payload, btn, res, data, actionInput, defaultRadio, headerText, err_2;
+            var formData, btn, res, data, actionInput, defaultRadio, headerText, err_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         e.preventDefault();
                         formData = new FormData(form);
-                        payload = {
-                            action: formData.get('action'),
-                            id: formData.get('id'),
-                            title: formData.get('title'),
-                            category: formData.get('category'),
-                            content: formData.get('content'),
-                            is_published: formData.get('is_published') ? 1 : 0
-                        };
                         btn = form.querySelector('button[type="submit"]');
                         if (btn) {
                             btn.disabled = true;
@@ -121,8 +112,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     case 1:
                         _a.trys.push([1, 4, 5, 6]);
                         return [4 /*yield*/, fetch('/admin/api/news_action.php', {
-                                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(payload)
+                                method: 'POST',
+                                body: formData // A böngésző magától beállítja a multipart/form-data headert!
                             })];
                     case 2:
                         res = _a.sent();
@@ -168,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }); });
     }
-    // Gomb funkciók globális elérése a DOM-ból
+    // Toggle és Törlés (Ez maradt JSON, mert itt nincsenek fájlok)
     window.doNewsAction = function (action, id, state) { return __awaiter(void 0, void 0, void 0, function () {
         var res, data, e_1;
         return __generator(this, function (_a) {
@@ -191,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (data.status === 'success') {
                         if (typeof showToast === 'function')
                             showToast('success', data.message);
-                        loadNews(); // Azonnal frissítjük a táblát, így a szem gomb színe is átvált
+                        loadNews(); // Frissíti a listát, így a szem ikon is azonnal átvált!
                     }
                     else {
                         if (typeof showToast === 'function')
@@ -206,7 +197,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }); };
-    // JAVÍTOTT: Rádiógomb kártyák beállítása szerkesztéskor
     window.editNews = function (id) {
         var news = currentNewsList.find(function (n) { return Number(n.id) === id; });
         if (!news)
@@ -220,13 +210,21 @@ document.addEventListener("DOMContentLoaded", function () {
         var titleInput = document.getElementById('news-title');
         if (titleInput)
             titleInput.value = news.title;
-        // JAVÍTÁS: Kikeressük a megfelelő rejtett rádiógombot a kártyák közül, és "checked"-re állítjuk!
         var catRadio = document.querySelector("input[name=\"category\"][value=\"".concat(news.category, "\"]"));
         if (catRadio)
             catRadio.checked = true;
+        // Rövid szöveg (snippet) betöltése
+        var snippetInput = document.getElementById('news-snippet');
+        if (snippetInput)
+            snippetInput.value = news.snippet || '';
+        // Hosszú szöveg betöltése
         var contentInput = document.getElementById('news-content');
         if (contentInput)
-            contentInput.value = news.content;
+            contentInput.value = news.content || '';
+        // Kép input törlése biztonsági okokból szerkesztéskor
+        var imageInput = document.getElementById('news-image');
+        if (imageInput)
+            imageInput.value = '';
         var pubInput = document.getElementById('news-published');
         if (pubInput)
             pubInput.checked = (Number(news.is_published) === 1);

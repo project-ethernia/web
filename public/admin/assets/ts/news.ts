@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.getElementById("news-search") as HTMLInputElement | null;
     const form = document.getElementById("news-form") as HTMLFormElement | null;
     let debounceTimer: number;
-    
     let currentNewsList: any[] = []; 
 
     async function loadNews(query: string = '') {
@@ -32,7 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     tr.className = 'hover-row';
                     const isPub = Number(news.is_published) === 1;
                     
-                    // JAVÍTVA: type="button" és cursor pointer a biztonságos kattintáshoz
                     const visibilityBtn = isPub 
                         ? `<button type="button" class="toggle-visibility active" style="cursor: pointer;" title="Kattints az elrejtéshez" onclick="doNewsAction('toggle', ${news.id}, 0)"><span class="material-symbols-rounded">visibility</span></button>`
                         : `<button type="button" class="toggle-visibility inactive" style="cursor: pointer;" title="Kattints a közzétételhez" onclick="doNewsAction('toggle', ${news.id}, 1)"><span class="material-symbols-rounded">visibility_off</span></button>`;
@@ -70,25 +68,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            // JAVÍTÁS: FormData küldése JSON helyett, hogy a KÉP is felmenjen a szerverre!
             const formData = new FormData(form);
-            const payload = {
-                action: formData.get('action'),
-                id: formData.get('id'),
-                title: formData.get('title'),
-                category: formData.get('category'),
-                content: formData.get('content'),
-                is_published: formData.get('is_published') ? 1 : 0
-            };
-
+            
             const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
             if (btn) { btn.disabled = true; btn.innerText = "Mentés..."; }
 
             try {
                 const res = await fetch('/admin/api/news_action.php', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    method: 'POST', 
+                    body: formData // A böngésző magától beállítja a multipart/form-data headert!
                 });
                 const data = await res.json();
+                
                 if (data.status === 'success') {
                     if(typeof showToast === 'function') showToast('success', data.message); else alert(data.message);
                     form.reset();
@@ -96,7 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     const actionInput = document.getElementById('news-action') as HTMLInputElement | null;
                     if(actionInput) actionInput.value = 'add';
                     
-                    // Visszaállítjuk a default radio gombot "Karbantartás"-ra a mentés után
                     const defaultRadio = document.querySelector('input[name="category"][value="Karbantartás"]') as HTMLInputElement | null;
                     if(defaultRadio) defaultRadio.checked = true;
 
@@ -115,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Gomb funkciók globális elérése a DOM-ból
+    // Toggle és Törlés (Ez maradt JSON, mert itt nincsenek fájlok)
     (window as any).doNewsAction = async (action: string, id: number, state?: number) => {
         if (action === 'delete' && !confirm("Biztosan törlöd a hírt?")) return;
         try {
@@ -126,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
             if (data.status === 'success') {
                 if(typeof showToast === 'function') showToast('success', data.message);
-                loadNews(); // Azonnal frissítjük a táblát, így a szem gomb színe is átvált
+                loadNews(); // Frissíti a listát, így a szem ikon is azonnal átvált!
             } else {
                 if(typeof showToast === 'function') showToast('error', data.message);
             }
@@ -135,7 +126,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // JAVÍTOTT: Rádiógomb kártyák beállítása szerkesztéskor
     (window as any).editNews = (id: number) => {
         const news = currentNewsList.find((n: any) => Number(n.id) === id);
         if (!news) return;
@@ -149,12 +139,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const titleInput = document.getElementById('news-title') as HTMLInputElement | null;
         if (titleInput) titleInput.value = news.title;
         
-        // JAVÍTÁS: Kikeressük a megfelelő rejtett rádiógombot a kártyák közül, és "checked"-re állítjuk!
         const catRadio = document.querySelector(`input[name="category"][value="${news.category}"]`) as HTMLInputElement | null;
         if (catRadio) catRadio.checked = true;
         
+        // Rövid szöveg (snippet) betöltése
+        const snippetInput = document.getElementById('news-snippet') as HTMLTextAreaElement | null;
+        if (snippetInput) snippetInput.value = news.snippet || '';
+        
+        // Hosszú szöveg betöltése
         const contentInput = document.getElementById('news-content') as HTMLTextAreaElement | null;
-        if (contentInput) contentInput.value = news.content;
+        if (contentInput) contentInput.value = news.content || '';
+        
+        // Kép input törlése biztonsági okokból szerkesztéskor
+        const imageInput = document.getElementById('news-image') as HTMLInputElement | null;
+        if (imageInput) imageInput.value = '';
         
         const pubInput = document.getElementById('news-published') as HTMLInputElement | null;
         if (pubInput) pubInput.checked = (Number(news.is_published) === 1);
