@@ -1,10 +1,7 @@
-/* TÁBLÁZAT ÉS ALAPOK ... (Itt hagyhatod az eddigi táblázat kódodat, nem bántja a rácsot!) */
 .admin-table { width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.2); }
-.admin-table th { text-align: left; padding: 1.2rem 1.5rem; background: rgba(239, 68, 68, 0.1); color: #f8fafc; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid #ef4444; }
-.admin-table td { padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
+.admin-table th { text-align: left; padding: 1.2rem 1.5rem; background: rgba(239, 68, 68, 0.1); color: #f8fafc; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid var(--admin-red); }
+.admin-table td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--admin-border); vertical-align: middle; }
 .hover-row:hover { background: rgba(255, 255, 255, 0.03); }
-
-/* ... (többi táblázat osztály maradhat) ... */
 
 /* --- A TICKET CHAT FIXÁLÁSA (CSAK A VIEW MÓDBAN) --- */
 .support-container.view-ticket-mode {
@@ -65,5 +62,3 @@
     gap: 1rem;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-
-/* A chat-input, gombok és buborékok CSS-ét idemásolhatod az előzőből, az mind hibátlan volt! */

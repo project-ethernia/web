@@ -1,58 +1,58 @@
 .admin-table { width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.2); }
-.admin-table th { text-align: left; padding: 1.2rem 1.5rem; background: rgba(239, 68, 68, 0.1); color: #f8fafc; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid #ef4444; }
-.admin-table td { padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
+.admin-table th { text-align: left; padding: 1.2rem 1.5rem; background: rgba(239, 68, 68, 0.1); color: #f8fafc; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid var(--admin-red); }
+.admin-table td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--admin-border); vertical-align: middle; }
 .hover-row:hover { background: rgba(255, 255, 255, 0.03); }
 
-.td-id { color: #94a3b8; font-family: monospace; font-size: 1.1rem; }
+.td-id { color: var(--text-muted); font-family: monospace; font-size: 1.1rem; }
 
 .admin-user-cell { display: flex; align-items: center; gap: 0.8rem; font-weight: 500; }
-.admin-avatar { width: 32px; height: 32px; border-radius: 6px; image-rendering: pixelated; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-.td-muted { color: #94a3b8; font-size: 0.9rem; font-weight: 500; }
+.admin-avatar { width: 32px; height: 32px; border-radius: 8px; image-rendering: pixelated; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+.td-muted { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
 
-.role-badge { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.3rem 0.8rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--role-color); border: 1px solid var(--role-color); background: transparent; }
+.role-badge { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--role-color); border: 1px solid var(--role-color); background: transparent; }
 .role-badge .material-symbols-rounded { font-size: 1.1rem; }
 
 .status-2fa { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; font-weight: 700; }
-.status-2fa.success { color: #22c55e; }
-.status-2fa.warning { color: #f59e0b; }
+.status-2fa.success { color: var(--admin-success); }
+.status-2fa.warning { color: var(--admin-warning); }
 .status-2fa .material-symbols-rounded { font-size: 1.1rem; }
 
 .action-buttons { display: flex; gap: 0.5rem; align-items: center; }
 
-.btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-radius: 9999px; text-decoration: none; transition: all 0.3s; display: inline-block; cursor: pointer; }
-.btn-danger { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 0.4rem 0.6rem; }
-.btn-danger:hover { background: #ef4444; color: #fff; box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
-.btn-warning { background: transparent; border: 1px solid #f59e0b; color: #f59e0b; padding: 0.4rem 0.6rem; }
-.btn-warning:hover { background: #f59e0b; color: #fff; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
+.btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-radius: 8px; text-decoration: none; transition: var(--transition); display: inline-block; cursor: pointer; }
+.btn-danger { background: transparent; border: 1px solid var(--admin-red); color: var(--admin-red); padding: 0.4rem 0.6rem; }
+.btn-danger:hover { background: var(--admin-red); color: #fff; box-shadow: 0 0 10px var(--admin-red-glow); }
+.btn-warning { background: transparent; border: 1px solid var(--admin-warning); color: var(--admin-warning); padding: 0.4rem 0.6rem; }
+.btn-warning:hover { background: var(--admin-warning); color: #fff; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
 .btn-disabled { padding: 0.4rem 0.6rem; color: rgba(255,255,255,0.2); cursor: not-allowed; display: inline-block; }
 
 .split-layout { display: flex; gap: 2rem; align-items: flex-start; }
 .list-panel { flex: 2; overflow: hidden; }
 .form-panel { flex: 1; min-width: 320px; }
 
-.panel-header { padding: 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.3); }
+.panel-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--admin-border); background: rgba(0,0,0,0.3); }
 .panel-header h2 { margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; }
-.panel-header h2 .material-symbols-rounded { color: #ef4444; }
+.panel-header h2 .material-symbols-rounded { color: var(--admin-red); }
 .panel-body { padding: 2rem; }
 
 .add-admin-form { display: flex; flex-direction: column; gap: 1.5rem; }
 .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
-.input-group label { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
+.input-group label { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
 
-.admin-input { width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; color: #fff; font-size: 0.95rem; outline: none; transition: 0.3s; font-family: 'Outfit', sans-serif; }
-.admin-input:focus { border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+.admin-input { width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--admin-border); border-radius: 8px; color: #fff; font-size: 0.95rem; outline: none; transition: var(--transition); font-family: var(--font-body); }
+.admin-input:focus { border-color: var(--admin-red); box-shadow: 0 0 15px var(--admin-red-glow); }
 
 .role-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; margin-top: 0.5rem; }
 .role-card { cursor: pointer; display: block; }
 .role-card input[type="radio"] { display: none; }
-.role-content { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem; background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.08); border-radius: 8px; color: #94a3b8; transition: 0.3s; opacity: 0.6; text-align: center; font-weight: 600; font-size: 0.8rem; }
-.role-content .material-symbols-rounded { font-size: 1.5rem; transition: 0.3s; }
+.role-content { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem; background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.08); border-radius: 8px; color: var(--text-muted); transition: var(--transition); opacity: 0.6; text-align: center; font-weight: 600; font-size: 0.8rem; }
+.role-content .material-symbols-rounded { font-size: 1.5rem; transition: var(--transition); }
 .role-card:hover .role-content { opacity: 0.8; background: rgba(0, 0, 0, 0.5); }
 .role-card input:checked + .role-content { opacity: 1; border-color: var(--role-color); background: rgba(0, 0, 0, 0.6); color: #fff; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 0 15px var(--role-color); }
 .role-card input:checked + .role-content .material-symbols-rounded { color: var(--role-color); filter: drop-shadow(0 0 5px var(--role-color)); }
 
-.btn-action { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem; background: rgba(0,0,0,0.3); transition: 0.2s; text-decoration: none; border: 1px solid transparent; }
-.btn-claim { border-color: #22c55e; color: #22c55e; }
+.btn-action { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem; background: rgba(0,0,0,0.3); transition: var(--transition); text-decoration: none; border: 1px solid transparent; }
+.btn-claim { border-color: var(--admin-success); color: var(--admin-success); }
 .btn-claim:hover { background: rgba(34, 197, 94, 0.15); box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); color: #fff; }
 
 @media (max-width: 1100px) {
