@@ -1,74 +1,60 @@
 <?php
-// Ha nincs megadva az oldal, alapértelmezetten üres marad
+// A nav-item osztály kapja meg az 'active' stílust, ha azon az oldalon vagyunk.
 $current_page = $current_page ?? '';
 ?>
 <aside class="admin-sidebar glass" id="admin-sidebar">
     <div class="sidebar-header">
         <div class="logo-wrapper">
-            <span class="material-symbols-rounded logo-icon">admin_panel_settings</span>
+            <span class="material-symbols-rounded logo-icon">security</span>
             <span class="logo-text">ETHERNIA</span>
         </div>
-        <button class="toggle-btn" id="sidebar-toggle" title="Menü összecsukása/kinyitása">
+        <button class="toggle-btn" id="sidebar-toggle">
             <span class="material-symbols-rounded">menu_open</span>
         </button>
     </div>
 
     <nav class="sidebar-nav">
-        <div class="nav-section">Rendszer</div>
+        <div class="nav-section">Főmenü</div>
         <a href="/admin/index.php" class="nav-item <?= $current_page === 'dashboard' ? 'active' : '' ?>">
             <span class="material-symbols-rounded">dashboard</span>
             <span class="nav-text">Vezérlőpult</span>
         </a>
-        <a href="/admin/tickets.php" class="nav-item <?= $current_page === 'tickets' ? 'active' : '' ?>">
-            <span class="material-symbols-rounded">support_agent</span>
-            <span class="nav-text">Ügyfélszolgálat</span>
-        </a>
         
-        <div class="nav-section">Játékosok</div>
+        <div class="nav-section">Rendszer & Szerver</div>
         <a href="/admin/users.php" class="nav-item <?= $current_page === 'users' ? 'active' : '' ?>">
             <span class="material-symbols-rounded">group</span>
-            <span class="nav-text">Felhasználók</span>
+            <span class="nav-text">Játékosok Kezelése</span>
         </a>
-        <a href="/admin/users.php" class="nav-item <?= $current_page === 'players' ? 'active' : '' ?>">
-            <span class="material-symbols-rounded">sports_esports</span>
-            <span class="nav-text">Játékos Karakterek</span>
-        </a>
-
-        <div class="nav-section">Tartalom</div>
-        <a href="/admin/news.php" class="nav-item <?= $current_page === 'news' ? 'active' : '' ?>">
-            <span class="material-symbols-rounded">newspaper</span>
-            <span class="nav-text">Hírek & Cikkek</span>
+        <a href="/admin/players.php" class="nav-item <?= $current_page === 'players' ? 'active' : '' ?>">
+            <span class="material-symbols-rounded">terminal</span>
+            <span class="nav-text">Szerver Konzol (RCON)</span>
         </a>
         
-        <div class="nav-section">Biztonság</div>
+        <div class="nav-section">Kommunikáció</div>
+        <a href="/admin/tickets.php" class="nav-item <?= $current_page === 'tickets' ? 'active' : '' ?>">
+            <span class="material-symbols-rounded">forum</span>
+            <span class="nav-text">Hibajegyek</span>
+        </a>
+        <a href="/admin/news.php" class="nav-item <?= $current_page === 'news' ? 'active' : '' ?>">
+            <span class="material-symbols-rounded">newspaper</span>
+            <span class="nav-text">Hírek kezelése</span>
+        </a>
+        
+        <div class="nav-section">Adminisztráció</div>
         <a href="/admin/admins.php" class="nav-item <?= $current_page === 'admins' ? 'active' : '' ?>">
             <span class="material-symbols-rounded">shield_person</span>
             <span class="nav-text">Adminisztrátorok</span>
         </a>
         <a href="/admin/logs.php" class="nav-item <?= $current_page === 'logs' ? 'active' : '' ?>">
             <span class="material-symbols-rounded">manage_search</span>
-            <span class="nav-text">Rendszernaplók</span>
+            <span class="nav-text">Műveletnapló</span>
         </a>
     </nav>
 
     <div class="sidebar-footer">
-        <a href="/admin/auth/logout.php" class="nav-item logout-btn">
+        <a href="/admin/auth/logout.php" class="logout-btn">
             <span class="material-symbols-rounded">logout</span>
             <span class="nav-text">Kijelentkezés</span>
         </a>
     </div>
 </aside>
-
-<div id="eth-modal" class="eth-modal-overlay">
-    <div class="eth-modal-box glass">
-        <div class="eth-modal-icon">
-            <span class="material-symbols-rounded">warning</span>
-        </div>
-        <h3 class="eth-modal-title">Megerősítés</h3>
-        <p id="eth-modal-msg" class="eth-modal-text">Biztosan végrehajtod ezt a műveletet?</p>
-        <div class="eth-modal-actions">
-            <button id="eth-modal-cancel" class="btn-modal btn-cancel">Mégse</button>
-            <a href="#" id="eth-modal-confirm" class="btn-modal btn-confirm">Igen, végrehajtom</a>
-        </div>
-    </div>
-</div>
