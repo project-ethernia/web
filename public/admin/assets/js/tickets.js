@@ -36,7 +36,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-// 1. Fő végrehajtó funkció
 var executeTicketAction = function (action, ticketId) { return __awaiter(void 0, void 0, void 0, function () {
     var res, data, htmlRes, htmlText, parser, doc, currentControls, newControls, currentHeader, newHeader, currentChat, newChat, chatArea, newChatArea, alertBox, alertBox, err_1;
     var _a, _b, _c;
@@ -107,7 +106,6 @@ var executeTicketAction = function (action, ticketId) { return __awaiter(void 0,
         }
     });
 }); };
-// 2. Gombnyomás elkapó (ami már látja a fenti funkciót)
 var doTicketAction = function (action, ticketId, confirmMessage) {
     if (confirmMessage) {
         ethConfirm(confirmMessage, function () { return executeTicketAction(action, ticketId); });
