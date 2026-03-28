@@ -41,7 +41,6 @@ document.addEventListener("DOMContentLoaded", function () {
     var searchInput = document.getElementById("news-search");
     var form = document.getElementById("news-form");
     var debounceTimer;
-    // JAVÍTÁS: Itt tároljuk a híreket memóriában, így nem kell a HTML kódot összetörnünk vele!
     var currentNewsList = [];
     function loadNews() {
         return __awaiter(this, arguments, void 0, function (query) {
@@ -68,15 +67,16 @@ document.addEventListener("DOMContentLoaded", function () {
                                 tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">Nincs a keresésnek megfelelő találat.</td></tr>';
                                 return [2 /*return*/];
                             }
-                            currentNewsList = json.data; // Eltároljuk a friss listát a szerkesztéshez
+                            currentNewsList = json.data;
                             json.data.forEach(function (news) {
                                 var tr = document.createElement('tr');
                                 tr.className = 'hover-row';
                                 var isPub = Number(news.is_published) === 1;
+                                // JAVÍTVA: type="button" és cursor pointer a biztonságos kattintáshoz
                                 var visibilityBtn = isPub
-                                    ? "<button class=\"toggle-visibility active\" title=\"Elrejt\u00E9s\" onclick=\"doNewsAction('toggle', ".concat(news.id, ", 0)\"><span class=\"material-symbols-rounded\">visibility</span></button>")
-                                    : "<button class=\"toggle-visibility inactive\" title=\"K\u00F6zz\u00E9t\u00E9tel\" onclick=\"doNewsAction('toggle', ".concat(news.id, ", 1)\"><span class=\"material-symbols-rounded\">visibility_off</span></button>");
-                                tr.innerHTML = "\n                        <td class=\"td-id\">#".concat(String(news.id).padStart(3, '0'), "</td>\n                        <td>\n                            <div class=\"news-title\">").concat(news.title, "</div>\n                            <span class=\"cat-badge\" style=\"background: rgba(255,255,255,0.1);\">").concat(news.category, "</span>\n                        </td>\n                        <td class=\"td-muted\">").concat(news.author_name || 'Ismeretlen', "</td>\n                        <td>").concat(visibilityBtn, "</td>\n                        <td>\n                            <div class=\"action-buttons\">\n                                <button class=\"btn-sm btn-edit\" onclick=\"editNews(").concat(news.id, ")\"><span class=\"material-symbols-rounded\">edit</span></button>\n                                <button class=\"btn-sm btn-danger\" onclick=\"doNewsAction('delete', ").concat(news.id, ")\"><span class=\"material-symbols-rounded\">delete</span></button>\n                            </div>\n                        </td>\n                    ");
+                                    ? "<button type=\"button\" class=\"toggle-visibility active\" style=\"cursor: pointer;\" title=\"Kattints az elrejt\u00E9shez\" onclick=\"doNewsAction('toggle', ".concat(news.id, ", 0)\"><span class=\"material-symbols-rounded\">visibility</span></button>")
+                                    : "<button type=\"button\" class=\"toggle-visibility inactive\" style=\"cursor: pointer;\" title=\"Kattints a k\u00F6zz\u00E9t\u00E9telhez\" onclick=\"doNewsAction('toggle', ".concat(news.id, ", 1)\"><span class=\"material-symbols-rounded\">visibility_off</span></button>");
+                                tr.innerHTML = "\n                        <td class=\"td-id\">#".concat(String(news.id).padStart(3, '0'), "</td>\n                        <td>\n                            <div class=\"news-title\">").concat(news.title, "</div>\n                            <span class=\"cat-badge\" style=\"background: rgba(255,255,255,0.1);\">").concat(news.category, "</span>\n                        </td>\n                        <td class=\"td-muted\">").concat(news.author_name || 'Ismeretlen', "</td>\n                        <td>").concat(visibilityBtn, "</td>\n                        <td>\n                            <div class=\"action-buttons\">\n                                <button type=\"button\" class=\"btn-sm btn-edit\" onclick=\"editNews(").concat(news.id, ")\"><span class=\"material-symbols-rounded\">edit</span></button>\n                                <button type=\"button\" class=\"btn-sm btn-danger\" onclick=\"doNewsAction('delete', ").concat(news.id, ")\"><span class=\"material-symbols-rounded\">delete</span></button>\n                            </div>\n                        </td>\n                    ");
                                 tbody.appendChild(tr);
                             });
                         }
@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (form) {
         form.addEventListener('submit', function (e) { return __awaiter(void 0, void 0, void 0, function () {
-            var formData, payload, btn, res, data, actionInput, headerText, err_2;
+            var formData, payload, btn, res, data, actionInput, defaultRadio, headerText, err_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -138,6 +138,9 @@ document.addEventListener("DOMContentLoaded", function () {
                             actionInput = document.getElementById('news-action');
                             if (actionInput)
                                 actionInput.value = 'add';
+                            defaultRadio = document.querySelector('input[name="category"][value="Karbantartás"]');
+                            if (defaultRadio)
+                                defaultRadio.checked = true;
                             headerText = document.querySelector('.form-panel .panel-header h2');
                             if (headerText)
                                 headerText.innerHTML = '<span class="material-symbols-rounded">add_circle</span> Új hír írása';
@@ -188,7 +191,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (data.status === 'success') {
                         if (typeof showToast === 'function')
                             showToast('success', data.message);
-                        loadNews();
+                        loadNews(); // Azonnal frissítjük a táblát, így a szem gomb színe is átvált
                     }
                     else {
                         if (typeof showToast === 'function')
@@ -203,7 +206,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }); };
-    // JAVÍTÁS: Biztonságos hír betöltés ID alapján
+    // JAVÍTOTT: Rádiógomb kártyák beállítása szerkesztéskor
     window.editNews = function (id) {
         var news = currentNewsList.find(function (n) { return Number(n.id) === id; });
         if (!news)
@@ -217,9 +220,10 @@ document.addEventListener("DOMContentLoaded", function () {
         var titleInput = document.getElementById('news-title');
         if (titleInput)
             titleInput.value = news.title;
-        var catInput = document.getElementById('news-category');
-        if (catInput)
-            catInput.value = news.category;
+        // JAVÍTÁS: Kikeressük a megfelelő rejtett rádiógombot a kártyák közül, és "checked"-re állítjuk!
+        var catRadio = document.querySelector("input[name=\"category\"][value=\"".concat(news.category, "\"]"));
+        if (catRadio)
+            catRadio.checked = true;
         var contentInput = document.getElementById('news-content');
         if (contentInput)
             contentInput.value = news.content;
@@ -229,7 +233,6 @@ document.addEventListener("DOMContentLoaded", function () {
         var headerText = document.querySelector('.form-panel .panel-header h2');
         if (headerText)
             headerText.innerHTML = '<span class="material-symbols-rounded" style="color: var(--admin-info);">edit</span> Hír szerkesztése';
-        // Felgördülünk, hogy az admin egyből lássa a formot
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
     loadNews();

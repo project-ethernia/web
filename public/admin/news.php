@@ -43,17 +43,41 @@ require_once __DIR__ . '/includes/topbar.php';
                 
                 <div class="input-group">
                     <label>Hír Címe</label>
-                    <input type="text" id="news-title" name="title" class="admin-input" required>
+                    <input type="text" id="news-title" name="title" class="admin-input" required autocomplete="off">
                 </div>
                 
                 <div class="input-group">
                     <label>Kategória</label>
-                    <select id="news-category" name="category" class="admin-input" required>
-                        <option value="Karbantartás">Karbantartás</option>
-                        <option value="Frissítés">Frissítés</option>
-                        <option value="Bejelentés">Bejelentés</option>
-                        <option value="Esemény">Esemény</option>
-                    </select>
+                    <div class="role-grid">
+                        <label class="role-card" style="--role-color: var(--admin-info);">
+                            <input type="radio" name="category" value="Karbantartás" required checked>
+                            <div class="role-content">
+                                <span class="material-symbols-rounded">build</span>
+                                <span>Karbantartás</span>
+                            </div>
+                        </label>
+                        <label class="role-card" style="--role-color: var(--admin-success);">
+                            <input type="radio" name="category" value="Frissítés" required>
+                            <div class="role-content">
+                                <span class="material-symbols-rounded">update</span>
+                                <span>Frissítés</span>
+                            </div>
+                        </label>
+                        <label class="role-card" style="--role-color: var(--admin-warning);">
+                            <input type="radio" name="category" value="Bejelentés" required>
+                            <div class="role-content">
+                                <span class="material-symbols-rounded">campaign</span>
+                                <span>Bejelentés</span>
+                            </div>
+                        </label>
+                        <label class="role-card" style="--role-color: var(--admin-red);">
+                            <input type="radio" name="category" value="Esemény" required>
+                            <div class="role-content">
+                                <span class="material-symbols-rounded">event</span>
+                                <span>Esemény</span>
+                            </div>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="input-group">

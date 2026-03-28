@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("news-form") as HTMLFormElement | null;
     let debounceTimer: number;
     
-    // JAVÍTÁS: Itt tároljuk a híreket memóriában, így nem kell a HTML kódot összetörnünk vele!
     let currentNewsList: any[] = []; 
 
     async function loadNews(query: string = '') {
@@ -26,15 +25,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 
-                currentNewsList = json.data; // Eltároljuk a friss listát a szerkesztéshez
+                currentNewsList = json.data; 
 
                 json.data.forEach((news: any) => {
                     const tr = document.createElement('tr');
                     tr.className = 'hover-row';
                     const isPub = Number(news.is_published) === 1;
+                    
+                    // JAVÍTVA: type="button" és cursor pointer a biztonságos kattintáshoz
                     const visibilityBtn = isPub 
-                        ? `<button class="toggle-visibility active" title="Elrejtés" onclick="doNewsAction('toggle', ${news.id}, 0)"><span class="material-symbols-rounded">visibility</span></button>`
-                        : `<button class="toggle-visibility inactive" title="Közzététel" onclick="doNewsAction('toggle', ${news.id}, 1)"><span class="material-symbols-rounded">visibility_off</span></button>`;
+                        ? `<button type="button" class="toggle-visibility active" style="cursor: pointer;" title="Kattints az elrejtéshez" onclick="doNewsAction('toggle', ${news.id}, 0)"><span class="material-symbols-rounded">visibility</span></button>`
+                        : `<button type="button" class="toggle-visibility inactive" style="cursor: pointer;" title="Kattints a közzétételhez" onclick="doNewsAction('toggle', ${news.id}, 1)"><span class="material-symbols-rounded">visibility_off</span></button>`;
 
                     tr.innerHTML = `
                         <td class="td-id">#${String(news.id).padStart(3, '0')}</td>
@@ -46,8 +47,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         <td>${visibilityBtn}</td>
                         <td>
                             <div class="action-buttons">
-                                <button class="btn-sm btn-edit" onclick="editNews(${news.id})"><span class="material-symbols-rounded">edit</span></button>
-                                <button class="btn-sm btn-danger" onclick="doNewsAction('delete', ${news.id})"><span class="material-symbols-rounded">delete</span></button>
+                                <button type="button" class="btn-sm btn-edit" onclick="editNews(${news.id})"><span class="material-symbols-rounded">edit</span></button>
+                                <button type="button" class="btn-sm btn-danger" onclick="doNewsAction('delete', ${news.id})"><span class="material-symbols-rounded">delete</span></button>
                             </div>
                         </td>
                     `;
@@ -95,6 +96,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     const actionInput = document.getElementById('news-action') as HTMLInputElement | null;
                     if(actionInput) actionInput.value = 'add';
                     
+                    // Visszaállítjuk a default radio gombot "Karbantartás"-ra a mentés után
+                    const defaultRadio = document.querySelector('input[name="category"][value="Karbantartás"]') as HTMLInputElement | null;
+                    if(defaultRadio) defaultRadio.checked = true;
+
                     const headerText = document.querySelector('.form-panel .panel-header h2') as HTMLElement | null;
                     if (headerText) headerText.innerHTML = '<span class="material-symbols-rounded">add_circle</span> Új hír írása';
                     
@@ -121,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
             if (data.status === 'success') {
                 if(typeof showToast === 'function') showToast('success', data.message);
-                loadNews();
+                loadNews(); // Azonnal frissítjük a táblát, így a szem gomb színe is átvált
             } else {
                 if(typeof showToast === 'function') showToast('error', data.message);
             }
@@ -130,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // JAVÍTÁS: Biztonságos hír betöltés ID alapján
+    // JAVÍTOTT: Rádiógomb kártyák beállítása szerkesztéskor
     (window as any).editNews = (id: number) => {
         const news = currentNewsList.find((n: any) => Number(n.id) === id);
         if (!news) return;
@@ -144,8 +149,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const titleInput = document.getElementById('news-title') as HTMLInputElement | null;
         if (titleInput) titleInput.value = news.title;
         
-        const catInput = document.getElementById('news-category') as HTMLInputElement | null;
-        if (catInput) catInput.value = news.category;
+        // JAVÍTÁS: Kikeressük a megfelelő rejtett rádiógombot a kártyák közül, és "checked"-re állítjuk!
+        const catRadio = document.querySelector(`input[name="category"][value="${news.category}"]`) as HTMLInputElement | null;
+        if (catRadio) catRadio.checked = true;
         
         const contentInput = document.getElementById('news-content') as HTMLTextAreaElement | null;
         if (contentInput) contentInput.value = news.content;
@@ -156,7 +162,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const headerText = document.querySelector('.form-panel .panel-header h2') as HTMLElement | null;
         if (headerText) headerText.innerHTML = '<span class="material-symbols-rounded" style="color: var(--admin-info);">edit</span> Hír szerkesztése';
         
-        // Felgördülünk, hogy az admin egyből lássa a formot
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
