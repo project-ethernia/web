@@ -7,50 +7,12 @@ $action = $_GET['action'] ?? 'list';
 function formatTicketId($id) { return sprintf("#%03d-%03d", floor($id / 1000), $id % 1000); }
 function formatHungarianDate($datetime) { return date('Y. m. d. - H:i', strtotime($datetime)); }
 
-if (isset($_GET['do']) && isset($_GET['id'])) {
-    $do = $_GET['do'];
-    $ticket_id = (int)$_GET['id'];
-    
-    $botMsg = ""; $newStatus = null; $logMessage = "";
-    
-    if ($do === 'claim') {
-        $pdo->prepare("UPDATE tickets SET claimed_by = ? WHERE id = ?")->execute([$admin_id, $ticket_id]);
-        $botMsg = "[SYSTEM] **" . h($admin_name) . "** adminisztrátor csatlakozott, és megkezdte a hibajegy feldolgozását.";
-        $logMessage = "Magára vállalta a #" . $ticket_id . " azonosítójú hibajegyet.";
-        setFlash('success', 'Hibajegy magadra vállalva.');
-    } elseif ($do === 'unclaim') {
-        $pdo->prepare("UPDATE tickets SET claimed_by = NULL WHERE id = ?")->execute([$ticket_id]);
-        $botMsg = "[SYSTEM] **" . h($admin_name) . "** adminisztrátor lemondott a hibajegyről. Egy másik kolléga hamarosan átveszi.";
-        $logMessage = "Lemondott a #" . $ticket_id . " azonosítójú hibajegyről.";
-        setFlash('warning', 'Hibajegyről lemondva.');
-    } elseif ($do === 'pause') {
-        $newStatus = 'paused';
-        $botMsg = "[SYSTEM] A hibajegy **szüneteltetve** lett. Kérjük, várj türelemmel a további intézkedésig.";
-        $logMessage = "Szüneteltette a #" . $ticket_id . " azonosítójú hibajegyet.";
-        setFlash('warning', 'Hibajegy szüneteltetve.');
-    } elseif ($do === 'unpause') {
-        $newStatus = 'open';
-        $botMsg = "[SYSTEM] A hibajegy szüneteltetése feloldva.";
-        $logMessage = "Feloldotta a #" . $ticket_id . " azonosítójú hibajegy szüneteltetését.";
-        setFlash('success', 'Hibajegy feloldva.');
-    } elseif ($do === 'close') {
-        $newStatus = 'closed';
-        $botMsg = "[SYSTEM] A hibajegyet az adminisztrátor **lezárta**.";
-        $logMessage = "Lezárta a #" . $ticket_id . " azonosítójú hibajegyet.";
-        setFlash('error', 'Hibajegy véglegesen lezárva.');
-    }
-
-    if ($newStatus) $pdo->prepare("UPDATE tickets SET status = ?, updated_at = NOW() WHERE id = ?")->execute([$newStatus, $ticket_id]);
-    if ($botMsg) $pdo->prepare("INSERT INTO ticket_messages (ticket_id, sender_id, message, is_admin) VALUES (?, ?, ?, 1)")->execute([$ticket_id, $admin_id, $botMsg]);
-    if ($logMessage !== "") log_admin_action($pdo, $admin_id, $admin_name, $logMessage);
-
-    header("Location: /admin/tickets.php?action=view&id=" . $ticket_id);
-    exit;
-}
-
 $page_title = 'Ügyfélszolgálat | ETHERNIA Admin';
 $extra_css = ['/admin/assets/css/tickets.css'];
-$extra_js = ['/admin/assets/js/chat.js']; 
+
+// Itt behúztuk az új, lefordított scriptet a régi chat.js mellé!
+$extra_js = ['/admin/assets/js/chat.js', '/admin/assets/js/ticket_actions.js']; 
+
 $topbar_icon = 'support_agent';
 $topbar_title = 'Ügyfélszolgálat (Tickets)';
 $topbar_subtitle = 'Hibajegyek kezelése és játékos támogatás';
@@ -109,7 +71,7 @@ require_once __DIR__ . '/includes/topbar.php';
             <div class="chat-container glass">
                 <div class="chat-header" style="padding: 1.5rem; border-bottom: 1px solid var(--admin-border); display: flex; justify-content: space-between; align-items: center;">
                     <div class="chat-title-area">
-                        <h2 style="margin: 0 0 0.5rem 0; font-size: 1.3rem;"><span class="text-muted" style="color: var(--text-muted); margin-right: 0.5rem;"><?= formatTicketId($ticket['id']) ?></span> <?= h($ticket['subject']) ?></h2>
+                        <h2 style="margin: 0 0 0.5rem 0; font-size: 1.3rem; font-family: inherit;"><span class="text-muted" style="color: var(--text-muted); margin-right: 0.5rem;"><?= formatTicketId($ticket['id']) ?></span> <?= h($ticket['subject']) ?></h2>
                         <span class="badge default"><?= h($ticket['category']) ?></span>
                     </div>
                     <span class="badge <?= $bClass ?>"><?= $statusTexts[$ticket['status']] ?></span>
@@ -149,14 +111,14 @@ require_once __DIR__ . '/includes/topbar.php';
             </div>
 
             <div class="admin-controls glass">
-                <h3 style="margin-bottom: 1rem; color: #fff; text-transform: uppercase; font-size: 1.1rem;">Műveletek</h3>
+                <h3 style="margin-bottom: 1rem; color: #fff; text-transform: uppercase; font-size: 1.1rem; font-family: inherit;">Műveletek</h3>
                 <p class="control-player" style="color: var(--text-muted); margin-bottom: 1.5rem;">Játékos: <strong style="color: #fff;"><?= h($ticket['creator_name']) ?></strong></p>
 
                 <div class="control-actions" style="display: flex; flex-direction: column; gap: 1rem;">
                     <?php if ($ticket['claimed_by'] === null): ?>
-                        <a href="?do=claim&id=<?= $ticket_id ?>" class="btn-action btn-claim"><span class="material-symbols-rounded">pan_tool</span> Magamra vállalom</a>
+                        <button onclick="doTicketAction('claim', <?= $ticket_id ?>)" class="btn-action btn-claim"><span class="material-symbols-rounded">pan_tool</span> Magamra vállalom</button>
                     <?php elseif ($ticket['claimed_by'] == $admin_id): ?>
-                        <a href="?do=unclaim&id=<?= $ticket_id ?>" class="btn-action btn-warning" onclick="ethConfirm(event, 'Biztosan lemondasz erről a jegyről?', this.href);"><span class="material-symbols-rounded">waving_hand</span> Lemondok róla</a>
+                        <button onclick="doTicketAction('unclaim', <?= $ticket_id ?>, 'Biztosan lemondasz erről a jegyről?')" class="btn-action btn-warning"><span class="material-symbols-rounded">waving_hand</span> Lemondok róla</button>
                     <?php else: ?>
                         <div class="alert-box warning" style="padding: 1rem; font-size: 0.85rem; background: rgba(245, 158, 11, 0.15); border: 1px solid var(--admin-warning); border-radius: 8px; color: var(--admin-warning); text-align: center;">Ezt a jegyet már egy másik admin lefoglalta.</div>
                     <?php endif; ?>
@@ -164,15 +126,15 @@ require_once __DIR__ . '/includes/topbar.php';
                     <hr style="border: none; border-top: 1px solid var(--admin-border); margin: 0.5rem 0;">
 
                     <?php if ($ticket['status'] !== 'paused' && $ticket['status'] !== 'closed'): ?>
-                        <a href="?do=pause&id=<?= $ticket_id ?>" class="btn-action btn-warning"><span class="material-symbols-rounded">pause_circle</span> Szüneteltetés</a>
+                        <button onclick="doTicketAction('pause', <?= $ticket_id ?>)" class="btn-action btn-warning"><span class="material-symbols-rounded">pause_circle</span> Szüneteltetés</button>
                     <?php elseif ($ticket['status'] === 'paused'): ?>
-                        <a href="?do=unpause&id=<?= $ticket_id ?>" class="btn-action btn-claim"><span class="material-symbols-rounded">play_circle</span> Feloldás</a>
+                        <button onclick="doTicketAction('unpause', <?= $ticket_id ?>)" class="btn-action btn-claim"><span class="material-symbols-rounded">play_circle</span> Feloldás</button>
                     <?php endif; ?>
 
                     <?php if ($ticket['status'] !== 'closed'): ?>
-                        <a href="?do=close&id=<?= $ticket_id ?>" class="btn-action btn-danger" onclick="ethConfirm(event, 'Biztosan véglegesen lezárod a jegyet?', this.href);"><span class="material-symbols-rounded">lock</span> Jegy Lezárása</a>
+                        <button onclick="doTicketAction('close', <?= $ticket_id ?>, 'Biztosan véglegesen lezárod a jegyet?')" class="btn-action btn-danger"><span class="material-symbols-rounded">lock</span> Jegy Lezárása</button>
                     <?php else: ?>
-                        <a href="?do=unpause&id=<?= $ticket_id ?>" class="btn-action btn-claim"><span class="material-symbols-rounded">lock_open</span> Jegy Újranyitása</a>
+                        <button onclick="doTicketAction('unpause', <?= $ticket_id ?>)" class="btn-action btn-claim"><span class="material-symbols-rounded">lock_open</span> Jegy Újranyitása</button>
                     <?php endif; ?>
                     
                     <hr style="border: none; border-top: 1px solid var(--admin-border); margin: 0.5rem 0;">
