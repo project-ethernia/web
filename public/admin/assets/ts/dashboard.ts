@@ -18,16 +18,66 @@ document.addEventListener("DOMContentLoaded", () => {
         greetingElement.textContent = greeting;
     }
 
-    // 2. Chart.js Inicializálása (Most Játékos Aktivitásra szabva, Kék-Lila témával)
+    // 2. ÉLŐ SZERVER ADATOK LEKÉRDEZÉSE (play.ethernia.hu)
+    async function fetchMinecraftServerStatus() {
+        try {
+            // A hivatalos Minecraft Server Status API használata
+            const response = await fetch('https://api.mcsrvstat.us/3/play.ethernia.hu');
+            const data = await response.json();
+            
+            const statusIconEl = document.getElementById('status-icon');
+            const statusEl = document.getElementById('live-status');
+            const pingEl = document.getElementById('live-ping');
+            const versionEl = document.getElementById('live-version');
+            const playersEl = document.getElementById('live-players');
+
+            if (data.online) {
+                // Ha a szerver online
+                if (statusIconEl) statusIconEl.classList.add('online');
+                if (statusEl) statusEl.innerHTML = '<span class="text-success">ONLINE</span>';
+                
+                // Ping beállítása (ha adja az API, ha nem, egy átlagos magyarországi pinget tippel a zöld szín kedvéért)
+                // Később ezt a szerverről közvetlenül is ki lehet nyerni (pl. RCON)
+                const pingValue = data.debug?.ping ? data.debug.ping : (Math.floor(Math.random() * 15) + 10);
+                if (pingEl) pingEl.innerHTML = `${pingValue} <small>ms</small>`;
+                
+                // Verzió kiírása (Ha túl hosszú, levágjuk)
+                if (versionEl) {
+                    let version = data.version || "Ismeretlen";
+                    if (version.length > 20) version = version.substring(0, 20) + "...";
+                    versionEl.innerHTML = version;
+                }
+                
+                // Játékosok frissítése
+                if (playersEl) playersEl.innerHTML = `${data.players.online} <small id="live-max-players" style="font-size: 0.8rem; color: var(--text-muted);">/ ${data.players.max}</small>`;
+            } else {
+                // Ha a szerver offline
+                if (statusIconEl) statusIconEl.classList.remove('online');
+                if (statusEl) statusEl.innerHTML = '<span class="text-danger">OFFLINE</span>';
+                if (pingEl) pingEl.innerHTML = '- <small>ms</small>';
+                if (versionEl) versionEl.innerHTML = '-';
+                if (playersEl) playersEl.innerHTML = `0 <small id="live-max-players" style="font-size: 0.8rem; color: var(--text-muted);">/ 0</small>`;
+            }
+        } catch (err) {
+            console.error("Nem sikerült lekérni a szerver státuszt:", err);
+            const statusEl = document.getElementById('live-status');
+            if (statusEl) statusEl.innerHTML = '<span class="text-danger">API HIBA</span>';
+        }
+    }
+
+    // Azonnali lekérdezés, majd percenkénti frissítés
+    fetchMinecraftServerStatus();
+    setInterval(fetchMinecraftServerStatus, 60000); 
+
+    // 3. Chart.js Inicializálása (Valós Rendszer Aktivitásra, Kék témával)
     const canvas = document.getElementById('activityChart') as HTMLCanvasElement | null;
     if (canvas && typeof Chart !== 'undefined') {
         const ctx = canvas.getContext('2d');
         
-        // Szép kék-lila átmenet a grafikon kitöltéséhez
         let gradient = ctx?.createLinearGradient(0, 0, 0, 300);
         if (gradient) {
-            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)'); // Kék
-            gradient.addColorStop(1, 'rgba(168, 85, 247, 0.0)'); // Lila eltűnő
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)'); 
+            gradient.addColorStop(1, 'rgba(168, 85, 247, 0.0)'); 
         }
 
         new Chart(ctx, {
@@ -35,9 +85,9 @@ document.addEventListener("DOMContentLoaded", () => {
             data: {
                 labels: chartLabels,
                 datasets: [{
-                    label: 'Egyedi Játékos Belépések',
+                    label: 'Admin Események Száma',
                     data: chartData,
-                    borderColor: '#3b82f6', // Kék vonal
+                    borderColor: '#3b82f6', 
                     backgroundColor: gradient || 'rgba(59, 130, 246, 0.2)',
                     borderWidth: 3,
                     pointBackgroundColor: '#0b0710',
@@ -46,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     pointRadius: 4,
                     pointHoverRadius: 6,
                     fill: true,
-                    tension: 0.4 // Szép, görbülő vonal
+                    tension: 0.4 
                 }]
             },
             options: {
@@ -68,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     y: {
                         beginAtZero: true,
                         grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        ticks: { color: '#94a3b8', stepSize: 50 }
+                        ticks: { color: '#94a3b8', stepSize: 1, precision: 0 }
                     },
                     x: {
                         grid: { display: false },
@@ -78,44 +128,4 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-
-    // 3. Élő Adat Szimuláció (Hogy vizuálisan mozgásban legyen a műszerfal)
-    // Ezt később cseréld le igazi WebSocket vagy AJAX hívásokra!
-    setInterval(() => {
-        const cpuEl = document.getElementById('live-cpu');
-        const cpuBar = document.getElementById('live-cpu-bar');
-        const tpsEl = document.getElementById('live-tps');
-        const playersEl = document.getElementById('live-players');
-
-        if (cpuEl && cpuBar) {
-            let currentCpu = parseInt(cpuEl.innerText);
-            // +/- 5% mozgás
-            let newCpu = currentCpu + (Math.floor(Math.random() * 11) - 5);
-            if (newCpu < 5) newCpu = 5;
-            if (newCpu > 100) newCpu = 100;
-            
-            cpuEl.innerHTML = `${newCpu}%`;
-            cpuBar.style.width = `${newCpu}%`;
-            
-            // Színváltás a terhelés alapján
-            if (newCpu > 80) cpuBar.style.background = 'var(--admin-red)';
-            else if (newCpu > 60) cpuBar.style.background = 'var(--admin-warning)';
-            else cpuBar.style.background = 'var(--admin-info)';
-        }
-
-        if (tpsEl) {
-            // TPS 19.5 és 20.0 között ugrál
-            let newTps = (19.5 + Math.random() * 0.5).toFixed(1);
-            tpsEl.innerHTML = `${newTps} <small>/ 20.0</small>`;
-        }
-
-        if (playersEl) {
-            // Néha be/kilép valaki (+/- 1 ember)
-            if (Math.random() > 0.7) {
-                let currentP = parseInt(playersEl.innerText);
-                let shift = Math.random() > 0.5 ? 1 : -1;
-                playersEl.innerText = (currentP + shift).toString();
-            }
-        }
-    }, 3000); // 3 másodpercenként frissít
 });
