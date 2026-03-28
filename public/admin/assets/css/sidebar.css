@@ -13,7 +13,7 @@
     overflow-y: auto;
     scrollbar-width: none; 
     z-index: 1000;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, width 0.3s ease;
 }
 .admin-sidebar::-webkit-scrollbar { display: none; } 
 
@@ -41,6 +41,17 @@
 .sidebar-footer { padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); }
 .logout-btn { display: flex; align-items: center; justify-content: center; gap: 0.8rem; width: 100%; padding: 0.8rem; background: rgba(239, 68, 68, 0.1); color: var(--admin-red); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; transition: 0.3s; cursor: pointer; }
 .logout-btn:hover { background: var(--admin-red); color: #fff; box-shadow: 0 0 15px var(--admin-red-glow); }
+
+/* --- ÖSSZECSUKOTT (COLLAPSED) ÁLLAPOT --- */
+.admin-sidebar.collapsed { width: 80px; }
+.admin-sidebar.collapsed .logo-wrapper,
+.admin-sidebar.collapsed .nav-section,
+.admin-sidebar.collapsed .nav-text { display: none; }
+.admin-sidebar.collapsed .sidebar-header { justify-content: center; padding: 2rem 0; }
+.admin-sidebar.collapsed .toggle-btn { margin: 0 auto; }
+.admin-sidebar.collapsed .nav-item { justify-content: center; padding: 1rem 0; }
+.admin-sidebar.collapsed .nav-item .material-symbols-rounded { margin: 0; font-size: 1.5rem; }
+.admin-sidebar.collapsed .logout-btn { padding: 1rem 0; justify-content: center; }
 
 @media (max-width: 992px) {
     .admin-sidebar { transform: translateX(-100%); }

@@ -1,52 +1,32 @@
-/// <reference lib="dom" />
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleBtn = document.getElementById('sidebar-toggle') as HTMLButtonElement | null;
+    const sidebar = document.getElementById('admin-sidebar') as HTMLElement | null;
+    const main = document.querySelector('.admin-main') as HTMLElement | null;
 
-document.addEventListener("DOMContentLoaded", () => {
-    // --- SIDEBAR LOGIKA ---
-    const sidebar = document.getElementById('admin-sidebar');
-    const toggleBtn = document.getElementById('sidebar-toggle');
-    const toggleIcon = toggleBtn?.querySelector('.material-symbols-rounded');
-
-    if (sidebar && toggleBtn && toggleIcon) {
-        const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+    if (toggleBtn && sidebar && main) {
+        // Ellenőrizzük a böngészőből, hogy korábban be volt-e csukva
+        const isCollapsed: boolean = localStorage.getItem('sidebarCollapsed') === 'true';
+        const toggleIcon = toggleBtn.querySelector('.material-symbols-rounded') as HTMLElement | null;
         
+        // Ha csukva volt az előző munkamenetben, akkor most is úgy nyitjuk meg
         if (isCollapsed) {
             sidebar.classList.add('collapsed');
-            toggleIcon.textContent = 'menu';
+            main.classList.add('collapsed');
+            if (toggleIcon) toggleIcon.innerText = 'menu';
         }
 
+        // Kattintás esemény
         toggleBtn.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
-            const currentlyCollapsed = sidebar.classList.contains('collapsed');
-            localStorage.setItem('sidebar_collapsed', currentlyCollapsed ? 'true' : 'false');
-            toggleIcon.textContent = currentlyCollapsed ? 'menu' : 'menu_open';
+            main.classList.toggle('collapsed');
+            
+            const collapsedNow: boolean = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', String(collapsedNow)); // Állapot mentése szövegként
+            
+            // Ikon cseréje (menu vs menu_open)
+            if (toggleIcon) {
+                toggleIcon.innerText = collapsedNow ? 'menu' : 'menu_open';
+            }
         });
     }
-
-    // --- GLOBÁLIS MODAL LOGIKA ---
-    (window as any).ethConfirm = function(event: Event, message: string, url: string) {
-        event.preventDefault(); // Megakadályozzuk az azonnali kattintást/link megnyitást
-
-        const overlay = document.getElementById('eth-modal');
-        const msgEl = document.getElementById('eth-modal-msg');
-        const confirmBtn = document.getElementById('eth-modal-confirm') as HTMLAnchorElement;
-        const cancelBtn = document.getElementById('eth-modal-cancel');
-
-        if (overlay && msgEl && confirmBtn && cancelBtn) {
-            msgEl.textContent = message;
-            confirmBtn.href = url;
-            overlay.classList.add('active');
-
-            // Mégse gomb
-            cancelBtn.onclick = function() {
-                overlay.classList.remove('active');
-            };
-
-            // Overlay-re kattintás (háttér) is bezárja
-            overlay.onclick = function(e) {
-                if (e.target === overlay) {
-                    overlay.classList.remove('active');
-                }
-            };
-        }
-    };
 });

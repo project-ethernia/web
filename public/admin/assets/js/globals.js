@@ -64,12 +64,14 @@ var AdminToastManager = /** @class */ (function () {
 }());
 var Toast = new AdminToastManager();
 window.Toast = Toast;
+// ITT A BIZTOS VAGY EBBEN ABLAK LOGIKÁJA
 function ethConfirm(e, msg, url) {
     e.preventDefault();
     if (confirm(msg))
         window.location.href = url;
 }
 window.ethConfirm = ethConfirm;
+// CSRF API VÉDELEM
 var originalFetch = window.fetch;
 window.fetch = function (input, init) { return __awaiter(void 0, void 0, void 0, function () {
     var config, csrfToken;
