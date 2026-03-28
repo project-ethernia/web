@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const ticketIdEl = document.getElementById("chat-ticket-id") as HTMLInputElement | null;
     const contextEl = document.getElementById("chat-context") as HTMLInputElement | null;
     const typingIndicator = document.getElementById("typing-indicator") as HTMLDivElement | null;
-    
     const previewContainer = document.getElementById("image-preview-container") as HTMLDivElement | null;
     const previewImg = document.getElementById("image-preview") as HTMLImageElement | null;
     const removeBtn = document.getElementById("remove-image-btn") as HTMLButtonElement | null;
@@ -17,14 +16,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!chatMsgs || !ticketIdEl) return;
 
     const ticketId = parseInt(ticketIdEl.value, 10);
-    const chatContext = contextEl ? contextEl.value : 'player'; // <-- ITT OLVASSA BE
+    const chatContext = contextEl ? contextEl.value : 'player';
     
     let lastMsgId = 0;
     let isTyping = false;
     let typingTimeout: ReturnType<typeof setTimeout> | null = null;
     let isSubmitting = false;
 
-    // --- 1. KÉP ELŐNÉZET ---
     if (fileInput && previewContainer && previewImg && removeBtn) {
         fileInput.addEventListener("change", function() {
             if (fileInput.files && fileInput.files.length > 0) {
@@ -50,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (previewImg) previewImg.src = "";
     }
 
-    // --- 2. GÉPELÉS ÉRZÉKELÉS ÉS AUTOSIZE ---
     if (chatTextarea) {
         chatTextarea.addEventListener("input", function() {
             chatTextarea.style.height = "45px"; 
@@ -58,11 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             isTyping = true;
             if (typingTimeout) clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => { 
-                isTyping = false; 
-                notifyTyping(false);
-            }, 2000);
-
+            typingTimeout = setTimeout(() => { isTyping = false; notifyTyping(false); }, 2000);
             notifyTyping(true);
         });
 
@@ -79,11 +72,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const now = Date.now();
         if (typing && now - lastTypingNotify < 2000) return; 
         lastTypingNotify = now;
-        // CONTEXT BEKÜLDÉSE:
-        fetch(`/chat_api.php?action=typing&ticket_id=${ticketId}&typing=${typing ? 1 : 0}&context=${chatContext}`).catch(() => {});
+        
+        const fd = new URLSearchParams();
+        fd.append('action', 'typing');
+        fd.append('ticket_id', ticketId.toString());
+        fd.append('context', chatContext);
+        
+        fetch(`/api/chat.php`, { method: 'POST', body: fd }).catch(() => {});
     }
 
-    // --- 3. ZERO-RELOAD KÜLDÉS ---
     if (chatForm) {
         chatForm.addEventListener("submit", async function(e) {
             e.preventDefault();
@@ -91,7 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const hasText = chatTextarea && chatTextarea.value.trim() !== '';
             const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
-
             if (!hasText && !hasFile) return;
 
             isSubmitting = true;
@@ -104,26 +100,23 @@ document.addEventListener("DOMContentLoaded", () => {
             const formData = new FormData(chatForm);
             formData.append('action', 'send');
             formData.append('ticket_id', ticketId.toString());
-            formData.append('context', chatContext); // CONTEXT BEKÜLDÉSE!
+            formData.append('context', chatContext);
 
             try {
-                const res = await fetch('/chat_api.php', { method: 'POST', body: formData });
+                const res = await fetch('/api/chat.php', { method: 'POST', body: formData });
                 const data = await res.json();
                 
                 if (data.success) {
-                    if (chatTextarea) {
-                        chatTextarea.value = '';
-                        chatTextarea.style.height = '45px';
-                    }
+                    if (chatTextarea) { chatTextarea.value = ''; chatTextarea.style.height = '45px'; }
                     clearPreview();
                     syncChat();
                 } else if (data.error === 'cooldown') {
-                    alert("Kérjük, várj picit a következő üzenet előtt!");
+                    if ((window as any).Toast) (window as any).Toast.warning("Kérjük, várj egy picit a következő üzenet előtt!");
                 } else {
-                    console.error("Hiba:", data.error);
+                    if ((window as any).Toast) (window as any).Toast.error("Hiba történt: " + data.error);
                 }
             } catch (err) {
-                console.error(err);
+                if ((window as any).Toast) (window as any).Toast.error("Hálózati hiba történt a küldés során.");
             } finally {
                 isSubmitting = false;
                 isTyping = false;
@@ -139,15 +132,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- 4. SZINKRONIZÁCIÓ ---
     let isSyncing = false;
     async function syncChat() {
         if (isSyncing || !chatMsgs) return; 
         isSyncing = true;
 
         try {
-            // CONTEXT BEKÜLDÉSE:
-            const res = await fetch(`/chat_api.php?action=sync&ticket_id=${ticketId}&last_id=${lastMsgId}&context=${chatContext}`);
+            const res = await fetch(`/api/chat.php?action=sync&ticket_id=${ticketId}&last_id=${lastMsgId}&context=${chatContext}`);
             const data = await res.json();
 
             if (data.success && data.messages && data.messages.length > 0) {
@@ -174,11 +165,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 });
 
-                if (typingIndicator) {
-                    typingIndicator.insertAdjacentHTML('beforebegin', html);
-                } else {
-                    chatMsgs.innerHTML += html;
-                }
+                if (typingIndicator) typingIndicator.insertAdjacentHTML('beforebegin', html);
+                else chatMsgs.innerHTML += html;
                 
                 lastMsgId = data.last_id;
                 chatMsgs.scrollTo({ top: chatMsgs.scrollHeight, behavior: 'smooth' });
@@ -195,11 +183,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (data.ticket_status === 'closed') {
                 const inputArea = document.querySelector('.chat-input-area');
-                if (inputArea) {
-                    inputArea.innerHTML = '<div class="chat-closed-alert"><span class="material-symbols-rounded">lock</span> Ez a hibajegy le lett zárva.</div>';
-                }
+                if (inputArea) inputArea.innerHTML = '<div class="chat-closed-alert"><span class="material-symbols-rounded">lock</span> Ez a hibajegy le lett zárva.</div>';
             }
-
         } catch (err) {
             console.error("Sync error:", err);
         } finally {
@@ -209,8 +194,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
     syncChat();
     setInterval(syncChat, 1500);
-
-    const style = document.createElement('style');
-    style.textContent = `@keyframes spin { 100% { transform: rotate(360deg); } }`;
-    document.head.appendChild(style);
 });
