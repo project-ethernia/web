@@ -1,26 +1,21 @@
-/* --- A NUCLEAR OPTION: FIXÁLT MAGASSÁG, FOOTER ELREJTÉSE --- */
-body:has(.view-ticket-mode) {
-    overflow: hidden !important; 
-    height: 100vh !important;
-    display: flex;
-    flex-direction: column;
-}
-
-body:has(.view-ticket-mode) .footer {
-    display: none !important; /* A footer takarodjon, ha chatelünk! */
-}
-
 /* LISTA MÓD (ALAP) */
 .support-container { max-width: 1000px; margin: 2rem auto 4rem auto; padding: 0 1.5rem; flex: 1; width: 100%; display: flex; flex-direction: column; gap: 2rem; }
 
-/* TICKET NÉZET MÓD */
+/* --- JAVÍTOTT TICKET VIEW MÓD ---
+   Nincs body:has() hack! Simán elbújik a navbar alatt, a footer meg eltűnik. */
 .support-container.view-ticket-mode { 
     margin: 0 auto; 
     padding-top: 0; 
-    padding-bottom: 1rem; 
-    max-width: 1200px; /* Szélesebb a chatnek */
-    flex: 1; 
-    min-height: 0; 
+    padding-bottom: 2rem; 
+    max-width: 1200px;
+    height: calc(100vh - 120px); 
+    min-height: 600px;
+}
+
+/* FOOTER ELREJTÉSE, HA A CHAT NYITVA VAN (Testvér selector) */
+.support-container.view-ticket-mode + .footer,
+.support-container.view-ticket-mode ~ .footer {
+    display: none !important;
 }
 
 .support-header { text-align: center; }
@@ -86,7 +81,7 @@ body:has(.view-ticket-mode) .footer {
 .chat-messages::-webkit-scrollbar { width: 6px; }
 .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 
-.typing-indicator { display: none; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 12px; color: #c084fc; font-size: 0.8rem; font-weight: 600; width: fit-content; margin-top: auto; animation: fadeIn 0.3s ease; }
+.typing-indicator { display: none; align-items: center; gap: 0.5rem; padding: 0.8rem 1.2rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 12px; color: #c084fc; font-size: 0.85rem; font-weight: 600; width: fit-content; margin-top: auto; animation: fadeIn 0.3s ease; }
 .typing-indicator.active { display: flex !important; }
 .typing-dots span { display: inline-block; width: 4px; height: 4px; background: #c084fc; border-radius: 50%; margin: 0 2px; animation: bounce 1.4s infinite ease-in-out both; }
 .typing-dots span:nth-child(1) { animation-delay: -0.32s; }

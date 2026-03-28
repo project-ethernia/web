@@ -27,12 +27,16 @@
 .btn-open { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #fff; }
 .btn-open:hover { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
 
-/* --- TICKET VIEW: KŐKEMÉNY FIX MAGASSÁG --- */
+/* --- JAVÍTOTT TICKET VIEW --- 
+   Nincs több :has() hack! A doboz magától kitölti a maradék helyet 
+   anélkül, hogy bántaná a Topbar-t vagy az admin-main-t! */
+
+.support-container { margin-top: 1rem; }
+
 .support-container.view-ticket-mode {
     display: flex;
     flex-direction: column;
-    /* A viewport magassága mínusz a felső menü és a padding. Ezt NEM LÉPHETI TÚL! */
-    height: calc(100vh - 130px); 
+    height: calc(100vh - 160px); /* Precíz magasság a Topbar alatt */
     min-height: 500px; 
 }
 
