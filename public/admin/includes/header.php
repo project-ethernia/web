@@ -13,7 +13,6 @@ require_once __DIR__ . '/../../includes/csrf.php';
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@300..700&display=block">
     
     <link rel="stylesheet" href="/admin/assets/css/globals.css?v=<?= time(); ?>">
-    
     <link rel="stylesheet" href="/admin/assets/css/sidebar.css?v=<?= time(); ?>">
     
     <?php if (!empty($extra_css)): ?>
@@ -25,4 +24,16 @@ require_once __DIR__ . '/../../includes/csrf.php';
 <body class="admin-body">
 <div class="admin-layout">
     <?php require_once __DIR__ . '/sidebar.php'; ?>
+
+    <script>
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            document.querySelector('.admin-layout').classList.add('collapsed');
+            document.getElementById('admin-sidebar').classList.add('collapsed');
+            
+            // Az ikont is azonnal átállítjuk, hogy az se villanjon
+            var toggleIcon = document.querySelector('#sidebar-toggle .material-symbols-rounded');
+            if (toggleIcon) toggleIcon.textContent = 'menu';
+        }
+    </script>
+    
     <main class="admin-main">
