@@ -1,218 +1,154 @@
-// public/admin/assets/ts/users.ts
+/// <reference lib="dom" />
 
 document.addEventListener("DOMContentLoaded", () => {
-  const rows = document.querySelectorAll<HTMLTableRowElement>(".users-table tbody tr");
-  if (!rows.length) return;
+    const tbody = document.getElementById("users-tbody");
+    const searchInput = document.getElementById("user-search") as HTMLInputElement | null;
+    const profilePanel = document.getElementById("profile-panel");
+    let debounceTimer: number;
 
-  function openModal(id: string): void {
-    const m = document.getElementById(id);
-    if (m) m.classList.add("open");
-  }
+    // 1. TÁBLÁZAT ÉS KERESÉS BETÖLTÉSE
+    async function loadUsers(query: string = '') {
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-muted);"><span class="material-symbols-rounded spinning" style="font-size: 2rem;">refresh</span><br><br>Játékosok keresése...</td></tr>';
 
-  function closeModal(el: Element): void {
-    const m = el.closest<HTMLElement>(".modal");
-    if (m) m.classList.remove("open");
-  }
+        try {
+            const res = await fetch(`/admin/api/get_users.php?q=${encodeURIComponent(query)}`);
+            const json = await res.json();
 
-  document.querySelectorAll<HTMLElement>("[data-modal-close]").forEach((btn) => {
-    btn.addEventListener("click", () => closeModal(btn));
-  });
+            if (json.status === 'success') {
+                tbody.innerHTML = '';
+                if (json.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">Nincs a keresésnek megfelelő játékos.</td></tr>';
+                    return;
+                }
 
-  document.querySelectorAll<HTMLElement>(".modal-backdrop").forEach((bd) => {
-    bd.addEventListener("click", () => closeModal(bd));
-  });
+                json.data.forEach((user: any) => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover-row';
+                    const paddedId = String(user.id).padStart(4, '0');
+                    
+                    const dateObj = new Date(user.created_at);
+                    const formattedDate = !isNaN(dateObj.getTime()) ? dateObj.toISOString().split('T')[0] : user.created_at;
 
-  document.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
-      document
-        .querySelectorAll<HTMLElement>(".modal.open")
-        .forEach((m) => m.classList.remove("open"));
-    }
-  });
+                    tr.innerHTML = `
+                        <td class="td-id">#${paddedId}</td>
+                        <td>
+                            <div class="player-cell">
+                                <img src="https://minotar.net/helm/${user.username}/24.png" class="player-head">
+                                <strong>${user.username}</strong>
+                            </div>
+                        </td>
+                        <td class="td-muted">${formattedDate}</td>
+                        <td>
+                            <button class="btn-sm btn-open load-profile-btn" data-id="${user.id}">Megnyitás</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
 
-  const emailForm = document.getElementById("form-change-email") as HTMLFormElement | null;
-  const emailUserId = document.getElementById("email-user-id") as HTMLInputElement | null;
-  const emailUsername = document.getElementById("email-username") as HTMLElement | null;
-  const emailInput = document.getElementById("email-new") as HTMLInputElement | null;
-  const emailError = document.getElementById("email-error") as HTMLElement | null;
+                // Eseménykezelők hozzáadása a friss gombokhoz
+                document.querySelectorAll('.load-profile-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        // Kiemeljük az aktív sort
+                        document.querySelectorAll('.log-row, .hover-row').forEach(r => r.classList.remove('active-row'));
+                        const target = e.currentTarget as HTMLButtonElement;
+                        target.closest('tr')?.classList.add('active-row');
+                        
+                        const id = target.getAttribute('data-id');
+                        if (id) loadUserProfile(id);
+                    });
+                });
 
-  const pwForm = document.getElementById("form-change-password") as HTMLFormElement | null;
-  const pwUserId = document.getElementById("pw-user-id") as HTMLInputElement | null;
-  const pwUsername = document.getElementById("pw-username") as HTMLElement | null;
-  const pwNew = document.getElementById("pw-new") as HTMLInputElement | null;
-  const pwNew2 = document.getElementById("pw-new2") as HTMLInputElement | null;
-  const pwError = document.getElementById("pw-error") as HTMLElement | null;
-
-  const delForm = document.getElementById("form-delete-user") as HTMLFormElement | null;
-  const delUserId = document.getElementById("del-user-id") as HTMLInputElement | null;
-  const delUsername = document.getElementById("del-username") as HTMLElement | null;
-  const delEmail = document.getElementById("del-email") as HTMLElement | null;
-  const delError = document.getElementById("del-error") as HTMLElement | null;
-
-  rows.forEach((row) => {
-    const id = row.dataset.id || "";
-    const username = row.dataset.username || "";
-    const email = row.dataset.email || "";
-
-    const btnEmail = row.querySelector<HTMLElement>(".js-change-email");
-    const btnPw = row.querySelector<HTMLElement>(".js-change-password");
-    const btnDel = row.querySelector<HTMLElement>(".js-delete-user");
-
-    if (btnEmail && emailUserId && emailUsername && emailInput && emailError) {
-      btnEmail.addEventListener("click", () => {
-        emailUserId.value = id;
-        emailUsername.textContent = username;
-        emailInput.value = email;
-        emailError.hidden = true;
-        emailError.textContent = "";
-        openModal("modal-change-email");
-        emailInput.focus();
-      });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--admin-red); padding: 2rem;">Hiba: ${json.message}</td></tr>`;
+            }
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--admin-red); padding: 2rem;">Hálózati hiba történt.</td></tr>`;
+        }
     }
 
-    if (btnPw && pwUserId && pwUsername && pwNew && pwNew2 && pwError) {
-      btnPw.addEventListener("click", () => {
-        pwUserId.value = id;
-        pwUsername.textContent = username;
-        pwNew.value = "";
-        pwNew2.value = "";
-        pwError.hidden = true;
-        pwError.textContent = "";
-        openModal("modal-change-password");
-        pwNew.focus();
-      });
+    // 2. PROFIL PANEL DINAMIKUS BETÖLTÉSE
+    async function loadUserProfile(id: string) {
+        if (!profilePanel) return;
+        profilePanel.innerHTML = '<div class="empty-profile"><span class="material-symbols-rounded spinning" style="font-size: 3rem;">refresh</span><p>Profil betöltése...</p></div>';
+
+        try {
+            const res = await fetch(`/admin/api/get_user_profile.php?id=${id}`);
+            const json = await res.json();
+
+            if (json.status === 'success') {
+                const u = json.data;
+                const statusBadge = u.status === 'Aktív' ? 'success' : 'error';
+                
+                profilePanel.innerHTML = `
+                    <div class="panel-header" style="border-radius: 12px 12px 0 0;">
+                        <h2><span class="material-symbols-rounded">person</span> Játékos Profilja</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="profile-header">
+                            <img src="https://minotar.net/armor/bust/${u.username}/80.png" class="profile-avatar">
+                            <div>
+                                <h3 class="profile-name">${u.username}</h3>
+                                <span class="profile-id">ID: #${String(u.id).padStart(4, '0')}</span>
+                                <span class="badge ${statusBadge}" style="margin-left: 0.5rem;">${u.status}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-info-grid">
+                            <div class="info-box">
+                                <span class="info-label">Regisztráció ideje</span>
+                                <span class="info-value">${u.created_at}</span>
+                            </div>
+                            <div class="info-box">
+                                <span class="info-label">Rendelkezésre álló Ethernia Coin</span>
+                                <span class="info-value" style="color: var(--admin-warning); font-weight: 800;">${u.coins} EC</span>
+                            </div>
+                            <div class="info-box">
+                                <span class="info-label">Jelenlegi Rang</span>
+                                <span class="info-value" style="color: var(--admin-info); font-weight: 800;">${u.rank}</span>
+                            </div>
+                        </div>
+
+                        <hr class="control-divider">
+                        <h4 style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 1rem;">Adminisztrátori Műveletek</h4>
+                        
+                        <div class="punishment-actions">
+                            <button class="btn-punish" onclick="alert('A büntetési API hamarosan bekötésre kerül!')">
+                                <span class="material-symbols-rounded">gavel</span>
+                                <div>
+                                    <strong>Kitiltás (Ban)</strong>
+                                    <span>Játékos végleges vagy ideiglenes kitiltása</span>
+                                </div>
+                            </button>
+                            <button class="btn-punish" onclick="alert('A büntetési API hamarosan bekötésre kerül!')">
+                                <span class="material-symbols-rounded">volume_off</span>
+                                <div>
+                                    <strong>Némítás (Mute)</strong>
+                                    <span>Chat használatának megvonása</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                profilePanel.innerHTML = `<div class="empty-profile"><span class="material-symbols-rounded" style="color: var(--admin-red);">error</span><p>Hiba: ${json.message}</p></div>`;
+            }
+        } catch (err) {
+            profilePanel.innerHTML = '<div class="empty-profile"><span class="material-symbols-rounded" style="color: var(--admin-red);">wifi_off</span><p>Hálózati hiba a profil betöltésekor.</p></div>';
+        }
     }
 
-    if (btnDel && delUserId && delUsername && delEmail && delError) {
-      btnDel.addEventListener("click", () => {
-        delUserId.value = id;
-        delUsername.textContent = username;
-        delEmail.textContent = email;
-        delError.hidden = true;
-        delError.textContent = "";
-        openModal("modal-delete-user");
-      });
-    }
-  });
-
-  const postUsers = (data: Record<string, string>): Promise<any> => {
-    return fetch("/admin/users.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: new URLSearchParams(data)
-    }).then(async (res) => {
-      const json = await res.json().catch(() => ({} as any));
-      if (!res.ok || !json.ok) {
-        const msg =
-          (json && json.error) ||
-          `Ismeretlen hiba (HTTP ${res.status})`;
-        throw new Error(msg);
-      }
-      return json;
-    });
-  };
-
-  if (emailForm && emailUserId && emailInput && emailError) {
-    emailForm.addEventListener("submit", (e: SubmitEvent) => {
-      e.preventDefault();
-      emailError.hidden = true;
-      emailError.textContent = "";
-
-      const id = emailUserId.value;
-      const newEmail = emailInput.value.trim();
-
-      if (!newEmail) {
-        emailError.textContent = "Adj meg egy e‑mail címet.";
-        emailError.hidden = false;
-        return;
-      }
-
-      postUsers({
-        action: "change_email",
-        id,
-        email: newEmail
-      })
-        .then((json) => {
-          const row = document.querySelector<HTMLTableRowElement>(
-            `.users-table tbody tr[data-id="${json.id}"]`
-          );
-          if (row) {
-            row.dataset.email = json.email;
-            const cell = row.querySelector<HTMLElement>(".cell-email");
-            if (cell) cell.textContent = json.email;
-          }
-          closeModal(emailForm);
-        })
-        .catch((err: Error) => {
-          emailError.textContent = err.message;
-          emailError.hidden = false;
+    // Gépelés figyelése (Debounce)
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            const target = e.target as HTMLInputElement;
+            debounceTimer = setTimeout(() => {
+                loadUsers(target.value);
+            }, 300);
         });
-    });
-  }
+    }
 
-  if (pwForm && pwUserId && pwNew && pwNew2 && pwError) {
-    pwForm.addEventListener("submit", (e: SubmitEvent) => {
-      e.preventDefault();
-      pwError.hidden = true;
-      pwError.textContent = "";
-
-      const id = pwUserId.value;
-      const p1 = pwNew.value;
-      const p2 = pwNew2.value;
-
-      if (!p1 || !p2) {
-        pwError.textContent = "Töltsd ki mindkét jelszó mezőt.";
-        pwError.hidden = false;
-        return;
-      }
-      if (p1 !== p2) {
-        pwError.textContent = "A két jelszó nem egyezik.";
-        pwError.hidden = false;
-        return;
-      }
-
-      postUsers({
-        action: "change_password",
-        id,
-        password: p1
-      })
-        .then(() => {
-          closeModal(pwForm);
-        })
-        .catch((err: Error) => {
-          pwError.textContent = err.message;
-          pwError.hidden = false;
-        });
-    });
-  }
-
-  if (delForm && delUserId && delError) {
-    delForm.addEventListener("submit", (e: SubmitEvent) => {
-      e.preventDefault();
-      delError.hidden = true;
-      delError.textContent = "";
-
-      const id = delUserId.value;
-
-      postUsers({
-        action: "delete_user",
-        id
-      })
-        .then((json) => {
-          const row = document.querySelector<HTMLTableRowElement>(
-            `.users-table tbody tr[data-id="${json.id}"]`
-          );
-          if (row && row.parentElement) {
-            row.parentElement.removeChild(row);
-          }
-          closeModal(delForm);
-        })
-        .catch((err: Error) => {
-          delError.textContent = err.message;
-          delError.hidden = false;
-        });
-    });
-  }
+    // Alapértelmezett lista betöltése
+    loadUsers('');
 });
