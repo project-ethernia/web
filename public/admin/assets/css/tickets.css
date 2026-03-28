@@ -1,14 +1,8 @@
-.admin-table { width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.2); }
-.admin-table th { text-align: left; padding: 1.2rem 1.5rem; background: rgba(239, 68, 68, 0.1); color: #f8fafc; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid var(--admin-red); }
-.admin-table td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--admin-border); vertical-align: middle; }
-.hover-row:hover { background: rgba(255, 255, 255, 0.03); }
-
 /* --- A TICKET CHAT FIXÁLÁSA (CSAK A VIEW MÓDBAN) --- */
 .support-container.view-ticket-mode {
     display: flex;
     flex-direction: column;
-    flex: 1; /* Kitölti az admin-main maradék helyét */
-    /* Dinamikusan számoljuk a magasságot a padding és a topbar alapján */
+    flex: 1; 
     height: calc(100vh - 160px); 
     min-height: 500px;
 }
@@ -17,7 +11,7 @@
     display: flex;
     gap: 1.5rem;
     flex: 1;
-    min-height: 0; /* Flexbox scrolling varázslat */
+    min-height: 0; 
 }
 
 /* BAL OLDAL (CHAT) */
@@ -26,7 +20,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    overflow: hidden; /* A chat doboz sohase nőhet túl a szülőjén */
+    overflow: hidden;
     background: var(--admin-glass);
     border: 1px solid var(--admin-border);
     border-radius: 12px;
@@ -61,4 +55,10 @@
     flex-direction: column;
     gap: 1rem;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+@media (max-width: 1100px) {
+    .admin-ticket-layout { flex-direction: column; }
+    .chat-container, .admin-controls { width: 100%; height: auto; flex: none; }
+    .support-container.view-ticket-mode { height: auto; }
 }
