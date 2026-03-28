@@ -25,4 +25,4 @@ require_once __DIR__ . '/../../includes/csrf.php';
 <body class="admin-body">
 <div class="admin-layout">
     <?php require_once __DIR__ . '/sidebar.php'; ?>
-    <main class="admin-main"></main>
+    <main class="admin-main">
