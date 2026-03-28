@@ -1,40 +1,9 @@
 /// <reference lib="dom" />
 
-// Egy globális Toast értesítő függvény (ezt a dizájnt már beírtuk a CSS-be!)
-function showToast(type: 'success' | 'error' | 'warning' | 'info', message: string) {
-    let container = document.querySelector('.toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'toast-container';
-        document.body.appendChild(container);
-    }
+declare function showToast(type: string, message: string): void;
+declare function ethConfirm(message: string, onConfirm: Function): void;
 
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    
-    let icon = 'info';
-    if (type === 'success') icon = 'check_circle';
-    if (type === 'error') icon = 'error';
-    if (type === 'warning') icon = 'warning';
-
-    toast.innerHTML = `<span class="material-symbols-rounded">${icon}</span> ${message}`;
-    container.appendChild(toast);
-
-    // Kicsi késleltetés az animáció beúszásához
-    setTimeout(() => toast.classList.add('show'), 10);
-
-    // 3 másodperc múlva animálva eltűnik
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-// A funkció, ami lekezeli a gombnyomást
-async function doTicketAction(action: string, ticketId: number, confirmMessage?: string) {
-    // Ha van megerősítő üzenet (pl. törlésnél), rákérdezünk
-    if (confirmMessage && !confirm(confirmMessage)) return;
-
+async function executeTicketAction(action: string, ticketId: number) {
     try {
         const res = await fetch('/admin/api/ticket_action.php', {
             method: 'POST',
@@ -62,12 +31,12 @@ async function doTicketAction(action: string, ticketId: number, confirmMessage?:
             const newHeader = doc.querySelector('.chat-header');
             if (currentHeader && newHeader) currentHeader.innerHTML = newHeader.innerHTML;
 
-            // Ha bejött egy rendszerüzenet, frissítjük a chat dobozt is!
+            // Chat doboz frissítése
             const currentChat = document.getElementById('chat-messages');
             const newChat = doc.getElementById('chat-messages');
             if (currentChat && newChat) {
                 currentChat.innerHTML = newChat.innerHTML;
-                currentChat.scrollTop = currentChat.scrollHeight; // Legörgetünk az aljára
+                currentChat.scrollTop = currentChat.scrollHeight; 
             }
             
             // Input doboz logikája (lezárás vs újranyitás)
@@ -92,5 +61,13 @@ async function doTicketAction(action: string, ticketId: number, confirmMessage?:
     }
 }
 
-// Hozzárendeljük a globális window objektumhoz, hogy a HTML gombok elérjék
+// Gombnyomás kezelő
+function doTicketAction(action: string, ticketId: number, confirmMessage?: string) {
+    if (confirmMessage) {
+        ethConfirm(confirmMessage, () => executeTicketAction(action, ticketId));
+    } else {
+        executeTicketAction(action, ticketId);
+    }
+}
+
 (window as any).doTicketAction = doTicketAction;

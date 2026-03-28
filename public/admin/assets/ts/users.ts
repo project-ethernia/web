@@ -1,12 +1,13 @@
 /// <reference lib="dom" />
 
+declare function showToast(type: string, message: string): void;
+
 document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.getElementById("users-tbody");
     const searchInput = document.getElementById("user-search") as HTMLInputElement | null;
     const profilePanel = document.getElementById("profile-panel");
     let debounceTimer: number;
 
-    // 1. TÁBLÁZAT ÉS KERESÉS BETÖLTÉSE
     async function loadUsers(query: string = '') {
         if (!tbody) return;
         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-muted);"><span class="material-symbols-rounded spinning" style="font-size: 2rem;">refresh</span><br><br>Játékosok keresése...</td></tr>';
@@ -46,10 +47,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     tbody.appendChild(tr);
                 });
 
-                // Eseménykezelők hozzáadása a friss gombokhoz
                 document.querySelectorAll('.load-profile-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        // Kiemeljük az aktív sort
                         document.querySelectorAll('.log-row, .hover-row').forEach(r => r.classList.remove('active-row'));
                         const target = e.currentTarget as HTMLButtonElement;
                         target.closest('tr')?.classList.add('active-row');
@@ -67,7 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 2. PROFIL PANEL DINAMIKUS BETÖLTÉSE
     async function loadUserProfile(id: string) {
         if (!profilePanel) return;
         profilePanel.innerHTML = '<div class="empty-profile"><span class="material-symbols-rounded spinning" style="font-size: 3rem;">refresh</span><p>Profil betöltése...</p></div>';
@@ -80,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const u = json.data;
                 const statusBadge = u.status === 'Aktív' ? 'success' : 'error';
                 
+                // JAVÍTVA: Az alert() helyett mostantól a showToast() fut le!
                 profilePanel.innerHTML = `
                     <div class="panel-header" style="border-radius: 12px 12px 0 0;">
                         <h2><span class="material-symbols-rounded">person</span> Játékos Profilja</h2>
@@ -113,14 +112,14 @@ document.addEventListener("DOMContentLoaded", () => {
                         <h4 style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 1rem;">Adminisztrátori Műveletek</h4>
                         
                         <div class="punishment-actions">
-                            <button class="btn-punish" onclick="alert('A büntetési API hamarosan bekötésre kerül!')">
+                            <button class="btn-punish" onclick="showToast('info', 'A büntetési API hamarosan bekötésre kerül!')">
                                 <span class="material-symbols-rounded">gavel</span>
                                 <div>
                                     <strong>Kitiltás (Ban)</strong>
                                     <span>Játékos végleges vagy ideiglenes kitiltása</span>
                                 </div>
                             </button>
-                            <button class="btn-punish" onclick="alert('A büntetési API hamarosan bekötésre kerül!')">
+                            <button class="btn-punish" onclick="showToast('info', 'A büntetési API hamarosan bekötésre kerül!')">
                                 <span class="material-symbols-rounded">volume_off</span>
                                 <div>
                                     <strong>Némítás (Mute)</strong>
@@ -138,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Gépelés figyelése (Debounce)
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             clearTimeout(debounceTimer);
@@ -149,6 +147,5 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Alapértelmezett lista betöltése
     loadUsers('');
 });

@@ -41,7 +41,6 @@ document.addEventListener("DOMContentLoaded", function () {
     var searchInput = document.getElementById("user-search");
     var profilePanel = document.getElementById("profile-panel");
     var debounceTimer;
-    // 1. TÁBLÁZAT ÉS KERESÉS BETÖLTÉSE
     function loadUsers() {
         return __awaiter(this, arguments, void 0, function (query) {
             var res, json, err_1;
@@ -76,11 +75,9 @@ document.addEventListener("DOMContentLoaded", function () {
                                 tr.innerHTML = "\n                        <td class=\"td-id\">#".concat(paddedId, "</td>\n                        <td>\n                            <div class=\"player-cell\">\n                                <img src=\"https://minotar.net/helm/").concat(user.username, "/24.png\" class=\"player-head\">\n                                <strong>").concat(user.username, "</strong>\n                            </div>\n                        </td>\n                        <td class=\"td-muted\">").concat(formattedDate, "</td>\n                        <td>\n                            <button class=\"btn-sm btn-open load-profile-btn\" data-id=\"").concat(user.id, "\">Megnyit\u00E1s</button>\n                        </td>\n                    ");
                                 tbody.appendChild(tr);
                             });
-                            // Eseménykezelők hozzáadása a friss gombokhoz
                             document.querySelectorAll('.load-profile-btn').forEach(function (btn) {
                                 btn.addEventListener('click', function (e) {
                                     var _a;
-                                    // Kiemeljük az aktív sort
                                     document.querySelectorAll('.log-row, .hover-row').forEach(function (r) { return r.classList.remove('active-row'); });
                                     var target = e.currentTarget;
                                     (_a = target.closest('tr')) === null || _a === void 0 ? void 0 : _a.classList.add('active-row');
@@ -103,7 +100,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
     }
-    // 2. PROFIL PANEL DINAMIKUS BETÖLTÉSE
     function loadUserProfile(id) {
         return __awaiter(this, void 0, void 0, function () {
             var res, json, u, statusBadge, err_2;
@@ -125,7 +121,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (json.status === 'success') {
                             u = json.data;
                             statusBadge = u.status === 'Aktív' ? 'success' : 'error';
-                            profilePanel.innerHTML = "\n                    <div class=\"panel-header\" style=\"border-radius: 12px 12px 0 0;\">\n                        <h2><span class=\"material-symbols-rounded\">person</span> J\u00E1t\u00E9kos Profilja</h2>\n                    </div>\n                    <div class=\"panel-body\">\n                        <div class=\"profile-header\">\n                            <img src=\"https://minotar.net/armor/bust/".concat(u.username, "/80.png\" class=\"profile-avatar\">\n                            <div>\n                                <h3 class=\"profile-name\">").concat(u.username, "</h3>\n                                <span class=\"profile-id\">ID: #").concat(String(u.id).padStart(4, '0'), "</span>\n                                <span class=\"badge ").concat(statusBadge, "\" style=\"margin-left: 0.5rem;\">").concat(u.status, "</span>\n                            </div>\n                        </div>\n                        \n                        <div class=\"profile-info-grid\">\n                            <div class=\"info-box\">\n                                <span class=\"info-label\">Regisztr\u00E1ci\u00F3 ideje</span>\n                                <span class=\"info-value\">").concat(u.created_at, "</span>\n                            </div>\n                            <div class=\"info-box\">\n                                <span class=\"info-label\">Rendelkez\u00E9sre \u00E1ll\u00F3 Ethernia Coin</span>\n                                <span class=\"info-value\" style=\"color: var(--admin-warning); font-weight: 800;\">").concat(u.coins, " EC</span>\n                            </div>\n                            <div class=\"info-box\">\n                                <span class=\"info-label\">Jelenlegi Rang</span>\n                                <span class=\"info-value\" style=\"color: var(--admin-info); font-weight: 800;\">").concat(u.rank, "</span>\n                            </div>\n                        </div>\n\n                        <hr class=\"control-divider\">\n                        <h4 style=\"color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 1rem;\">Adminisztr\u00E1tori M\u0171veletek</h4>\n                        \n                        <div class=\"punishment-actions\">\n                            <button class=\"btn-punish\" onclick=\"alert('A b\u00FCntet\u00E9si API hamarosan bek\u00F6t\u00E9sre ker\u00FCl!')\">\n                                <span class=\"material-symbols-rounded\">gavel</span>\n                                <div>\n                                    <strong>Kitilt\u00E1s (Ban)</strong>\n                                    <span>J\u00E1t\u00E9kos v\u00E9gleges vagy ideiglenes kitilt\u00E1sa</span>\n                                </div>\n                            </button>\n                            <button class=\"btn-punish\" onclick=\"alert('A b\u00FCntet\u00E9si API hamarosan bek\u00F6t\u00E9sre ker\u00FCl!')\">\n                                <span class=\"material-symbols-rounded\">volume_off</span>\n                                <div>\n                                    <strong>N\u00E9m\u00EDt\u00E1s (Mute)</strong>\n                                    <span>Chat haszn\u00E1lat\u00E1nak megvon\u00E1sa</span>\n                                </div>\n                            </button>\n                        </div>\n                    </div>\n                ");
+                            // JAVÍTVA: Az alert() helyett mostantól a showToast() fut le!
+                            profilePanel.innerHTML = "\n                    <div class=\"panel-header\" style=\"border-radius: 12px 12px 0 0;\">\n                        <h2><span class=\"material-symbols-rounded\">person</span> J\u00E1t\u00E9kos Profilja</h2>\n                    </div>\n                    <div class=\"panel-body\">\n                        <div class=\"profile-header\">\n                            <img src=\"https://minotar.net/armor/bust/".concat(u.username, "/80.png\" class=\"profile-avatar\">\n                            <div>\n                                <h3 class=\"profile-name\">").concat(u.username, "</h3>\n                                <span class=\"profile-id\">ID: #").concat(String(u.id).padStart(4, '0'), "</span>\n                                <span class=\"badge ").concat(statusBadge, "\" style=\"margin-left: 0.5rem;\">").concat(u.status, "</span>\n                            </div>\n                        </div>\n                        \n                        <div class=\"profile-info-grid\">\n                            <div class=\"info-box\">\n                                <span class=\"info-label\">Regisztr\u00E1ci\u00F3 ideje</span>\n                                <span class=\"info-value\">").concat(u.created_at, "</span>\n                            </div>\n                            <div class=\"info-box\">\n                                <span class=\"info-label\">Rendelkez\u00E9sre \u00E1ll\u00F3 Ethernia Coin</span>\n                                <span class=\"info-value\" style=\"color: var(--admin-warning); font-weight: 800;\">").concat(u.coins, " EC</span>\n                            </div>\n                            <div class=\"info-box\">\n                                <span class=\"info-label\">Jelenlegi Rang</span>\n                                <span class=\"info-value\" style=\"color: var(--admin-info); font-weight: 800;\">").concat(u.rank, "</span>\n                            </div>\n                        </div>\n\n                        <hr class=\"control-divider\">\n                        <h4 style=\"color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 1rem;\">Adminisztr\u00E1tori M\u0171veletek</h4>\n                        \n                        <div class=\"punishment-actions\">\n                            <button class=\"btn-punish\" onclick=\"showToast('info', 'A b\u00FCntet\u00E9si API hamarosan bek\u00F6t\u00E9sre ker\u00FCl!')\">\n                                <span class=\"material-symbols-rounded\">gavel</span>\n                                <div>\n                                    <strong>Kitilt\u00E1s (Ban)</strong>\n                                    <span>J\u00E1t\u00E9kos v\u00E9gleges vagy ideiglenes kitilt\u00E1sa</span>\n                                </div>\n                            </button>\n                            <button class=\"btn-punish\" onclick=\"showToast('info', 'A b\u00FCntet\u00E9si API hamarosan bek\u00F6t\u00E9sre ker\u00FCl!')\">\n                                <span class=\"material-symbols-rounded\">volume_off</span>\n                                <div>\n                                    <strong>N\u00E9m\u00EDt\u00E1s (Mute)</strong>\n                                    <span>Chat haszn\u00E1lat\u00E1nak megvon\u00E1sa</span>\n                                </div>\n                            </button>\n                        </div>\n                    </div>\n                ");
                         }
                         else {
                             profilePanel.innerHTML = "<div class=\"empty-profile\"><span class=\"material-symbols-rounded\" style=\"color: var(--admin-red);\">error</span><p>Hiba: ".concat(json.message, "</p></div>");
@@ -140,7 +137,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
     }
-    // Gépelés figyelése (Debounce)
     if (searchInput) {
         searchInput.addEventListener('input', function (e) {
             clearTimeout(debounceTimer);
@@ -150,6 +146,5 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 300);
         });
     }
-    // Alapértelmezett lista betöltése
     loadUsers('');
 });

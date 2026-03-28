@@ -36,64 +36,31 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-// Egy globális Toast értesítő függvény (ezt a dizájnt már beírtuk a CSS-be!)
-function showToast(type, message) {
-    var container = document.querySelector('.toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'toast-container';
-        document.body.appendChild(container);
-    }
-    var toast = document.createElement('div');
-    toast.className = "toast toast-".concat(type);
-    var icon = 'info';
-    if (type === 'success')
-        icon = 'check_circle';
-    if (type === 'error')
-        icon = 'error';
-    if (type === 'warning')
-        icon = 'warning';
-    toast.innerHTML = "<span class=\"material-symbols-rounded\">".concat(icon, "</span> ").concat(message);
-    container.appendChild(toast);
-    // Kicsi késleltetés az animáció beúszásához
-    setTimeout(function () { return toast.classList.add('show'); }, 10);
-    // 3 másodperc múlva animálva eltűnik
-    setTimeout(function () {
-        toast.classList.remove('show');
-        setTimeout(function () { return toast.remove(); }, 300);
-    }, 3000);
-}
-// A funkció, ami lekezeli a gombnyomást
-function doTicketAction(action, ticketId, confirmMessage) {
+function executeTicketAction(action, ticketId) {
     return __awaiter(this, void 0, void 0, function () {
         var res, data, htmlRes, htmlText, parser, doc, currentControls, newControls, currentHeader, newHeader, currentChat, newChat, chatArea, newChatArea, alert_1, alert_2, err_1;
         var _a, _b, _c;
         return __generator(this, function (_d) {
             switch (_d.label) {
                 case 0:
-                    // Ha van megerősítő üzenet (pl. törlésnél), rákérdezünk
-                    if (confirmMessage && !confirm(confirmMessage))
-                        return [2 /*return*/];
-                    _d.label = 1;
-                case 1:
-                    _d.trys.push([1, 8, , 9]);
+                    _d.trys.push([0, 7, , 8]);
                     return [4 /*yield*/, fetch('/admin/api/ticket_action.php', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ action: action, id: ticketId })
                         })];
-                case 2:
+                case 1:
                     res = _d.sent();
                     return [4 /*yield*/, res.json()];
-                case 3:
+                case 2:
                     data = _d.sent();
-                    if (!(data.status === 'success')) return [3 /*break*/, 6];
+                    if (!(data.status === 'success')) return [3 /*break*/, 5];
                     showToast('success', data.message);
                     return [4 /*yield*/, fetch(window.location.href)];
-                case 4:
+                case 3:
                     htmlRes = _d.sent();
                     return [4 /*yield*/, htmlRes.text()];
-                case 5:
+                case 4:
                     htmlText = _d.sent();
                     parser = new DOMParser();
                     doc = parser.parseFromString(htmlText, 'text/html');
@@ -109,7 +76,7 @@ function doTicketAction(action, ticketId, confirmMessage) {
                     newChat = doc.getElementById('chat-messages');
                     if (currentChat && newChat) {
                         currentChat.innerHTML = newChat.innerHTML;
-                        currentChat.scrollTop = currentChat.scrollHeight; // Legörgetünk az aljára
+                        currentChat.scrollTop = currentChat.scrollHeight;
                     }
                     chatArea = document.querySelector('.chat-input-area');
                     newChatArea = doc.querySelector('.chat-input-area');
@@ -126,20 +93,28 @@ function doTicketAction(action, ticketId, confirmMessage) {
                         if (alert_2)
                             (_c = alert_2.parentNode) === null || _c === void 0 ? void 0 : _c.replaceChild(newChatArea, alert_2);
                     }
-                    return [3 /*break*/, 7];
-                case 6:
+                    return [3 /*break*/, 6];
+                case 5:
                     showToast('error', data.message || 'Hiba történt a művelet során.');
-                    _d.label = 7;
-                case 7: return [3 /*break*/, 9];
-                case 8:
+                    _d.label = 6;
+                case 6: return [3 /*break*/, 8];
+                case 7:
                     err_1 = _d.sent();
                     console.error(err_1);
                     showToast('error', 'Hálózati hiba történt az API hívás közben!');
-                    return [3 /*break*/, 9];
-                case 9: return [2 /*return*/];
+                    return [3 /*break*/, 8];
+                case 8: return [2 /*return*/];
             }
         });
     });
 }
-// Hozzárendeljük a globális window objektumhoz, hogy a HTML gombok elérjék
+// Gombnyomás kezelő
+function doTicketAction(action, ticketId, confirmMessage) {
+    if (confirmMessage) {
+        ethConfirm(confirmMessage, function () { return executeTicketAction(action, ticketId); });
+    }
+    else {
+        executeTicketAction(action, ticketId);
+    }
+}
 window.doTicketAction = doTicketAction;

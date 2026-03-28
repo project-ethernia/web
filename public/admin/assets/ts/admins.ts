@@ -1,36 +1,9 @@
 /// <reference lib="dom" />
 
-// Toast értesítő függvény
-function showToast(type: 'success' | 'error' | 'warning' | 'info', message: string) {
-    let container = document.querySelector('.toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'toast-container';
-        document.body.appendChild(container);
-    }
+declare function showToast(type: string, message: string): void;
+declare function ethConfirm(message: string, onConfirm: Function): void;
 
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    
-    let icon = 'info';
-    if (type === 'success') icon = 'check_circle';
-    if (type === 'error') icon = 'error';
-    if (type === 'warning') icon = 'warning';
-
-    toast.innerHTML = `<span class="material-symbols-rounded">${icon}</span> ${message}`;
-    container.appendChild(toast);
-
-    setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-// Gombnyomások (Törlés, 2FA) kezelése
-async function doAdminAction(action: string, id: number, confirmMessage?: string) {
-    if (confirmMessage && !confirm(confirmMessage)) return;
-
+async function executeAdminAction(action: string, id: number) {
     try {
         const res = await fetch('/admin/api/admin_action.php', {
             method: 'POST',
@@ -51,9 +24,18 @@ async function doAdminAction(action: string, id: number, confirmMessage?: string
     }
 }
 
+// Gombnyomások (Törlés, 2FA) kezelése a Custom Confirm modallal
+function doAdminAction(action: string, id: number, confirmMessage?: string) {
+    if (confirmMessage) {
+        ethConfirm(confirmMessage, () => executeAdminAction(action, id));
+    } else {
+        executeAdminAction(action, id);
+    }
+}
+
 // Űrlap (Hozzáadás) beküldésének kezelése
 async function handleAddAdmin(e: Event) {
-    e.preventDefault(); // Megakadályozzuk az oldal újratöltését!
+    e.preventDefault(); 
     
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
@@ -81,8 +63,8 @@ async function handleAddAdmin(e: Event) {
 
         if (data.status === 'success') {
             showToast('success', data.message);
-            form.reset(); // Ürítjük a formot
-            refreshAdminTable(); // Táblázat frissítése
+            form.reset(); 
+            refreshAdminTable(); 
         } else {
             showToast('error', data.message || 'Hiba történt a hozzáadáskor.');
         }
@@ -97,7 +79,7 @@ async function handleAddAdmin(e: Event) {
     }
 }
 
-// Élő táblázat frissítő mágia
+// Élő táblázat frissítés
 async function refreshAdminTable() {
     try {
         const htmlRes = await fetch(window.location.href);
@@ -115,6 +97,5 @@ async function refreshAdminTable() {
     }
 }
 
-// Kötjük a globális window objektumhoz, hogy a HTMLből hívhatóak legyenek
 (window as any).doAdminAction = doAdminAction;
 (window as any).handleAddAdmin = handleAddAdmin;

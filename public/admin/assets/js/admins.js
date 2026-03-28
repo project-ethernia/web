@@ -36,52 +36,22 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-// Toast értesítő függvény
-function showToast(type, message) {
-    var container = document.querySelector('.toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'toast-container';
-        document.body.appendChild(container);
-    }
-    var toast = document.createElement('div');
-    toast.className = "toast toast-".concat(type);
-    var icon = 'info';
-    if (type === 'success')
-        icon = 'check_circle';
-    if (type === 'error')
-        icon = 'error';
-    if (type === 'warning')
-        icon = 'warning';
-    toast.innerHTML = "<span class=\"material-symbols-rounded\">".concat(icon, "</span> ").concat(message);
-    container.appendChild(toast);
-    setTimeout(function () { return toast.classList.add('show'); }, 10);
-    setTimeout(function () {
-        toast.classList.remove('show');
-        setTimeout(function () { return toast.remove(); }, 300);
-    }, 3000);
-}
-// Gombnyomások (Törlés, 2FA) kezelése
-function doAdminAction(action, id, confirmMessage) {
+function executeAdminAction(action, id) {
     return __awaiter(this, void 0, void 0, function () {
         var res, data, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (confirmMessage && !confirm(confirmMessage))
-                        return [2 /*return*/];
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 4, , 5]);
+                    _a.trys.push([0, 3, , 4]);
                     return [4 /*yield*/, fetch('/admin/api/admin_action.php', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ action: action, id: id })
                         })];
-                case 2:
+                case 1:
                     res = _a.sent();
                     return [4 /*yield*/, res.json()];
-                case 3:
+                case 2:
                     data = _a.sent();
                     if (data.status === 'success') {
                         showToast('success', data.message);
@@ -90,16 +60,25 @@ function doAdminAction(action, id, confirmMessage) {
                     else {
                         showToast('error', data.message || 'Hiba történt a művelet során.');
                     }
-                    return [3 /*break*/, 5];
-                case 4:
+                    return [3 /*break*/, 4];
+                case 3:
                     err_1 = _a.sent();
                     console.error(err_1);
                     showToast('error', 'Hálózati hiba történt az API hívás közben!');
-                    return [3 /*break*/, 5];
-                case 5: return [2 /*return*/];
+                    return [3 /*break*/, 4];
+                case 4: return [2 /*return*/];
             }
         });
     });
+}
+// Gombnyomások (Törlés, 2FA) kezelése a Custom Confirm modallal
+function doAdminAction(action, id, confirmMessage) {
+    if (confirmMessage) {
+        ethConfirm(confirmMessage, function () { return executeAdminAction(action, id); });
+    }
+    else {
+        executeAdminAction(action, id);
+    }
 }
 // Űrlap (Hozzáadás) beküldésének kezelése
 function handleAddAdmin(e) {
@@ -108,7 +87,7 @@ function handleAddAdmin(e) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    e.preventDefault(); // Megakadályozzuk az oldal újratöltését!
+                    e.preventDefault();
                     form = e.target;
                     formData = new FormData(form);
                     payload = {
@@ -137,8 +116,8 @@ function handleAddAdmin(e) {
                     data = _a.sent();
                     if (data.status === 'success') {
                         showToast('success', data.message);
-                        form.reset(); // Ürítjük a formot
-                        refreshAdminTable(); // Táblázat frissítése
+                        form.reset();
+                        refreshAdminTable();
                     }
                     else {
                         showToast('error', data.message || 'Hiba történt a hozzáadáskor.');
@@ -160,7 +139,7 @@ function handleAddAdmin(e) {
         });
     });
 }
-// Élő táblázat frissítő mágia
+// Élő táblázat frissítés
 function refreshAdminTable() {
     return __awaiter(this, void 0, void 0, function () {
         var htmlRes, htmlText, parser, doc, currentList, newList, err_3;
@@ -191,6 +170,5 @@ function refreshAdminTable() {
         });
     });
 }
-// Kötjük a globális window objektumhoz, hogy a HTMLből hívhatóak legyenek
 window.doAdminAction = doAdminAction;
 window.handleAddAdmin = handleAddAdmin;
