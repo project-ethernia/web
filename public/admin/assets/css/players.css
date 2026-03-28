@@ -1,158 +1,57 @@
-/* ==========================================================================
-   ETHERNIA ADMIN - SIDEBAR (OLDALMENÜ)
-   ========================================================================== */
-
-.admin-sidebar {
-    width: 280px;
-    height: 100vh;
-    position: sticky;
-    top: 0;
-    display: flex;
-    flex-direction: column;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 100;
-    border-right: 1px solid rgba(239, 68, 68, 0.15);
-    background: rgba(15, 10, 20, 0.8);
-    overflow: hidden; 
+/* SZERVER STÁTUSZ SÁV */
+.server-status-bar {
+    display: flex; align-items: center; gap: 2rem;
+    padding: 1rem 1.5rem; border-radius: 12px; flex-wrap: wrap;
 }
+.status-item { display: flex; align-items: center; gap: 0.6rem; font-weight: 600; font-size: 0.95rem; }
+.status-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; transition: 0.3s; }
+.status-dot.online  { background: #22c55e; box-shadow: 0 0 8px #22c55e; animation: pulse-green 2s infinite; }
+.status-dot.offline { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+@keyframes pulse-green { 0%,100% { box-shadow: 0 0 5px #22c55e; } 50% { box-shadow: 0 0 15px #22c55e; } }
 
-/* ÖSSZECSUKOTT ÁLLAPOT */
-.admin-sidebar.collapsed {
-    width: 80px;
-}
+.btn-refresh { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8;
+    display: flex; align-items: center; gap: 0.4rem; cursor: pointer;
+    padding: 0.4rem 0.8rem; border-radius: 6px; transition: 0.2s; font-size: 0.8rem; font-weight: 700; }
+.btn-refresh:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
 
-.sidebar-header {
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 1.5rem;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-}
+/* ONLINE JÁTÉKOSOK RÁCS */
+.online-grid { padding: 1.5rem; display: flex; flex-wrap: wrap; gap: 1rem; min-height: 100px; }
+.online-loading, .online-empty { width: 100%; text-align: center; color: #94a3b8;
+    display: flex; align-items: center; justify-content: center; gap: 0.8rem; padding: 2rem; }
+.online-empty .material-symbols-rounded { font-size: 2rem; opacity: 0.4; }
+.spinning { animation: spin 1s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.logo-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    overflow: hidden;
-    white-space: nowrap;
-}
+.online-player-card { padding: 1rem; border-radius: 10px; display: flex;
+    flex-direction: column; align-items: center; gap: 0.6rem;
+    min-width: 110px; transition: 0.2s; text-align: center; }
+.online-player-card:hover { transform: translateY(-3px); }
+.online-avatar { width: 48px; height: 48px; border-radius: 10px; image-rendering: pixelated; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+.online-name { font-weight: 700; font-size: 0.9rem; color: #fff; }
+.online-actions { display: flex; gap: 0.4rem; }
+.btn-kick { background: transparent; border: 1px solid #ef4444; color: #ef4444;
+    padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; transition: 0.2s; }
+.btn-kick:hover { background: #ef4444; color: #fff; }
+.btn-msg { background: transparent; border: 1px solid #3b82f6; color: #3b82f6;
+    padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; transition: 0.2s; }
+.btn-msg:hover { background: #3b82f6; color: #fff; }
 
-.logo-icon {
-    font-size: 2rem;
-    color: var(--admin-red);
-    filter: drop-shadow(0 0 10px var(--admin-red-glow));
-    flex-shrink: 0;
-}
+/* RCON PARANCS INPUT */
+.rcon-form { display: flex; flex-direction: column; gap: 1rem; }
+.rcon-input-wrap { display: flex; align-items: center; gap: 1rem; }
+.rcon-prompt { font-family: monospace; font-size: 1.3rem; color: #22c55e;
+    font-weight: 900; flex-shrink: 0; }
+.rcon-input { flex: 1; font-family: monospace !important; font-size: 1rem !important; }
+.rcon-response { padding: 1rem 1.5rem; border-radius: 8px; font-family: monospace;
+    font-size: 0.9rem; border-left: 4px solid transparent; transition: 0.3s; }
+.rcon-response.success { background: rgba(34,197,94,0.1); border-color: #22c55e; color: #86efac; }
+.rcon-response.error   { background: rgba(239,68,68,0.1);  border-color: #ef4444; color: #fca5a5; }
+.rcon-response.loading { background: rgba(255,255,255,0.05); border-color: #94a3b8; color: #94a3b8; }
 
-.logo-text {
-    font-family: var(--font-heading);
-    font-size: 1.2rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    color: #fff;
-    transition: opacity 0.2s;
-}
-
-.toggle-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem;
-    border-radius: 8px;
-    transition: 0.2s;
-    flex-shrink: 0;
-}
-
-.toggle-btn:hover {
-    color: #fff;
-    background: rgba(255,255,255,0.1);
-}
-
-.admin-sidebar.collapsed .logo-text { opacity: 0; pointer-events: none; }
-.admin-sidebar.collapsed .nav-text { opacity: 0; pointer-events: none; }
-.admin-sidebar.collapsed .nav-section { opacity: 0; height: 0; margin: 0; padding: 0; }
-
-/* MENÜ PONTOK */
-.sidebar-nav {
-    flex: 1; /* Kitölti a rendelkezésre álló helyet */
-    padding: 1.5rem 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    overflow-y: auto;
-    scrollbar-width: none; 
-}
-.sidebar-nav::-webkit-scrollbar { display: none; } 
-
-.nav-section {
-    font-size: 0.7rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.3);
-    margin: 1rem 0 0.5rem 0.8rem;
-    white-space: nowrap;
-    transition: opacity 0.2s;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    /* A border-left miatt a bal oldali paddinget picit visszavesszük, hogy ne ugorjon a szöveg */
-    padding: 0.8rem 1rem 0.8rem 0.75rem; 
-    color: var(--text-muted);
-    text-decoration: none;
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: all 0.2s;
-    white-space: nowrap;
-    border-left: 4px solid transparent; /* Előkészítjük a helyet a piros csíknak */
-}
-
-.nav-item .material-symbols-rounded {
-    font-size: 1.4rem;
-    flex-shrink: 0;
-    transition: color 0.2s;
-}
-
-.nav-item:hover {
-    background: rgba(255,255,255,0.05);
-    color: #fff;
-}
-
-/* ÚJ: KŐKEMÉNY AKTÍV JELÖLÉS */
-.nav-item.active {
-    background: linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, transparent 100%);
-    color: #fff;
-    border-left: 4px solid var(--admin-red); /* Erős piros vonal a bal szélen */
-}
-
-.nav-item.active .material-symbols-rounded {
-    color: var(--admin-red);
-    filter: drop-shadow(0 0 10px var(--admin-red-glow)); /* Izzó piros ikon */
-}
-
-/* ÚJ: LÁBLÉC LEHORGONYZÁSA A LEGALJÁRA */
-.sidebar-footer {
-    padding: 1rem;
-    border-top: 1px solid rgba(255,255,255,0.05);
-    margin-top: auto; /* Ez a varázsszó: feltolja a menüt, és letolja magát a pokolba! */
-    background: rgba(15, 10, 20, 0.9); /* Pici extra sötétítés */
-}
-
-.logout-btn {
-    border-radius: var(--radius-sm);
-    color: #f87171;
-}
-
-.logout-btn:hover {
-    background: rgba(239, 68, 68, 0.15);
-    color: #fca5a5;
-}
+/* INLINE RCON EREDMÉNY A PROFILPANELEN */
+.rcon-inline-result { margin-top: 1rem; padding: 0.8rem 1rem; border-radius: 8px;
+    font-size: 0.9rem; font-family: monospace; border-left: 4px solid transparent; }
+.rcon-inline-result.success { background: rgba(34,197,94,0.1); border-color: #22c55e; color: #86efac; }
+.rcon-inline-result.error   { background: rgba(239,68,68,0.1);  border-color: #ef4444; color: #fca5a5; }

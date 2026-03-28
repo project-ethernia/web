@@ -9,6 +9,13 @@ require_once __DIR__ . '/../config/roles.php';
 require_once __DIR__ . '/logger.php';
 require_once __DIR__ . '/discord.php';
 
+define('RCON_HOST',     '127.0.0.1');
+define('RCON_PORT',     25575);
+define('RCON_PASSWORD', 'a_te_rcon_jelszavad');
+define('RCON_TIMEOUT',  3);
+
+require_once __DIR__ . '/rcon.php';
+
 function getRealIp() {
     if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
         return $_SERVER['HTTP_CF_CONNECTING_IP']; 
