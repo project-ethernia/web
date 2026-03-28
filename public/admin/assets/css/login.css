@@ -175,3 +175,50 @@ body {
     margin: 1.5rem 0;
     text-shadow: 0 0 20px var(--admin-red-glow);
 }
+
+/* --- HITELESÍTÉS ANIMÁCIÓ (OVERLAY) --- */
+.auth-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(11, 7, 16, 0.95);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    border-radius: 12px;
+}
+.auth-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+.auth-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(239, 68, 68, 0.1);
+    border-top-color: var(--admin-red);
+    border-radius: 50%;
+    animation: auth-spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0 20px var(--admin-red-glow);
+}
+@keyframes auth-spin {
+    to { transform: rotate(360deg); }
+}
+.auth-text {
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-family: var(--font-heading);
+    animation: pulse-text 1.5s infinite;
+}
+@keyframes pulse-text {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
