@@ -15,7 +15,7 @@ $latestUsers = $pdo->query("SELECT username, created_at FROM users ORDER BY crea
 // Legutóbbi admin események (admin_logs táblából)
 $recentLogs = $pdo->query("SELECT * FROM admin_logs ORDER BY created_at DESC LIMIT 4")->fetchAll();
 
-// Napi aktivitás grafikon adatai (Valós admin_logs statisztika az elmúlt 7 napra)
+// Napi aktivitás grafikon adatai (adsaadaddasasddassdaasdasddasValós admin_logs statisztika az elmúlt 7 napra)
 $chartLabels = [];
 $chartData = [];
 for ($i = 6; $i >= 0; $i--) {
