@@ -1,3 +1,4 @@
+/* --- ADMIN GLOBALS: SZÍNEK ÉS ALAPOK --- */
 :root {
     --admin-red: #ef4444;
     --admin-red-glow: rgba(239, 68, 68, 0.4);
@@ -28,25 +29,73 @@ body.admin-body {
 
 h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 700; }
 
+/* SCROLLBAR */
 html { scrollbar-width: thin; scrollbar-color: var(--admin-red) var(--admin-bg); }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: var(--admin-bg); border-left: 1px solid rgba(255, 255, 255, 0.05); }
 ::-webkit-scrollbar-thumb { background: var(--admin-red); border-radius: 9999px; border: 2px solid var(--admin-bg); }
 ::-webkit-scrollbar-thumb:hover { background: #f87171; }
 
+/* KÖZÖS STÍLUSOK ÉS ÜVEG-HATÁS */
 .glass { background: var(--admin-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--admin-border); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); border-radius: 12px; }
 
-/* MODALOK ELREJTÉSE (Ettől volt csúnya a "Biztos vagy ebben" ablak!) */
+/* MODALOK (A BIZTOS VAGY EBBEN?) ALAPBÓL ELREJTVE! */
 .modal, .eth-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
 .modal.active, .eth-modal.active { display: flex !important; }
 
-/* GOMBOK ÉS INPUTOK ALAPJAI */
+/* GOMBOK ÉS INPUTOK */
 .eth-input { width: 100%; padding: 1rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: var(--font-body); transition: var(--transition); outline: none; }
 .eth-input:focus { border-color: var(--admin-red); box-shadow: 0 0 15px var(--admin-red-glow); }
 .btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 700; background: var(--admin-red); color: #fff; text-transform: uppercase; letter-spacing: 0.05em; border: none; cursor: pointer; transition: 0.3s; }
 .btn-primary:hover { box-shadow: 0 0 20px var(--admin-red-glow); filter: brightness(1.1); }
 
-/* TOAST ÉRTESÍTÉSEK */
+/* --- FŐ ELRENDEZÉS (VOLT BASE.CSS) --- */
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* EZ GONDOSKODIK RÓLA, HOGY A TARTALOM NE CSÚSSZON RÁ A MENÜRE */
+.admin-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-left: 280px; /* Az oldalsáv fix szélessége */
+    padding: 2rem;
+    min-width: 0;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
+}
+
+/* --- TOPBAR (FELSŐ MENÜ) --- */
+.admin-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background: var(--admin-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    flex-shrink: 0;
+}
+
+.topbar-left { display: flex; align-items: center; gap: 1rem; }
+.topbar-icon { width: 48px; height: 48px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--admin-red); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 0 15px var(--admin-red-glow); }
+.topbar-title h1 { margin: 0; font-size: 1.4rem; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; }
+.topbar-subtitle { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+
+.topbar-right { display: flex; align-items: center; gap: 1.5rem; }
+.admin-profile { display: flex; align-items: center; gap: 0.8rem; padding: 0.5rem 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 9999px; color: #fff; font-weight: 600; }
+.admin-profile img { width: 32px; height: 32px; border-radius: 50%; image-rendering: pixelated; }
+
+.mobile-menu-btn { display: none; background: transparent; border: none; color: #fff; font-size: 2rem; cursor: pointer; }
+
+/* --- TOAST ÉRTESÍTÉSEK --- */
 .toast-container { position: fixed; bottom: 2rem; right: 2rem; display: flex; flex-direction: column; gap: 1rem; z-index: 9999; pointer-events: none; }
 .toast { display: flex; align-items: center; gap: 0.8rem; padding: 1rem 1.5rem; background: rgba(20, 15, 25, 0.95); backdrop-filter: blur(10px); border-radius: 12px; color: #fff; font-weight: 600; font-size: 0.95rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: auto; border-left: 4px solid transparent; }
 .toast.show { transform: translateX(0); }
@@ -56,3 +105,14 @@ html { scrollbar-width: thin; scrollbar-color: var(--admin-red) var(--admin-bg);
 .toast-error .material-symbols-rounded { color: var(--admin-red); }
 .toast-warning { border-left-color: var(--admin-warning); }
 .toast-warning .material-symbols-rounded { color: var(--admin-warning); }
+.toast-info { border-left-color: var(--admin-info); }
+.toast-info .material-symbols-rounded { color: var(--admin-info); }
+
+/* --- MOBIL NÉZET --- */
+@media (max-width: 992px) {
+    .admin-main { margin-left: 0; padding: 1rem; }
+    .mobile-menu-btn { display: block; }
+    .admin-topbar { padding: 1rem; flex-direction: column; gap: 1rem; text-align: center; }
+    .topbar-left { flex-direction: column; }
+    .topbar-right .admin-profile { display: none; }
+}

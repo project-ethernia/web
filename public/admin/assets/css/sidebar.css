@@ -1,7 +1,7 @@
 .sidebar {
     width: 280px;
     height: 100vh;
-    position: fixed; /* EZ TARTJA A HELYÉN */
+    position: fixed; /* EZ A KULCS! EZT SOSE TÖRÖLJÜK KI! */
     top: 0;
     left: 0;
     background: rgba(15, 10, 20, 0.95); 
