@@ -50,7 +50,7 @@ if (isset($_GET['do']) && isset($_GET['id'])) {
 
 $page_title = 'Ügyfélszolgálat | ETHERNIA Admin';
 $extra_css = ['/admin/assets/css/tickets.css'];
-$extra_js = ['/assets/js/chat_engine.js']; 
+$extra_js = ['/admin/assets/js/chat.js']; 
 $topbar_icon = 'support_agent';
 $topbar_title = 'Ügyfélszolgálat (Tickets)';
 $topbar_subtitle = 'Hibajegyek kezelése és játékos támogatás';
